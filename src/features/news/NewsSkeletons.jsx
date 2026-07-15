@@ -32,7 +32,7 @@ export function NewsDetailSkeleton() {
   return (
     <div className={styles.article}>
       <div className={styles['article-head']}>
-        <Skeleton className="sk-pill" w={80} h={28} r={999} style={{ marginBottom: 14 }} />
+        <Skeleton w={80} h={28} r={999} style={{ marginBottom: 14 }} />
         <Skeleton h={30} w="90%" style={{ marginBottom: 9 }} />
         <Skeleton h={30} w="60%" />
       </div>

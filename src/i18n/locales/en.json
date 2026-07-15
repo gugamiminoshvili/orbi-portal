@@ -40,6 +40,7 @@
     "related": "Related news",
     "empty": "No news found",
     "emptyHint": "Try a different category or search term.",
+    "notFound": "Article not found",
     "backToNews": "Back to News",
     "share": "Share",
     "shareToast": "Link copied to clipboard",

@@ -7,6 +7,7 @@ import { getNews, listNews } from '../../api/endpoints/news'
 import { ph } from '../../utils/placeholder'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import EmptyState from '../../components/ui/EmptyState'
 import { Chip } from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
 import buttonStyles from '../../components/ui/Button.module.css'
@@ -29,7 +30,10 @@ export default function NewsDetailPage() {
   const { data: item, loading: itemLoading } = useAsync(() => getNews(Number(id)), [id])
   const { data: allNews, loading: listLoading } = useAsync(listNews, [])
 
-  const loading = itemLoading || listLoading || !item
+  // getNews() resolves undefined for unknown ids — treat that as not-found
+  // instead of leaving the skeleton up forever.
+  const notFound = !itemLoading && !item
+  const loading = !notFound && (itemLoading || listLoading || !item)
 
   useCrumbs(
     item
@@ -46,6 +50,23 @@ export default function NewsDetailPage() {
       <Icon name="back" /> {t('news:backToNews')}
     </Link>
   )
+
+  if (notFound) {
+    return (
+      <div>
+        {backLink}
+        <Card className={styles.article}>
+          <EmptyState title={t('news:notFound')}>
+            <p>
+              <Link to="/news" style={{ color: 'var(--teal-ink)', fontWeight: 600 }}>
+                {t('news:backToNews')}
+              </Link>
+            </p>
+          </EmptyState>
+        </Card>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
