@@ -96,6 +96,8 @@ export function ModalProvider({ children }) {
         <div
           ref={overlayRef}
           data-testid="modal-overlay"
+          role="dialog"
+          aria-modal="true"
           className={`${styles['modal-overlay']} ${styles.open}`}
           onMouseDown={handleOverlayMouseDown}
         >
