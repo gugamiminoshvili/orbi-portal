@@ -1,0 +1,2161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ORBI Portal — News & My Apartments (Redesign)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ORBI PORTAL — SHARED DESIGN SYSTEM
+   Tokens are the single source of truth for both flows + dashboard.
+   ============================================================ */
+:root{
+  /* Brand + accent */
+  --teal:#1A8A4E;          /* ORBI brand green (primary accent) */
+  --teal-600:#146F3E;
+  --teal-soft:#DCF3E5;     /* chip / badge background */
+  --teal-ink:#0E6B3B;
+
+  /* Surfaces */
+  --bg:#EEF1F4;
+  --card:#ffffff;
+  --sidebar:#15663B;       /* ORBI dark green shell */
+  --sidebar-2:#0E4A2A;
+  --sidebar-hover:#1C7A48;
+  --sidebar-active:#1A7044;
+
+  /* Text */
+  --ink:#1b1b2c;
+  --ink-2:#3f425a;
+  --muted:#7E8299;
+  --line:#eceef4;
+  --line-2:#e4e7f0;
+
+  /* Semantic (replace meaningless colored stripes) */
+  --pos:#1A8A4E;  --pos-bg:#DCF3E5;  --pos-ink:#0E6B3B;   /* paid / active / positive */
+  --warn:#FFA800; --warn-bg:#FFF4DE; --warn-ink:#b57400;  /* pause / pending / warning */
+  --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
+  --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
+
+  /* Shape + depth */
+  --r:16px;
+  --r-sm:10px;
+  --r-pill:999px;
+  --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
+  --shadow-lg:0 18px 50px rgba(20,24,60,.18);
+  --ring:0 0 0 3px rgba(26,138,78,.28);
+
+  /* Spacing scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px; --s8:40px;
+
+  --shell-w:264px;
+  --header-h:68px;
+  --t:.2s cubic-bezier(.4,0,.2,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* ---------- App shell layout ---------- */
+.app{display:flex;min-height:100vh}
+
+/* Sidebar (dark navy) — present on EVERY screen */
+.sidebar{
+  width:var(--shell-w);
+  background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));
+  color:#cdd0e6;
+  position:fixed;inset:0 auto 0 0;
+  display:flex;flex-direction:column;
+  z-index:60;
+  transition:transform var(--t);
+}
+.brand{display:flex;align-items:center;gap:12px;padding:22px 22px 18px}
+.brand .logo{
+  width:38px;height:38px;border-radius:11px;flex:none;
+  background:linear-gradient(135deg,var(--teal),#28a862);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:18px;
+  box-shadow:0 6px 16px rgba(26,138,78,.4);
+}
+.brand b{color:#fff;font-size:17px;font-weight:600;letter-spacing:.2px}
+.brand span{display:block;color:#7c80a8;font-size:11px;font-weight:500;margin-top:1px}
+.nav{padding:8px 14px;overflow-y:auto;flex:1}
+.nav .group{color:#5d6191;font-size:10.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;padding:18px 12px 8px}
+.nav a{
+  display:flex;align-items:center;gap:13px;
+  padding:11px 14px;border-radius:11px;color:#b6b9d8;font-weight:500;font-size:13.5px;
+  margin-bottom:3px;transition:var(--t);cursor:pointer;
+}
+.nav a:hover{background:var(--sidebar-hover);color:#fff}
+.nav a.active{background:var(--sidebar-active);color:#fff;box-shadow:inset 3px 0 0 var(--teal)}
+.nav a .ic{width:20px;height:20px;flex:none;opacity:.9}
+.nav a.active .ic{color:var(--teal)}
+.side-foot{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:11px}
+.side-foot .av{width:36px;height:36px;border-radius:50%;background:#2a2a52;display:grid;place-items:center;color:#fff;font-weight:600;font-size:13px;flex:none}
+.side-foot .nm{font-size:12.5px;color:#e6e7f4;font-weight:500;line-height:1.3}
+.side-foot .nm small{display:block;color:#7c80a8;font-size:11px;font-weight:400}
+
+/* Main column */
+.main{flex:1;margin-left:var(--shell-w);min-width:0;display:flex;flex-direction:column}
+
+/* Top header — present on EVERY screen */
+.header{
+  height:var(--header-h);position:sticky;top:0;z-index:40;
+  background:rgba(238,240,248,.82);backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line-2);
+  display:flex;align-items:center;gap:16px;padding:0 28px;
+}
+.burger{display:none;background:#fff;border:1px solid var(--line-2);width:40px;height:40px;border-radius:11px;cursor:pointer;align-items:center;justify-content:center}
+.crumbs{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:500;min-width:0}
+.crumbs b{color:var(--ink);font-weight:600}
+.crumbs .sep{opacity:.5}
+.header .spacer{flex:1}
+.h-search{position:relative;display:flex;align-items:center}
+.h-search input{
+  background:#fff;border:1px solid var(--line-2);border-radius:var(--r-pill);
+  height:42px;padding:0 16px 0 42px;width:230px;font-size:13px;color:var(--ink);transition:var(--t);
+}
+.h-search input:focus{outline:none;box-shadow:var(--ring);border-color:var(--teal);width:280px}
+.h-search svg{position:absolute;left:14px;color:var(--muted);pointer-events:none}
+.icon-btn{
+  width:42px;height:42px;border-radius:12px;background:#fff;border:1px solid var(--line-2);
+  display:grid;place-items:center;cursor:pointer;color:var(--ink-2);position:relative;transition:var(--t);
+}
+.icon-btn:hover{color:var(--teal);border-color:var(--teal)}
+.icon-btn .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--neg);border:2px solid #fff}
+.lang-switch{display:inline-flex;background:#fff;border:1px solid var(--line-2);border-radius:var(--r-pill);padding:3px;gap:2px}
+.lang-switch button{border:none;background:transparent;height:34px;min-width:42px;padding:0 10px;border-radius:var(--r-pill);font-weight:600;font-size:12px;color:var(--muted);cursor:pointer;transition:var(--t)}
+.lang-switch button:hover{color:var(--ink)}
+.lang-switch button.on{background:var(--teal-soft);color:var(--teal-ink)}
+
+/* Page container */
+.page{padding:28px;max-width:1240px;width:100%;margin:0 auto;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.page-head h1{font-size:24px;font-weight:600;margin:0 0 2px;letter-spacing:-.3px}
+.page-head p{margin:0;color:var(--muted);font-size:13.5px}
+
+/* ---------- Card (shared with Dashboard) ---------- */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid rgba(228,231,240,.7)}
+.card-pad{padding:22px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.card-head h3{margin:0;font-size:15.5px;font-weight:600}
+.card-head .sub{color:var(--muted);font-size:12px;margin-top:1px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:42px;padding:0 18px;border-radius:11px;border:1px solid transparent;
+  font-weight:600;font-size:13.5px;cursor:pointer;transition:var(--t);white-space:nowrap;
+}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 8px 18px rgba(26,138,78,.30)}
+.btn-primary:hover{background:var(--teal-600);transform:translateY(-1px)}
+.btn-ghost{background:#fff;border-color:var(--line-2);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
+.btn-soft{background:var(--teal-soft);color:var(--teal-ink)}
+.btn-soft:hover{background:#b6f2ef}
+.btn-sm{height:36px;padding:0 14px;font-size:12.5px;border-radius:9px}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ---------- Chips / badges ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:var(--r-pill);font-size:12px;font-weight:600;background:var(--teal-soft);color:var(--teal-ink)}
+.badge{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:var(--r-pill);font-size:11.5px;font-weight:600}
+.badge .b-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.pos{background:var(--pos-bg);color:var(--pos-ink)}
+.badge.warn{background:var(--warn-bg);color:var(--warn-ink)}
+.badge.neg{background:var(--neg-bg);color:var(--neg-ink)}
+.badge.info{background:var(--info-bg);color:var(--info-ink)}
+.badge.muted{background:#eef0f6;color:var(--muted)}
+
+/* Filter pills (segmented) */
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line-2);border-radius:var(--r-pill);padding:4px;gap:2px;flex-wrap:wrap}
+.seg button{border:none;background:transparent;height:34px;padding:0 16px;border-radius:var(--r-pill);font-weight:600;font-size:12.5px;color:var(--muted);cursor:pointer;transition:var(--t)}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--teal-soft);color:var(--teal-ink)}
+
+/* Inputs */
+.field{position:relative}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:7px}
+.input,select.input{
+  width:100%;height:44px;border:1px solid var(--line-2);border-radius:11px;padding:0 14px;
+  font-size:13.5px;color:var(--ink);background:#fff;transition:var(--t);
+}
+.input:focus,select.input:focus{outline:none;border-color:var(--teal);box-shadow:var(--ring)}
+.search-wrap{position:relative}
+.search-wrap input{padding-left:42px}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+
+/* Money — right aligned + tabular */
+.money{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+.money.pos{color:var(--pos-ink)}
+.money.neg{color:var(--neg-ink)}
+
+/* ---------- Tables ---------- */
+.tbl-wrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{
+  text-align:left;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.5px;text-transform:uppercase;
+  padding:13px 16px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+table.tbl th.r,table.tbl td.r{text-align:right}
+table.tbl td{padding:15px 16px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink-2)}
+table.tbl tbody tr{transition:background var(--t)}
+table.tbl tbody tr:hover{background:#f9fafd}
+table.tbl tbody tr:last-child td{border-bottom:none}
+
+/* ---------- News list ---------- */
+.news-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.news-card{overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform var(--t),box-shadow var(--t)}
+.news-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.news-card:focus-visible{outline:none;box-shadow:var(--ring)}
+.news-card .thumb{aspect-ratio:16/9;background:#dfe3f2;position:relative;overflow:hidden;border-radius:12px 12px 0 0}
+.news-card .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.news-card:hover .thumb img{transform:scale(1.05)}
+.news-card .thumb .cat{position:absolute;top:12px;left:12px}
+.news-card .body{padding:18px;display:flex;flex-direction:column;gap:9px;flex:1}
+.news-card .meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-weight:500}
+.news-card .meta svg{flex:none}
+.news-card h3{margin:0;font-size:16px;font-weight:600;line-height:1.35;letter-spacing:-.2px;color:var(--ink);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-card .foot{margin-top:auto;padding-top:4px;display:flex;align-items:center;color:var(--teal-ink);font-weight:600;font-size:12.5px;gap:6px;transition:gap var(--t)}
+.news-card:hover .foot{gap:10px}
+
+/* Pager */
+.pager{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:30px}
+.pager button{min-width:40px;height:40px;padding:0 12px;border-radius:11px;border:1px solid var(--line-2);background:#fff;color:var(--ink-2);font-weight:600;font-size:13.5px;cursor:pointer;transition:var(--t)}
+.pager button:hover:not(:disabled){border-color:var(--teal);color:var(--teal-ink)}
+.pager button.on{background:var(--teal);border-color:var(--teal);color:#fff;box-shadow:0 6px 14px rgba(26,138,78,.3)}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+.pager .dots{color:var(--muted);padding:0 4px}
+
+/* ---------- News detail — single readable column ---------- */
+.article{max-width:760px;margin:0 auto}
+.article-head{margin-bottom:20px}
+.article-head .meta{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;font-weight:500;margin-bottom:14px;flex-wrap:wrap}
+.article-head h1{font-size:32px;font-weight:600;line-height:1.18;letter-spacing:-.6px;margin:0;color:var(--ink)}
+.detail-hero{aspect-ratio:16/8;border-radius:var(--r);overflow:hidden;margin-bottom:26px;background:#dfe3f2}
+.detail-hero img{width:100%;height:100%;object-fit:cover}
+.prose{font-size:16px;line-height:1.8;color:var(--ink-2)}
+.prose h3{color:var(--ink);font-size:19px;margin:28px 0 10px}
+.prose p{margin:0 0 18px}
+.prose ul{margin:0 0 18px;padding-left:20px}
+.prose li{margin-bottom:8px}
+.prose strong{color:var(--ink)}
+.attach{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--line-2);border-radius:12px;margin-bottom:10px;transition:var(--t);cursor:pointer}
+.attach:hover{border-color:var(--teal);background:#f9fefe}
+.attach .ico{width:40px;height:40px;border-radius:10px;background:var(--teal-soft);color:var(--teal-ink);display:grid;place-items:center;flex:none}
+.attach .nm{font-weight:600;font-size:13px;color:var(--ink)}
+.attach .sz{font-size:11.5px;color:var(--muted)}
+.related-wrap{max-width:1100px;margin:40px auto 0}
+.related-wrap .rl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.related-wrap h3{margin:0;font-size:18px;font-weight:600}
+
+/* ---------- Apartments ---------- */
+.proj-group{margin-bottom:30px}
+.proj-head{display:flex;align-items:center;gap:12px;margin:0 0 16px}
+.proj-head .pj-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;flex:none}
+.proj-head h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-.2px}
+.proj-head .count{color:var(--muted);font-size:12.5px;font-weight:500;background:#fff;border:1px solid var(--line-2);border-radius:var(--r-pill);padding:3px 11px}
+.apt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.apt-card{overflow:hidden;cursor:pointer;display:flex;flex-direction:column;border:1px solid rgba(228,231,240,.7);
+  transition:transform var(--t),box-shadow var(--t),border-color var(--t)}
+.apt-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--teal)}
+.apt-card:focus-visible{outline:none;box-shadow:var(--ring)}
+.apt-card .top{display:flex;align-items:flex-start;gap:14px;padding:18px 18px 14px}
+.apt-card .bicon{width:54px;height:54px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;box-shadow:0 6px 14px rgba(20,24,60,.12)}
+.apt-card .hd{flex:1;min-width:0}
+.apt-card .code{font-size:16px;font-weight:600;letter-spacing:-.2px;color:var(--ink);font-variant-numeric:tabular-nums;word-break:break-word}
+.apt-card .role{margin-top:7px}
+.apt-card .metarow{display:flex;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.apt-card .metarow .m{flex:1;padding:12px 18px}
+.apt-card .metarow .m+.m{border-left:1px solid var(--line)}
+.apt-card .metarow .k{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.apt-card .metarow .v{font-size:14px;font-weight:600;color:var(--ink);margin-top:2px;font-variant-numeric:tabular-nums}
+.apt-card .status{display:flex;align-items:center;gap:8px;padding:14px 18px;font-size:13px}
+.apt-card .status .sdot{width:9px;height:9px;border-radius:50%;flex:none}
+.apt-card .status .slab{color:var(--muted);font-weight:500}
+.apt-card .status .sval{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.apt-card .hint{margin-top:auto;display:flex;align-items:center;gap:6px;padding:13px 18px;color:var(--muted);font-weight:600;font-size:12px;transition:color var(--t)}
+.apt-card .hint .arr{display:inline-flex;transition:transform var(--t)}
+.apt-card:hover .hint{color:var(--teal-ink)}
+.apt-card:hover .hint .arr{transform:translateX(4px)}
+
+/* Summary strip */
+.apt-summary{display:flex;flex-wrap:wrap;gap:30px;align-items:center;padding:20px 24px;margin-bottom:26px}
+.apt-summary .item{display:flex;align-items:center;gap:14px}
+.apt-summary .item .si{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none}
+.apt-summary .item .lab{color:var(--muted);font-size:12.5px;font-weight:500}
+.apt-summary .item .num{font-size:22px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1.1}
+.apt-summary .divider{width:1px;align-self:stretch;background:var(--line-2)}
+
+/* ---------- Apartment detail: overview block ---------- */
+.bicon-lg{width:74px;height:74px;border-radius:16px;display:grid;place-items:center;color:#fff;flex:none;box-shadow:0 8px 18px rgba(20,24,60,.14)}
+.ov-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.ov-head h3{margin:0;font-size:15.5px;font-weight:600}
+.ov-body{padding:22px;display:flex;gap:24px;align-items:flex-start}
+.ov-body .meta{flex:1;min-width:0}
+.ov-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ov-meta .cell{background:#fff;padding:13px 15px;min-width:0}
+.ov-meta .k{color:var(--muted);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;margin-bottom:4px}
+.ov-meta .v{font-weight:600;font-size:13.5px;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.qr-corner{flex:none;width:128px;text-align:center}
+.qr-corner .qr{width:108px;height:108px;border:1px solid var(--line-2);border-radius:12px;padding:9px;background:#fff;cursor:pointer;transition:var(--t);margin:0 auto}
+.qr-corner .qr:hover{border-color:var(--teal);box-shadow:var(--ring)}
+.qr-corner .qr svg{width:100%;height:100%;display:block}
+.qr-corner .ql{font-size:11px;color:var(--muted);margin-top:8px}
+.copywrap{display:inline-flex;align-items:center;gap:8px}
+.copy-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--line-2);background:#fff;color:var(--muted);cursor:pointer;display:inline-grid;place-items:center;flex:none;transition:var(--t)}
+.copy-btn:hover{border-color:var(--teal);color:var(--teal-ink)}
+.copy-btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.copy-btn.ok{color:var(--pos-ink);border-color:var(--pos-bg);background:var(--pos-bg)}
+
+/* ---------- Service accordion cards ---------- */
+.svc{margin-bottom:14px;overflow:hidden}
+.svc-head{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;width:100%;background:none;border:none;text-align:left;font-family:inherit}
+.svc-head:focus-visible{outline:none;box-shadow:var(--ring)}
+.svc-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none}
+.svc-tt{min-width:0}
+.svc-name{font-weight:600;font-size:15px;color:var(--ink)}
+.svc-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.svc-metric{margin-left:auto;text-align:right;padding-left:12px}
+.svc-metric .m-lab{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.svc-metric .m-val{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;margin-top:1px}
+.svc-actions{display:flex;align-items:center;gap:10px;margin-left:auto;padding-left:12px}
+.svc .chev{transition:transform var(--t);color:var(--muted);flex:none}
+.svc.open .chev{transform:rotate(180deg)}
+.svc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1)}
+.svc.open .svc-body{grid-template-rows:1fr}
+.svc-body>.inner{overflow:hidden;min-height:0}
+.svc-inner{padding:2px 18px 18px}
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px}
+.svc-grid .cell{background:#fff;padding:14px 16px}
+.svc-grid .k{color:var(--muted);font-size:11px;margin-bottom:4px;font-weight:600}
+.svc-grid .v{font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.svc-2{grid-template-columns:repeat(2,1fr)}
+.svc-cta{display:flex;gap:10px;flex-wrap:wrap}
+.section-label{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:26px 0 14px}
+
+/* ---------- Modal size variants + generic ---------- */
+.modal.md{max-width:560px}
+.modal.lg{max-width:720px}
+.modal.xl{max-width:940px}
+.modal-foot.split{justify-content:space-between}
+
+/* date pickers row */
+.date-row{display:flex;gap:12px;flex-wrap:wrap}
+.date-row .field{flex:1;min-width:140px}
+
+/* ---------- Doors calendar ---------- */
+.cal-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.cal-nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.cal-nav .mlabel{font-weight:600;font-size:14px;min-width:130px;text-align:center}
+.cal-nav button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line-2);background:#fff;cursor:pointer;color:var(--ink-2)}
+.cal-nav button:hover{border-color:var(--teal);color:var(--teal)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-dow{text-align:center;font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding-bottom:4px}
+.cal-day{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;padding:7px 8px;display:flex;flex-direction:column;justify-content:space-between;min-height:0}
+.cal-day.empty{border:none;background:transparent}
+.cal-day .dnum{font-size:12px;font-weight:600;color:var(--ink-2)}
+.cal-day .cnt{font-size:11px;font-weight:700;align-self:flex-start;padding:2px 7px;border-radius:999px;background:var(--teal-soft);color:var(--teal-ink)}
+.cal-day .cnt.zero{background:#eef0f6;color:var(--muted)}
+.cal-day.hi{border-color:var(--teal);background:#f6fefe}
+.cal-list{display:none}
+.cal-list .row{display:flex;justify-content:space-between;padding:11px 4px;border-bottom:1px solid var(--line);font-size:13px}
+.cal-summary{display:flex;gap:18px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);flex-wrap:wrap}
+.cal-summary b{color:var(--ink)}
+
+/* ---------- Pay checkout page ---------- */
+.pay-page{max-width:620px;margin:0 auto}
+
+/* ---------- Internet & TV subscription summary ---------- */
+.sub-panel{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.sub-panel .cell{background:#fff;padding:16px 18px;display:flex;flex-direction:column;justify-content:center}
+.sub-panel .cell.ringc{align-items:center;flex-direction:row;gap:14px}
+.sub-panel .k{color:var(--muted);font-size:11px;letter-spacing:.4px;text-transform:uppercase;font-weight:600;margin-bottom:5px}
+.sub-panel .v{font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.ring{position:relative;width:74px;height:74px;flex:none}
+.ring svg{transform:rotate(-90deg);display:block}
+.ring .rt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ring .rt b{font-size:18px;font-weight:700}
+.ring .rt small{font-size:8.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.sub-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* plan grid (change package) */
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.plan{border:1.5px solid var(--line-2);border-radius:16px;padding:18px 16px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;transition:transform var(--t),border-color var(--t),box-shadow var(--t)}
+.plan:hover{border-color:var(--teal);box-shadow:var(--shadow)}
+.plan.current{border-color:var(--teal);background:#f4fcf7;box-shadow:0 0 0 1px var(--teal) inset}
+.plan .cur-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.plan .pname{font-weight:600;font-size:14px;color:var(--ink);margin-bottom:10px;white-space:nowrap}
+.plan .price{display:inline-flex;align-items:flex-start;justify-content:center;gap:3px;line-height:1}
+.plan .price .amt{font-size:30px;font-weight:700;letter-spacing:-1px;color:var(--ink);font-variant-numeric:tabular-nums}
+.plan .price .cur{font-size:12px;font-weight:600;color:var(--muted);margin-top:4px}
+.plan .per{font-size:11px;color:var(--muted);margin-top:4px}
+.plan .p-div{width:36px;height:2px;background:var(--line-2);border-radius:2px;margin:13px 0}
+.plan .spec{width:100%}
+.plan .spec+.spec{margin-top:9px}
+.plan .spec .lab{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.plan .spec .val{font-size:14px;font-weight:600;color:var(--ink);margin-top:2px;white-space:nowrap}
+.plan-info{display:flex;flex-direction:column;align-items:center;width:100%}
+.plan-meta{display:none}
+.plan-cta{width:100%;margin-top:15px}
+.plan .btn{width:100%}
+.plan .btn.is-active{background:var(--teal-soft);color:var(--teal-ink);box-shadow:none;pointer-events:none}
+
+/* boost cards */
+.boost{display:flex;align-items:center;gap:14px;border:1.5px solid var(--line-2);border-radius:12px;padding:14px 16px;cursor:pointer;transition:var(--t);margin-bottom:10px}
+.boost:hover{border-color:var(--teal)}
+.boost.sel{border-color:var(--teal);background:#f3fdfc}
+.boost:focus-visible{outline:none;box-shadow:var(--ring)}
+.boost .bi{width:42px;height:42px;border-radius:11px;background:var(--teal-soft);color:var(--teal-ink);display:grid;place-items:center;flex:none}
+.boost .bt{flex:1;min-width:0}
+.boost .bname{font-weight:600;font-size:14px;color:var(--ink)}
+.boost .bsub{font-size:12px;color:var(--muted);margin-top:1px}
+.boost .bprice{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.boost .check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line-2);flex:none;display:grid;place-items:center;color:#fff}
+.boost.sel .check{background:var(--teal);border-color:var(--teal)}
+
+/* warning box (pause) */
+.warn-box{display:flex;gap:16px;padding:16px;background:var(--warn-bg);border:1px solid #ffe1a8;border-radius:12px}
+.warn-box .wi{width:44px;height:44px;border-radius:12px;background:#fff;color:var(--warn-ink);display:grid;place-items:center;flex:none}
+.warn-box h4{margin:0 0 4px;font-size:14px;color:var(--ink)}
+.warn-box p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
+.btn-warn{background:var(--warn);color:#fff;box-shadow:0 8px 18px rgba(255,168,0,.28)}
+.btn-warn:hover{background:#e89800}
+
+.diff-up{color:var(--pos-ink);font-weight:600}
+.diff-down{color:var(--neg-ink);font-weight:600}
+.diff-same{color:var(--muted);font-weight:600}
+.cmp-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.cmp-row:last-child{border-bottom:none}
+
+/* Stat tiles */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.stat{padding:20px}
+.stat .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin-bottom:14px}
+.stat .lab{color:var(--muted);font-size:12.5px;font-weight:500}
+.stat .num{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto}
+.tabs button{
+  border:none;background:none;padding:14px 18px;font-weight:600;font-size:13.5px;color:var(--muted);
+  cursor:pointer;position:relative;white-space:nowrap;transition:var(--t);
+}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--teal-ink)}
+.tabs button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--teal)}
+
+/* Overview detail */
+.bal-hero{display:grid;grid-template-columns:1.3fr 1fr;gap:0;overflow:hidden}
+.bal-hero .l{padding:28px;background:linear-gradient(135deg,var(--sidebar),var(--sidebar-2));color:#fff}
+.bal-hero .l .lab{color:#9b9fce;font-size:13px;font-weight:500}
+.bal-hero .l .big{font-size:38px;font-weight:700;letter-spacing:-1px;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.bal-hero .l .note{color:#c9cce8;font-size:12.5px}
+.bal-hero .r{padding:28px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.kv{display:flex;justify-content:space-between;align-items:center;font-size:13.5px}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:600;font-variant-numeric:tabular-nums}
+.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border-radius:12px;overflow:hidden}
+.info-grid .cell{background:#fff;padding:16px 18px}
+.info-grid .cell .k{color:var(--muted);font-size:12px;margin-bottom:4px}
+.info-grid .cell .v{font-weight:600;font-size:14px}
+
+/* ---------- Skeleton ---------- */
+.sk{background:linear-gradient(90deg,#eef0f6 25%,#e4e7f0 37%,#eef0f6 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.sk-line{height:12px;margin-bottom:9px}
+.sk-thumb{height:170px;border-radius:0}
+.sk-pill{height:28px;width:80px;border-radius:999px}
+
+/* ---------- Modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(17,20,45,.5);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity var(--t)}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);transform:translateY(14px) scale(.98);transition:transform var(--t);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-overlay.open .modal{transform:none}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--line)}
+.modal-head h3{margin:0;font-size:17px;font-weight:600}
+.modal-x{width:36px;height:36px;border-radius:10px;border:1px solid var(--line-2);background:#fff;cursor:pointer;display:grid;place-items:center;color:var(--muted);transition:var(--t)}
+.modal-x:hover{background:var(--neg-bg);color:var(--neg-ink);border-color:var(--neg-bg)}
+.modal-x:focus-visible{outline:none;box-shadow:var(--ring)}
+.modal-body{padding:22px;overflow-y:auto}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:#fafbfe}
+
+/* Payment steps */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:22px}
+.steps .stp{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-weight:600}
+.steps .stp .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#eef0f6;color:var(--muted);font-size:12px}
+.steps .stp.on .n{background:var(--teal);color:#fff}
+.steps .stp.done .n{background:var(--teal-soft);color:var(--teal-ink)}
+.steps .ln{flex:1;height:2px;background:var(--line-2);margin:0 8px}
+.pay-method{display:flex;align-items:center;gap:13px;padding:14px;border:1.5px solid var(--line-2);border-radius:12px;cursor:pointer;margin-bottom:10px;transition:var(--t)}
+.pay-method:hover{border-color:var(--teal)}
+.pay-method.sel{border-color:var(--teal);background:#f6fefe}
+.pay-method .mi{width:42px;height:30px;border-radius:6px;background:#eef0f6;display:grid;place-items:center;flex:none;font-size:11px;font-weight:700;color:var(--ink-2)}
+.pay-method .rad{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--line-2);flex:none;display:grid;place-items:center}
+.pay-method.sel .rad{border-color:var(--teal)}
+.pay-method.sel .rad::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--teal)}
+.success-ring{width:74px;height:74px;border-radius:50%;background:var(--teal-soft);display:grid;place-items:center;margin:0 auto 16px;color:var(--teal-ink);animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-box{text-align:center;padding:26px 10px}
+.gen-box .sk{margin:0 auto}
+
+/* Empty state */
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .ei{width:64px;height:64px;border-radius:16px;background:var(--teal-soft);color:var(--teal-ink);display:grid;place-items:center;margin:0 auto 14px}
+
+/* ============================================================
+   SUPPORT — two-pane (desktop) / single-column (mobile)
+   ============================================================ */
+.sup-wrap{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:stretch;height:calc(100vh - 214px);min-height:540px}
+.sup-list,.sup-detail{display:flex;flex-direction:column;overflow:hidden;padding:0}
+/* ----- list panel ----- */
+.sup-list-top{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:11px}
+.sup-list-top .row1{display:flex;gap:10px;align-items:center}
+.sup-list-top .search-wrap{flex:1}
+.sup-list-top .search-wrap input{height:40px}
+.sup-tabs{display:flex;gap:3px;overflow-x:auto;scrollbar-width:none}
+.sup-tabs::-webkit-scrollbar{display:none}
+.sup-tabs button{border:none;background:none;padding:7px 12px;font-weight:600;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:9px;white-space:nowrap;transition:var(--t)}
+.sup-tabs button:hover{color:var(--ink)}
+.sup-tabs button.on{background:var(--teal-soft);color:var(--teal-ink)}
+.sup-items{overflow-y:auto;flex:1;padding:8px}
+.sup-item{display:flex;gap:12px;padding:12px;border-radius:12px;cursor:pointer;transition:var(--t);border:1px solid transparent;align-items:flex-start;margin-bottom:2px}
+.sup-item:hover{background:#f9fafd}
+.sup-item.on{background:#f4fcf7;border-color:var(--teal)}
+.sup-item:focus-visible{outline:none;box-shadow:var(--ring)}
+.sup-item .si-ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none}
+.sup-item .si-ic svg{width:20px;height:20px}
+.sup-item .si-main{flex:1;min-width:0}
+.sup-item .si-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.sup-item .si-title{font-weight:600;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sup-item .badge{flex:none}
+.sup-item .si-prev{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.sup-item .si-meta{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.si-apt{display:inline-flex;align-items:center;gap:4px;background:var(--teal-soft);color:var(--teal-ink);border-radius:999px;padding:2px 9px;font-weight:600;font-size:10.5px}
+.si-apt svg{width:11px;height:11px}
+/* ----- detail header / body ----- */
+.sup-dhead{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+.sup-dhead .dh-main{flex:1;min-width:0}
+.sup-dhead h3{margin:0;font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sup-dhead .dh-sub{color:var(--muted);font-size:12px;margin-top:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sup-dhead .si-ic svg{width:20px;height:20px}
+.sup-dbody{overflow-y:auto;flex:1;padding:22px}
+.sup-back{width:36px;height:36px;border-radius:10px;border:1px solid var(--line-2);background:#fff;cursor:pointer;display:grid;place-items:center;color:var(--muted);flex:none;transition:var(--t)}
+.sup-back:hover{border-color:var(--teal);color:var(--teal)}
+.sup-back:focus-visible{outline:none;box-shadow:var(--ring)}
+.sup-foot{border-top:1px solid var(--line);padding:14px 16px;display:flex;gap:10px;justify-content:space-between;background:#fafbfe}
+/* ----- empty detail ----- */
+.sup-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;color:var(--muted);padding:40px}
+/* ----- create form ----- */
+.sup-form{max-width:660px}
+.topic-picker{display:flex;align-items:center;gap:12px;padding:0 14px;height:52px;border:1.5px solid var(--line-2);border-radius:12px;cursor:pointer;transition:var(--t);width:100%;background:#fff;text-align:left;font-family:inherit}
+.topic-picker:hover{border-color:var(--teal)}
+.topic-picker.chosen{border-color:var(--teal);background:#f6fefe}
+.topic-picker .tp-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;background:#eef0f6;color:var(--muted)}
+.topic-picker .tp-ic svg{width:19px;height:19px}
+.topic-picker .tp-main{flex:1;min-width:0}
+.topic-picker .tp-t{font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topic-picker .tp-d{font-size:12px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topic-picker .tp-act{color:var(--teal-ink);font-weight:600;font-size:12.5px;flex:none}
+.req{color:var(--neg-ink);font-weight:700}
+/* topic modal grid */
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.topic-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:5px;padding:16px;border:1.5px solid var(--line-2);border-radius:14px;background:#fff;cursor:pointer;transition:var(--t);font-family:inherit}
+.topic-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow)}
+.topic-card.sel{border-color:var(--teal);background:#f6fefe;box-shadow:0 0 0 1px var(--teal) inset}
+.topic-card .tc-ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;margin-bottom:4px}
+.topic-card .tc-ic svg{width:24px;height:24px}
+.topic-card .tc-t{font-weight:600;font-size:14px;color:var(--ink)}
+.topic-card .tc-d{font-size:12px;color:var(--muted);line-height:1.4}
+/* apartment combobox */
+.combo{position:relative}
+.combo-btn{display:flex;align-items:center;gap:10px;width:100%;height:52px;border:1.5px solid var(--line-2);border-radius:12px;padding:0 14px;background:#fff;cursor:pointer;font-family:inherit;font-size:13.5px;color:var(--ink);text-align:left;transition:var(--t)}
+.combo-btn:hover{border-color:var(--teal)}
+.combo-btn .cb-chev{margin-left:auto;color:var(--muted);transition:transform var(--t);flex:none}
+.combo.open .combo-btn{border-color:var(--teal);box-shadow:var(--ring)}
+.combo.open .cb-chev{transform:rotate(180deg)}
+.combo-panel{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line-2);border-radius:12px;box-shadow:var(--shadow-lg);z-index:30;overflow:hidden;display:none}
+.combo.open .combo-panel{display:block}
+.combo-search{padding:10px;border-bottom:1px solid var(--line)}
+.combo-search input{height:38px}
+.combo-opts{max-height:240px;overflow-y:auto;padding:6px}
+.combo-opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:var(--t)}
+.combo-opt:hover{background:#f4fcf7}
+.combo-opt.sel{background:var(--teal-soft)}
+.combo-opt .co-ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;flex:none}
+.combo-opt .co-ic svg{width:18px;height:18px}
+.combo-opt .co-t{font-weight:600;font-size:13px;color:var(--ink)}
+.combo-opt .co-s{font-size:11.5px;color:var(--muted)}
+.combo-opt.general .co-ic{background:#eef0f6;color:var(--muted)}
+/* textarea counter + attachments */
+.ta-wrap{position:relative}
+.ta-count{position:absolute;right:12px;bottom:10px;font-size:11px;color:var(--muted);background:#fff;padding:0 4px;pointer-events:none}
+textarea.input{height:auto;min-height:148px;padding:12px 14px;resize:vertical;line-height:1.5;font-family:inherit}
+.file-drop{display:flex;align-items:center;gap:10px}
+.file-fake{flex:1;height:44px;border:1px dashed var(--line-2);border-radius:11px;display:flex;align-items:center;gap:8px;padding:0 14px;color:var(--muted);font-size:13px}
+.file-fake svg{flex:none}
+.file-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.file-chip{display:inline-flex;align-items:center;gap:8px;background:#f4fcf7;border:1px solid var(--teal-soft);border-radius:999px;padding:6px 10px 6px 12px;font-size:12px;color:var(--ink)}
+.file-chip svg{flex:none;width:13px;height:13px}
+.file-chip button{border:none;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;padding:0;font-size:12px;line-height:1}
+.file-chip button:hover{color:var(--neg-ink)}
+/* create form fills the panel — no desktop scroll */
+.sup-create-body{display:flex;flex-direction:column;overflow:hidden;padding:20px}
+.sup-create-body .sup-form{flex:1;display:flex;flex-direction:column;min-height:0;max-width:none}
+.sup-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;align-items:start}
+.sup-row2 .field{margin-bottom:0}
+.field.grow{flex:1;display:flex;flex-direction:column;min-height:0;margin-bottom:0}
+.field.grow .ta-wrap{flex:1;min-height:0;display:flex}
+.field.grow textarea.input{flex:1;min-height:96px;height:auto;resize:none}
+.sup-attach-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.sup-attach-row .hint{font-size:11.5px;color:var(--muted)}
+.sup-attach-row .file-chips{margin-top:0}
+@media(max-width:880px){
+  /* natural block flow on mobile so the attach button is always reachable */
+  .sup-create-body{display:block;overflow-y:auto}
+  .sup-create-body .sup-form{display:block}
+  .field.grow{display:block}
+  .field.grow .ta-wrap{display:block}
+  .field.grow textarea.input{flex:none;min-height:150px}
+  .sup-attach-row{margin-top:14px}
+}
+@media(max-width:620px){
+  .sup-row2{grid-template-columns:1fr;gap:0}
+  .sup-row2 .field:first-child{margin-bottom:16px}
+}
+/* ----- chat thread ----- */
+.chat-day{display:flex;justify-content:center;margin:6px 0 16px}
+.chat-day span{background:#eef0f6;color:var(--muted);font-size:11px;font-weight:600;border-radius:999px;padding:4px 12px}
+.msg{display:flex;margin-bottom:14px}
+.msg.me{justify-content:flex-end}
+.msg .bubble{max-width:74%;padding:11px 14px;border-radius:15px;font-size:13.5px;line-height:1.5;word-wrap:break-word;overflow-wrap:anywhere}
+.msg.them .bubble{background:#f1f3f9;color:var(--ink);border-bottom-left-radius:4px}
+.msg.me .bubble{background:var(--teal-soft);color:var(--teal-ink);border-bottom-right-radius:4px}
+.msg .who{font-size:11px;font-weight:700;color:var(--teal-ink);margin-bottom:4px}
+.msg.them .who{color:var(--muted)}
+.msg .time{font-size:10px;color:var(--muted);margin-top:5px;text-align:right}
+.chat-composer{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:10px;align-items:flex-end;background:#fafbfe}
+.chat-composer textarea{flex:1;min-height:44px;max-height:120px;resize:none}
+.chat-composer .btn{flex:none}
+.chat-closed{padding:16px;text-align:center;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);background:#fafbfe}
+@media(max-width:880px){
+  .sup-wrap{grid-template-columns:1fr;height:auto;min-height:0}
+  .sup-list,.sup-detail{height:calc(100vh - 190px);min-height:460px}
+  .sup-wrap[data-mode="list"] .sup-detail{display:none}
+  .sup-wrap[data-mode="create"] .sup-list,.sup-wrap[data-mode="chat"] .sup-list{display:none}
+}
+@media(max-width:560px){
+  .topic-grid{grid-template-columns:1fr}
+  .msg .bubble{max-width:86%}
+  .sup-foot .btn{flex:1}
+}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--sidebar);color:#fff;padding:13px 20px;border-radius:12px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:var(--t);z-index:200;display:flex;align-items:center;gap:10px}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+.scrim{display:none;position:fixed;inset:0;background:rgba(17,20,45,.4);z-index:55}
+
+/* ---------- Responsive (mobile-first friendly) ---------- */
+@media(max-width:1080px){
+  .news-grid{grid-template-columns:repeat(2,1fr)}
+  .apt-grid{grid-template-columns:repeat(2,1fr)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:880px){
+  :root{--shell-w:0px}
+  .sidebar{transform:translateX(-100%);width:264px}
+  .sidebar.open{transform:none}
+  .main{margin-left:0}
+  .burger{display:flex}
+  .scrim.show{display:block}
+  .h-search{display:none}
+  .bal-hero{grid-template-columns:1fr}
+  .ov-meta{grid-template-columns:repeat(2,1fr)}
+  .ov-body{flex-direction:column-reverse;gap:18px}
+  .qr-corner{width:100%;display:flex;align-items:center;gap:16px;text-align:left}
+  .qr-corner .qr{margin:0}
+  .qr-corner button{width:auto!important}
+  .plan-grid{grid-template-columns:repeat(2,1fr)}
+  .sub-panel{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .page{padding:16px}
+  .header{padding:0 14px;gap:10px}
+  .header .icon-btn.hide-sm{display:none}
+  .lang-switch button{min-width:36px;padding:0 7px;font-size:11px}
+  .crumbs{font-size:12px}
+  .news-grid,.apt-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .article-head h1{font-size:23px}
+  .info-grid{grid-template-columns:1fr}
+  .ov-meta{grid-template-columns:repeat(2,1fr)}
+  .ov-meta .cell{padding:11px 13px}
+  .ov-meta .k{font-size:10px;margin-bottom:3px}
+  .ov-meta .v{font-size:12.5px}
+  .svc-grid,.svc-grid.svc-2{grid-template-columns:1fr!important}
+  .svc-head{gap:11px;padding:14px}
+  .svc-ic{width:40px;height:40px}
+  .svc-metric .m-val{font-size:14px}
+  .svc-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+  .plan-grid{grid-template-columns:1fr;gap:10px}
+  .plan{flex-direction:row;align-items:center;text-align:left;gap:12px;padding:14px 15px}
+  .plan .cur-badge{display:none}
+  .plan-info{width:auto;flex:1;align-items:flex-start;min-width:0}
+  .plan-info .pname{margin-bottom:2px}
+  .plan-info .price .amt{font-size:22px}
+  .plan-info .per{display:none}
+  .plan-meta{display:block;font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap}
+  .plan .p-div{display:none}
+  .plan-specs{display:none}
+  .plan-cta{width:auto;margin-top:0;flex:0 0 auto}
+  .plan-cta .btn{width:auto;padding:0 18px}
+  .sub-panel{grid-template-columns:1fr}
+  .sub-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .sub-actions .btn{width:100%}
+  .cal-grid{display:none}
+  .cal-list{display:block}
+  .page-head{gap:12px}
+  .page-head h1{font-size:19px;word-break:break-word}
+  .bicon-lg{width:52px!important;height:52px!important;border-radius:13px!important}
+  .modal-foot{flex-wrap:wrap}
+  .modal-foot .btn{flex:1}
+  .pay-page .modal-foot .btn{flex:1 1 auto}
+}
+@media(max-width:400px){
+  .sub-actions{grid-template-columns:1fr}
+  .seg{width:100%}
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR (persistent on every screen) ============ -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <div class="logo">O</div>
+      <div><b>ORBI</b><span>Owner Portal</span></div>
+    </div>
+    <nav class="nav">
+      <div class="group">Main</div>
+      <a data-nav="dashboard"><span class="ic">⌂</span> Dashboard</a>
+      <a data-nav="apartments"><span class="ic">⌗</span> My Apartments</a>
+      <a data-nav="news"><span class="ic">✦</span> News</a>
+      <div class="group">Finance</div>
+      <a data-nav="invoices"><span class="ic">▤</span> Invoices</a>
+      <a data-nav="payments"><span class="ic">⇄</span> Payments</a>
+      <a data-nav="reports"><span class="ic">▦</span> Reports</a>
+      <div class="group">Account</div>
+      <a data-nav="settings"><span class="ic">⚙</span> Settings</a>
+      <a data-nav="support"><span class="ic">☎</span> Support</a>
+    </nav>
+    <div class="side-foot">
+      <div class="av">GM</div>
+      <div class="nm">Guga M.<small>Owner · 3 units</small></div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <button class="burger" id="burger" aria-label="Open menu">☰</button>
+      <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+      <div class="spacer"></div>
+      <div class="h-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="search" placeholder="Search…" aria-label="Search portal" />
+      </div>
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Language">
+        <button data-lang="en" class="on">EN</button>
+        <button data-lang="ka">ქარ</button>
+        <button data-lang="ru">РУС</button>
+      </div>
+      <button class="icon-btn" aria-label="Notifications"><span class="dot"></span>🔔</button>
+      <button class="icon-btn hide-sm" aria-label="Help">?</button>
+    </header>
+
+    <main id="view" role="main"></main>
+  </div>
+</div>
+
+<!-- Modal mount -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modalBox"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ORBI PORTAL PROTOTYPE — router + screens + mock data
+   ============================================================ */
+const $ = (s,r=document)=>r.querySelector(s);
+const view = $('#view');
+const fmt = (n,cur='₾')=> (n<0?'-':'')+cur+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- Mock data ---------- */
+const IMG = {
+  pool:1, // placeholder color blocks via CSS gradients (offline-safe)
+};
+function ph(seed,w=600,h=400){ // deterministic gradient placeholder (no network needed)
+  const hues=[[26,138,78],[54,153,255],[255,168,0],[241,65,108],[124,77,255],[120,160,210]];
+  const c=hues[seed%hues.length], c2=hues[(seed+2)%hues.length];
+  return `data:image/svg+xml;utf8,`+encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='rgb(${c.join(',')})'/><stop offset='1' stop-color='rgb(${c2.join(',')})'/></linearGradient></defs><rect width='100%' height='100%' fill='url(%23g)'/><circle cx='${w*0.8}' cy='${h*0.25}' r='${h*0.4}' fill='rgba(255,255,255,0.12)'/><circle cx='${w*0.2}' cy='${h*0.9}' r='${h*0.5}' fill='rgba(0,0,0,0.06)'/></svg>`);
+}
+// deterministic decorative QR (visual only — not scannable)
+function qrSvg(text){
+  const N=25,q=2,sz=N+q*2; let h=0; for(let i=0;i<text.length;i++)h=(h*131+text.charCodeAt(i))>>>0;
+  const rnd=()=>{h=(h*1103515245+12345)>>>0;return (h>>>16)/65536;};
+  const finder=(r,c)=>{let s='';for(let dy=0;dy<7;dy++)for(let dx=0;dx<7;dx++){const edge=dy===0||dy===6||dx===0||dx===6;const core=dy>=2&&dy<=4&&dx>=2&&dx<=4;if(edge||core)s+=`<rect x='${c+dx}' y='${r+dy}' width='1' height='1'/>`;}return s;}
+  const inFinder=(x,y)=>((x<7&&y<7)||(x>=N-7&&y<7)||(x<7&&y>=N-7));
+  let mods='';
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(inFinder(x,y))continue; if(rnd()>0.52) mods+=`<rect x='${x+q}' y='${y+q}' width='1' height='1'/>`; }
+  return `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${sz} ${sz}' shape-rendering='crispEdges'><rect width='${sz}' height='${sz}' fill='#fff'/><g fill='#15152e'>${mods}<g transform='translate(${q},${q})'>${finder(0,0)}${finder(0,N-7)}${finder(N-7,0)}</g></g></svg>`;
+}
+// real photos for news (deterministic per item); falls back to the gradient placeholder offline
+function newsImg(n,w,h){return n.img?`${n.img}&w=${w}&h=${h}&fit=crop`:`https://picsum.photos/seed/orbinews${n.id}/${w}/${h}`;}
+function imgFallback(img,seed,w,h){img.onerror=null;img.src=ph(seed,w,h);}
+
+const NEWS = [
+  {id:1,cat:'Announcement',ts:20260606,date:'Jun 6, 2026',title:'New online payment methods now available for management fees',excerpt:'Owners can now settle monthly management and utility fees directly through the portal using Visa, Mastercard, and Georgian bank transfers — with instant receipts.',read:'3 min',seed:0},
+  {id:2,cat:'Maintenance',ts:20260603,date:'Jun 3, 2026',title:'Scheduled elevator maintenance in ORBI City Block B',excerpt:'Elevators in Block B will undergo routine inspection on June 12 between 09:00–14:00. Alternative access via Block A will remain available.',read:'2 min',seed:3},
+  {id:3,cat:'Community',ts:20260529,date:'May 29, 2026',title:'Summer rooftop lounge opens for all ORBI residents',excerpt:'The renovated rooftop terrace at ORBI Beach Tower is now open daily from 08:00 to 22:00 for owners and registered guests.',read:'2 min',seed:4},
+  {id:4,cat:'Financial',ts:20260524,date:'May 24, 2026',title:'Q2 2026 reconciliation statements are ready to download',excerpt:'Quarterly rental income and expense statements for the April–June period are available in the Reports section of each apartment.',read:'4 min',seed:1},
+  {id:5,cat:'Maintenance',ts:20260518,date:'May 18, 2026',title:'Water supply interruption notice — ORBI Sea Towers',excerpt:'A short planned interruption to the cold-water supply is scheduled for May 21, 02:00–05:00, to complete pipework upgrades.',read:'1 min',seed:5},
+  {id:6,cat:'Announcement',ts:20260512,date:'May 12, 2026',title:'Updated house rules and parking policy for 2026',excerpt:'Please review the revised parking allocation and visitor policy, effective from June 1. The full document is attached for download.',read:'5 min',seed:2},
+  {id:7,cat:'Financial',ts:20260508,date:'May 8, 2026',title:'Rental payouts for April have been transferred to owners',excerpt:'April rental distributions were processed on May 7. Owners can view the breakdown per unit in the Payments tab of each apartment.',read:'2 min',seed:1},
+  {id:8,cat:'Community',ts:20260430,date:'Apr 30, 2026',title:'Spring residents’ meeting — agenda and minutes published',excerpt:'Thank you to everyone who joined. The full minutes and decisions on common-area upgrades are attached for review.',read:'4 min',seed:4},
+  {id:9,cat:'Maintenance',ts:20260422,date:'Apr 22, 2026',title:'Parking gate access system upgrade complete',excerpt:'The new license-plate recognition system is now live across all ORBI City entrances. Re-registration of vehicles is not required.',read:'2 min',seed:3},
+  {id:10,cat:'Announcement',ts:20260415,date:'Apr 15, 2026',title:'Extended front-desk hours during the summer season',excerpt:'From May through September the reception desks at all towers will operate 24/7 to support the higher occupancy period.',read:'1 min',seed:0},
+  {id:11,cat:'Financial',ts:20260403,date:'Apr 3, 2026',title:'New fee schedule for short-term rental management',excerpt:'Updated management commission tiers take effect July 1. Existing owner agreements remain unchanged until renewal.',read:'5 min',seed:5},
+  {id:12,cat:'Community',ts:20260328,date:'Mar 28, 2026',title:'Beachfront cleanup and tree-planting day — join us',excerpt:'ORBI is organizing a community volunteering day on April 5. Families welcome; equipment and refreshments provided.',read:'2 min',seed:2},
+  {id:13,cat:'Maintenance',ts:20260319,date:'Mar 19, 2026',title:'Fire-safety inspection schedule for all towers',excerpt:'Mandatory annual inspections will take place across March and April. A short access window per apartment will be coordinated.',read:'3 min',seed:3},
+  {id:14,cat:'Announcement',ts:20260310,date:'Mar 10, 2026',title:'Mobile app for ORBI owners now in public beta',excerpt:'Manage balances, pay invoices and read news on the go. Download links and a setup guide are attached.',read:'3 min',seed:0},
+];
+const CATS=['All','Announcement','Maintenance','Financial','Community'];
+
+const APTS = [
+  {id:'A1',project:'Orbi City',code:'OCT.A.30.3026',block:'A',number:'3026',name:'OCT.A.30.3026',building:'Orbi City, Block A',addr:'Sherif Khimshiashvili St 5, Batumi',type:'1 Bedroom',area:42,floor:30,status:'active',balance:-180.00,nextDue:'Jun 25, 2026',rent:1450,occupancy:'Rented',seed:0},
+  {id:'A2',project:'Orbi City',code:'OCT.A.14.1408',block:'A',number:'1408',name:'OCT.A.14.1408',building:'Orbi City, Block A',addr:'Sherif Khimshiashvili St 5, Batumi',type:'Studio',area:31,floor:14,status:'active',balance:0.00,nextDue:'—',rent:1100,occupancy:'Owner use',seed:4},
+  {id:'A3',project:'Orbi City',code:'OCT.B.21.2105',block:'B',number:'2105',name:'OCT.B.21.2105',building:'Orbi City, Block B',addr:'Sherif Khimshiashvili St 5, Batumi',type:'2 Bedroom',area:58,floor:21,status:'active',balance:-95.00,nextDue:'Jun 25, 2026',rent:1600,occupancy:'Rented',seed:3},
+  {id:'A4',project:'Orbi Sea Towers',code:'OST.A.08.0803',block:'A',number:'0803',name:'OST.A.08.0803',building:'Orbi Sea Towers, Block A',addr:'Khimshiashvili St 17, Batumi',type:'2 Bedroom',area:60,floor:8,status:'paused',balance:0.00,nextDue:'Paused',rent:0,occupancy:'Under renovation',seed:5},
+  {id:'A5',project:'Orbi Sea Towers',code:'OST.A.17.1702',block:'A',number:'1702',name:'OST.A.17.1702',building:'Orbi Sea Towers, Block A',addr:'Khimshiashvili St 17, Batumi',type:'1 Bedroom',area:45,floor:17,status:'active',balance:320.00,nextDue:'—',rent:1250,occupancy:'Owner use',seed:1},
+];
+// stable color per block/project for the building icon tiles
+const BLOCK_COLORS={'Orbi City|A':['#1A8A4E','#26A862'],'Orbi City|B':['#15663B','#1E8A4F'],'Orbi Sea Towers|A':['#0E7A45','#19A05C'],'_default':['#3F7A5A','#5A9B78']};
+function blockGrad(a){const c=BLOCK_COLORS[a.project+'|'+a.block]||BLOCK_COLORS._default;return `linear-gradient(135deg,${c[0]},${c[1]})`;}
+// ownership roles + registry codes for each unit (all apartments are active)
+const ROLES={A1:'Owner',A2:'Owner',A3:'Owner',A4:'Trusted',A5:'Trusted'};
+const ROLE_STYLE={'Owner':{bg:'var(--teal-soft)',col:'var(--teal-ink)'},'Co-Owner':{bg:'var(--info-bg)',col:'var(--info-ink)'},'Trusted':{bg:'#ece7ff',col:'#6b4bff'}};
+APTS.forEach((a,i)=>{
+  a.cadastral=`05.3${a.block==='B'?'4':'2'}.0${3+i}.${(120+i*9)}.${(20+i)}`;
+  a.waterCode=`WTR-${a.number}`;
+  a.apCode=`AP-${a.code.replace(/\./g,'')}`;
+  a.role=ROLES[a.id]||'Owner';
+});
+// per-apartment services (balances tie out to the apartment balance)
+const SERVICES={
+  A1:{maintenance:{balance:-120,tariff:120,start:'12 Jan 2022'},water:{counter:'W-3026-01',indication:'00428 m³',updated:'5 Jun 2026'},electricity:{counter:'E-3026-01',status:'Active',balance:-60,updated:'5 Jun 2026'},internet:{provider:'Magti',plan:'Fiber 200 Mbps + TV',balance:0,status:'Active',updated:'1 Jun 2026'}},
+  A2:{maintenance:{balance:0,tariff:95,start:'03 Mar 2023'},water:{counter:'W-1408-01',indication:'00211 m³',updated:'5 Jun 2026'},electricity:{counter:'E-1408-01',status:'Active',balance:0,updated:'5 Jun 2026'},internet:{provider:'Silknet',plan:'Fiber 100 Mbps + TV',balance:0,status:'Active',updated:'1 Jun 2026'}},
+  A3:{maintenance:{balance:-95,tariff:95,start:'21 Sep 2021'},water:{counter:'W-2105-01',indication:'00540 m³',updated:'5 Jun 2026'},electricity:{counter:'E-2105-01',status:'Active',balance:0,updated:'5 Jun 2026'},internet:{provider:'Magti',plan:'Fiber 200 Mbps + TV',balance:0,status:'Active',updated:'1 Jun 2026'}},
+  A4:{maintenance:{balance:0,tariff:140,start:'08 Feb 2020'},water:{counter:'W-0803-01',indication:'00690 m³',updated:'2 Apr 2026'},electricity:{counter:'E-0803-01',status:'Suspended',balance:0,updated:'2 Apr 2026'},internet:{provider:'—',plan:'No active plan',balance:0,status:'Inactive',updated:'—'}},
+  A5:{maintenance:{balance:0,tariff:90,start:'17 Jul 2024'},water:{counter:'W-1702-01',indication:'00150 m³',updated:'5 Jun 2026'},electricity:{counter:'E-1702-01',status:'Active',balance:0,updated:'5 Jun 2026'},internet:{provider:'Silknet',plan:'Fiber 100 Mbps',balance:0,status:'Active',updated:'1 Jun 2026'}},
+};
+// deterministic door-opening count for a given unit + date
+function doorCount(aptId,y,m,d){const seed=(aptId.charCodeAt(1)*31+y*7+(m+1)*13+d*17)%23;return seed<6?0:Math.max(0,seed-5);}
+// Internet & TV: plans + boosts
+const PLANS=[
+  {id:'P1',name:'Package 1',price:50,mbps:50,ch:35},
+  {id:'P2',name:'Package 2',price:70,mbps:75,ch:35},
+  {id:'P3',name:'Package 3',price:110,mbps:120,ch:35},
+  {id:'P4',name:'Package 4',price:150,mbps:150,ch:35},
+];
+const BOOSTS=[
+  {id:'b65',name:'Boost 65',price:10,speed:'+65 Mbps',duration:'24 hours'},
+  {id:'b150',name:'Boost+ 150',price:25,speed:'+150 Mbps',duration:'7 days'},
+];
+const planById=id=>PLANS.find(p=>p.id===id);
+// enrich each unit's internet service with subscription details
+const NET_PLAN={A1:'P2',A2:'P2',A3:'P3',A5:'P1'};
+Object.keys(SERVICES).forEach(id=>{const n=SERVICES[id].internet; const pid=NET_PLAN[id];
+  n.planId=pid||null; n.tariff=pid?planById(pid).price:0; n.renewal=pid?'19 Jul 2026':'—';
+  n.daysLeft=pid?40:0; n.cycleDays=60; n.boost=null; n.status=pid?(n.status||'Active'):'Inactive';
+});
+
+const INVOICES = {
+  A1:[
+    {no:'INV-2026-0612',date:'Jun 1, 2026',desc:'Management fee — June',amount:120.00,status:'overdue',due:'Jun 25'},
+    {no:'INV-2026-0598',date:'Jun 1, 2026',desc:'Utilities — June',amount:60.00,status:'overdue',due:'Jun 25'},
+    {no:'INV-2026-0571',date:'May 1, 2026',desc:'Management fee — May',amount:120.00,status:'paid',due:'May 25'},
+    {no:'INV-2026-0540',date:'Apr 1, 2026',desc:'Management fee — April',amount:120.00,status:'paid',due:'Apr 25'},
+  ],
+  A2:[
+    {no:'INV-2026-0613',date:'Jun 1, 2026',desc:'Management fee — June',amount:95.00,status:'pending',due:'Jun 25'},
+    {no:'INV-2026-0572',date:'May 1, 2026',desc:'Management fee — May',amount:95.00,status:'paid',due:'May 25'},
+  ],
+  A3:[
+    {no:'INV-2026-0620',date:'Jun 1, 2026',desc:'Management fee — June',amount:95.00,status:'overdue',due:'Jun 25'},
+    {no:'INV-2026-0581',date:'May 1, 2026',desc:'Management fee — May',amount:95.00,status:'paid',due:'May 25'},
+  ],
+  A4:[
+    {no:'INV-2026-0410',date:'Mar 1, 2026',desc:'Management fee — March',amount:140.00,status:'paid',due:'Mar 25'},
+  ],
+  A5:[
+    {no:'INV-2026-0615',date:'Jun 1, 2026',desc:'Management fee — June',amount:90.00,status:'paid',due:'Jun 25'},
+    {no:'INV-2026-0575',date:'May 1, 2026',desc:'Management fee — May',amount:90.00,status:'paid',due:'May 25'},
+  ],
+};
+const PAYMENTS = {
+  A1:[
+    {date:'May 22, 2026',method:'Visa ••4821',ref:'PAY-9921',amount:120.00,status:'paid'},
+    {date:'Apr 20, 2026',method:'Bank transfer',ref:'PAY-9740',amount:120.00,status:'paid'},
+    {date:'Mar 19, 2026',method:'Visa ••4821',ref:'PAY-9610',amount:180.00,status:'paid'},
+  ],
+  A2:[
+    {date:'May 18, 2026',method:'Mastercard ••2207',ref:'PAY-9905',amount:95.00,status:'paid'},
+  ],
+  A3:[
+    {date:'May 20, 2026',method:'Bank transfer',ref:'PAY-9912',amount:95.00,status:'paid'},
+  ],
+  A4:[
+    {date:'Mar 18, 2026',method:'Visa ••4821',ref:'PAY-9608',amount:140.00,status:'paid'},
+  ],
+  A5:[
+    {date:'Jun 2, 2026',method:'Mastercard ••2207',ref:'PAY-9930',amount:90.00,status:'paid'},
+    {date:'May 2, 2026',method:'Mastercard ••2207',ref:'PAY-9901',amount:90.00,status:'paid'},
+  ],
+};
+const REPORTS = {
+  A1:[
+    {name:'Q2 2026 Income & Expense Statement',period:'Apr–Jun 2026',size:'248 KB'},
+    {name:'Q1 2026 Income & Expense Statement',period:'Jan–Mar 2026',size:'241 KB'},
+    {name:'2025 Annual Owner Statement',period:'Jan–Dec 2025',size:'612 KB'},
+  ],
+  A2:[
+    {name:'Q2 2026 Income & Expense Statement',period:'Apr–Jun 2026',size:'201 KB'},
+  ],
+  A3:[
+    {name:'Q2 2026 Income & Expense Statement',period:'Apr–Jun 2026',size:'232 KB'},
+    {name:'Q1 2026 Income & Expense Statement',period:'Jan–Mar 2026',size:'228 KB'},
+  ],
+  A4:[],
+  A5:[
+    {name:'Q2 2026 Income & Expense Statement',period:'Apr–Jun 2026',size:'205 KB'},
+  ],
+};
+
+const STATUS_MAP={
+  active:{cls:'pos',label:'Active'},
+  paused:{cls:'warn',label:'Paused'},
+  paid:{cls:'pos',label:'Paid'},
+  pending:{cls:'warn',label:'Pending'},
+  overdue:{cls:'neg',label:'Overdue'},
+};
+
+/* ---------- Icons (inline svg) ---------- */
+const I={
+  doc:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v5h5M7 3h8l5 5v13H7z"/></svg>`,
+  arrow:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`,
+  back:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>`,
+  dl:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></svg>`,
+  pin:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>`,
+  clock:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+  cal:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>`,
+  share:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7"/><path d="M12 3v13M8 7l4-4 4 4"/></svg>`,
+  wallet:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M16 12h3M3 9h13a2 2 0 012 2"/></svg>`,
+  home:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>`,
+  building:`<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-2.5h4V21"/></svg>`,
+  chevron:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>`,
+  wrench:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 005.4-5.4l-2.3 2.3-2.3-.6-.6-2.3z"/></svg>`,
+  drop:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3s6 6.5 6 10a6 6 0 01-12 0c0-3.5 6-10 6-10z"/></svg>`,
+  bolt:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>`,
+  wifi:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5a10 10 0 0114 0M8 16a5 5 0 018 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg>`,
+  door:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 21V4a1 1 0 011-1h7a1 1 0 011 1v17M6 21h12M14 21V3M11 12h.01"/></svg>`,
+  expand:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"/></svg>`,
+  copy:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>`,
+  swap:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg>`,
+  rocket:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2a3 3 0 00-3-3z"/><path d="M9 13l-2-2a12 12 0 017-7c2 0 4 0 4 0s0 2 0 4a12 12 0 01-7 7l-2-2z"/><circle cx="14.5" cy="9.5" r="1.5"/></svg>`,
+  pause:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>`,
+  tv:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 21h8M12 3l3 3M12 3L9 6"/></svg>`,
+  warn:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>`,
+  check:`<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4 10-11"/></svg>`,
+  card:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>`,
+  empty:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v13H4zM4 7l2-3h12l2 3"/><path d="M9 12h6"/></svg>`,
+  search:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>`,
+  plus:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>`,
+  send:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l16-8-5 16-4-6-7-2z"/></svg>`,
+  clip:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11l-8.5 8.5a5 5 0 01-7-7L14 4a3.5 3.5 0 015 5l-8.5 8.5a2 2 0 01-3-3L15 6"/></svg>`,
+  dots:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>`,
+  tag:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9h8v8l-9 9z"/><circle cx="16" cy="8" r="1.5"/></svg>`,
+  chat:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>`,
+};
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+const routes={};
+function route(name,fn){routes[name]=fn;}
+function go(hash){ if(location.hash===hash){render();} else location.hash=hash; }
+window.addEventListener('hashchange',render);
+
+function setActive(nav){document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.nav===nav));}
+function crumbs(items){
+  $('#crumbs').innerHTML=items.map((it,i)=>{
+    const last=i===items.length-1;
+    const sep=i>0?`<span class="sep">›</span>`:'';
+    return sep+(last?`<b>${it.label}</b>`:`<a href="${it.href}">${it.label}</a>`);
+  }).join('');
+}
+
+function render(){
+  const h=location.hash.replace('#','')||'/news';
+  const [path,arg]=h.split('/').filter(Boolean).length?h.split('/').filter(Boolean):['news'];
+  const parts=h.split('/').filter(Boolean);
+  const key=parts[0]||'news';
+  // close mobile sidebar + any open modal on nav
+  $('#sidebar').classList.remove('open');$('#scrim').classList.remove('show');
+  modalLocked=false; $('#modalOverlay').classList.remove('open'); document.body.style.overflow='';
+  if(key==='news' && parts[1]) return routes.newsDetail(parts[1]);
+  if(key==='pay' && parts[1]) return routes.payPage(parts[1]);
+  if(key==='apartments' && parts[1]) return routes.aptDetail(parts[1]);
+  if(key==='support') return routes.support(parts.slice(1));
+  (routes[key]||routes.news)();
+  view.scrollTo?.(0,0); window.scrollTo(0,0);
+}
+
+/* ============================================================
+   SKELETON HELPERS
+   ============================================================ */
+function skNewsGrid(){
+  let cards='';
+  for(let i=0;i<9;i++) cards+=`<div class="card news-card"><div class="sk" style="aspect-ratio:16/9;border-radius:12px 12px 0 0"></div><div class="body"><div class="sk sk-line" style="width:45%;margin-bottom:6px"></div><div class="sk sk-line" style="height:18px;width:95%"></div><div class="sk sk-line" style="height:18px;width:65%"></div><div class="sk sk-line"></div></div></div>`;
+  return `<div class="news-grid">${cards}</div>`;
+}
+function skTable(rows=4){
+  let r='';for(let i=0;i<rows;i++) r+=`<tr><td><div class="sk sk-line" style="width:120px;margin:0"></div></td><td><div class="sk sk-line" style="width:160px;margin:0"></div></td><td><div class="sk sk-line" style="width:70px;margin:0"></div></td><td class="r"><div class="sk sk-line" style="width:60px;margin:0 0 0 auto"></div></td></tr>`;
+  return `<div class="card"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>—</th><th>—</th><th>—</th><th class="r">—</th></tr></thead><tbody>${r}</tbody></table></div></div>`;
+}
+function skApt(){
+  const card=`<div class="card apt-card"><div class="top"><div class="sk" style="width:54px;height:54px;border-radius:13px"></div><div class="hd" style="flex:1"><div class="sk sk-line" style="height:18px;width:80%"></div><div class="sk sk-pill" style="margin-top:8px"></div></div></div><div class="metarow"><div class="m"><div class="sk sk-line" style="width:60%;margin:0 0 6px"></div><div class="sk sk-line" style="width:40%;margin:0"></div></div><div class="m"><div class="sk sk-line" style="width:60%;margin:0 0 6px"></div><div class="sk sk-line" style="width:40%;margin:0"></div></div><div class="m"><div class="sk sk-line" style="width:60%;margin:0 0 6px"></div><div class="sk sk-line" style="width:40%;margin:0"></div></div></div><div class="foot"><div class="sk sk-line" style="height:36px;border-radius:9px;margin:0"></div></div></div>`;
+  return `<div class="proj-group"><div class="proj-head"><div class="sk" style="width:34px;height:34px;border-radius:10px"></div><div class="sk sk-line" style="width:120px;margin:0"></div></div><div class="apt-grid">${card.repeat(3)}</div></div>`;
+}
+
+/* ============================================================
+   NEWS LIST
+   ============================================================ */
+let newsFilter='All', newsQuery='', newsSort='new', newsPage=1;
+const NEWS_PER_PAGE=9;
+route('news', async ()=>{
+  setActive('news');
+  crumbs([{label:'Home',href:'#/news'},{label:'News'}]);
+  view.innerHTML=`<div class="page">
+    <div class="page-head"><div><h1>News & Announcements</h1><p>Updates from ORBI management — payments, maintenance, and community.</p></div></div>
+    <div class="news-toolbar">
+      <div class="seg" id="newsSeg" role="tablist" aria-label="Filter by category">
+        ${CATS.map(c=>`<button role="tab" aria-selected="${c===newsFilter}" class="${c===newsFilter?'on':''}" data-cat="${c}">${c}</button>`).join('')}
+      </div>
+      <div style="flex:1"></div>
+      <div class="search-wrap" style="width:240px;max-width:100%">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input class="input" id="newsSearch" placeholder="Search news…" value="${newsQuery}" aria-label="Search news">
+      </div>
+      <select class="input" id="newsSort" style="width:auto" aria-label="Sort by date">
+        <option value="new"${newsSort==='new'?' selected':''}>Newest first</option>
+        <option value="old"${newsSort==='old'?' selected':''}>Oldest first</option>
+      </select>
+    </div>
+    <div id="newsList">${skNewsGrid()}</div>
+  </div>`;
+
+  // wire toolbar (reset to page 1 on any change)
+  $('#newsSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;newsFilter=b.dataset.cat;newsPage=1;document.querySelectorAll('#newsSeg button').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);});paintNews();});
+  $('#newsSearch').addEventListener('input',e=>{newsQuery=e.target.value;newsPage=1;paintNews();});
+  $('#newsSort').addEventListener('change',e=>{newsSort=e.target.value;newsPage=1;paintNews();});
+
+  await sleep(850); // simulate async load -> skeleton visible
+  paintNews();
+});
+
+function newsFiltered(){
+  return NEWS
+    .filter(n=>(newsFilter==='All'||n.cat===newsFilter) && (n.title+n.excerpt).toLowerCase().includes(newsQuery.toLowerCase()))
+    .sort((a,b)=> newsSort==='new' ? b.ts-a.ts : a.ts-b.ts);
+}
+// reusable card component — used by list AND article "Related news"
+function newsCardHtml(n){
+  return `<article class="card news-card" tabindex="0" role="link" aria-label="${n.title}" onclick="go('#/news/${n.id}')" onkeydown="if(event.key==='Enter')go('#/news/${n.id}')">
+    <div class="thumb"><img src="${newsImg(n,640,360)}" alt="" loading="lazy" onerror="imgFallback(this,${n.seed},640,360)"><div class="cat"><span class="chip">${n.cat}</span></div></div>
+    <div class="body">
+      <div class="meta">${I.cal} <span>${n.date}</span></div>
+      <h3>${n.title}</h3>
+      <p>${n.excerpt}</p>
+      <div class="foot">Read more ${I.arrow}</div>
+    </div></article>`;
+}
+function paintNews(){
+  const list=$('#newsList'); if(!list)return;
+  const items=newsFiltered();
+  if(!items.length){ list.innerHTML=`<div class="card"><div class="empty"><div class="ei">${I.empty}</div><h3 style="margin:0 0 4px;color:var(--ink)">No news yet</h3><p style="margin:0">Try a different category or search term.</p></div></div>`; return; }
+  const pages=Math.max(1,Math.ceil(items.length/NEWS_PER_PAGE));
+  if(newsPage>pages)newsPage=pages;
+  const start=(newsPage-1)*NEWS_PER_PAGE;
+  const pageItems=items.slice(start,start+NEWS_PER_PAGE);
+  let html=`<div class="news-grid">${pageItems.map(newsCardHtml).join('')}</div>`;
+  html+=pagerHtml(pages,newsPage);
+  list.innerHTML=html;
+}
+function pagerHtml(pages,cur){
+  if(pages<=1)return '';
+  let btns='';
+  const add=(p)=>btns+=`<button class="${p===cur?'on':''}" aria-label="Page ${p}" ${p===cur?'aria-current="page"':''} onclick="newsPage=${p};paintNews();document.querySelector('.page').scrollIntoView({behavior:'smooth'})">${p}</button>`;
+  const dots=()=>btns+=`<span class="dots">…</span>`;
+  btns+=`<button ${cur===1?'disabled':''} aria-label="Previous page" onclick="newsPage--;paintNews()">‹</button>`;
+  const win=[1];
+  for(let p=cur-1;p<=cur+1;p++) if(p>1&&p<pages) win.push(p);
+  if(pages>1) win.push(pages);
+  const uniq=[...new Set(win)].sort((a,b)=>a-b);
+  let prev=0;
+  uniq.forEach(p=>{ if(p-prev>1) dots(); add(p); prev=p; });
+  btns+=`<button ${cur===pages?'disabled':''} aria-label="Next page" onclick="newsPage++;paintNews()">›</button>`;
+  return `<nav class="pager" aria-label="Pagination">${btns}</nav>`;
+}
+
+/* ============================================================
+   NEWS DETAIL — single readable column, keeps the app shell
+   ============================================================ */
+route('newsDetail', async (id)=>{
+  setActive('news');
+  crumbs([{label:'Home',href:'#/news'},{label:'News',href:'#/news'},{label:'Article'}]);
+  view.innerHTML=`<div class="page">
+    <a class="btn btn-ghost btn-sm" href="#/news" style="margin-bottom:18px">${I.back} Back to News</a>
+    <div class="article">
+      <div class="article-head"><div class="sk sk-pill" style="margin-bottom:14px"></div><div class="sk sk-line" style="height:30px;width:90%"></div><div class="sk sk-line" style="height:30px;width:60%"></div></div>
+      <div class="sk" style="aspect-ratio:16/8;border-radius:16px;margin-bottom:26px"></div>
+      ${'<div class="sk sk-line"></div>'.repeat(3)}<div class="sk sk-line" style="width:55%;margin-bottom:24px"></div>${'<div class="sk sk-line"></div>'.repeat(4)}
+    </div>
+  </div>`;
+  await sleep(700);
+  const n=NEWS.find(x=>x.id==id)||NEWS[0];
+  const related=NEWS.filter(x=>x.id!=n.id && x.cat===n.cat).concat(NEWS.filter(x=>x.id!=n.id && x.cat!==n.cat)).slice(0,3);
+  crumbs([{label:'Home',href:'#/news'},{label:'News',href:'#/news'},{label:n.title.length>34?n.title.slice(0,34)+'…':n.title}]);
+  view.innerHTML=`<div class="page">
+    <a class="btn btn-ghost btn-sm" href="#/news" style="margin-bottom:18px">${I.back} Back to News</a>
+    <article class="article">
+      <header class="article-head">
+        <div class="meta">
+          <span class="chip">${n.cat}</span>
+          <span>${I.cal} ${n.date}</span>
+          <span>${I.clock} ${n.read} read</span>
+          <span style="flex:1"></span>
+          <button class="btn btn-ghost btn-sm" onclick="toast('Link copied to clipboard')">${I.share} Share</button>
+        </div>
+        <h1>${n.title}</h1>
+      </header>
+      <div class="detail-hero"><img src="${newsImg(n,1280,640)}" alt="" onerror="imgFallback(this,${n.seed},1280,640)"></div>
+      <div class="prose">
+        <p><strong>${n.excerpt}</strong></p>
+        <p>ORBI management is committed to keeping owners informed about everything that affects their property and investment. This update outlines what is changing, the timeline, and what (if any) action is required on your side.</p>
+        <h3>What's changing</h3>
+        <p>The change takes effect across all ORBI buildings. Owners do not need to re-register; existing portal credentials remain valid. Where relevant, affected apartments are flagged in the <a href="#/apartments" style="color:var(--teal-ink);font-weight:600">My Apartments</a> section.</p>
+        <ul>
+          <li>No interruption to existing services or scheduled payments.</li>
+          <li>All receipts and statements remain available for download in Reports.</li>
+          <li>Support is available 24/7 for any questions related to this notice.</li>
+        </ul>
+        <h3>What you should do</h3>
+        <p>Review the attached document, and if you have an outstanding balance, you can settle it directly from your apartment's billing page. For anything unclear, contact the management office or open a support ticket from the portal.</p>
+      </div>
+      <div class="card card-pad" style="margin-top:26px">
+        <h3 style="margin:0 0 14px;font-size:15px">Attachments</h3>
+        <div class="attach" onclick="toast('Downloading… official_notice.pdf')"><div class="ico">${I.doc}</div><div style="flex:1"><div class="nm">official_notice_2026.pdf</div><div class="sz">PDF · 248 KB</div></div><span class="btn btn-soft btn-sm">${I.dl} Download</span></div>
+        <div class="attach" onclick="toast('Downloading… house_rules.pdf')"><div class="ico">${I.doc}</div><div style="flex:1"><div class="nm">updated_house_rules.pdf</div><div class="sz">PDF · 512 KB</div></div><span class="btn btn-soft btn-sm">${I.dl} Download</span></div>
+      </div>
+    </article>
+    <section class="related-wrap">
+      <div class="rl-head"><h3>Related news</h3><a class="btn btn-ghost btn-sm" href="#/news">View all ${I.arrow}</a></div>
+      <div class="news-grid">${related.map(newsCardHtml).join('')}</div>
+    </section>
+  </div>`;
+  window.scrollTo(0,0);
+});
+
+/* ============================================================
+   MY APARTMENTS — LIST
+   ============================================================ */
+let aptRole='All';
+const APT_ROLES=['All','Owner','Trusted'];
+route('apartments', async ()=>{
+  setActive('apartments');
+  crumbs([{label:'Home',href:'#/news'},{label:'My Apartments'}]);
+  view.innerHTML=`<div class="page">
+    <div class="page-head"><div><h1>My Apartments</h1><p>View your units, services and documents in one place.</p></div></div>
+    <div class="seg" id="aptSeg" role="tablist" aria-label="Filter by ownership role" style="margin-bottom:22px">
+      ${APT_ROLES.map(r=>`<button role="tab" aria-selected="${r===aptRole}" class="${r===aptRole?'on':''}" data-role="${r}">${r}</button>`).join('')}
+    </div>
+    <div id="aptBody">${skApt()}</div>
+  </div>`;
+  $('#aptSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;aptRole=b.dataset.role;document.querySelectorAll('#aptSeg button').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);});paintApts();});
+  await sleep(850);
+  paintApts();
+});
+
+function aptCardHtml(a){
+  const rs=ROLE_STYLE[a.role]||ROLE_STYLE.Owner;
+  return `<article class="card apt-card" tabindex="0" role="link" aria-label="${a.code} — view details" onclick="go('#/apartments/${a.id}')" onkeydown="if(event.key==='Enter')go('#/apartments/${a.id}')">
+    <div class="top">
+      <div class="bicon" style="background:${blockGrad(a)}">${I.building}</div>
+      <div class="hd">
+        <div class="code">${a.code}</div>
+        <div class="role"><span class="badge" style="background:${rs.bg};color:${rs.col}"><span class="b-dot"></span>${a.role}</span></div>
+      </div>
+    </div>
+    <div class="metarow">
+      <div class="m"><div class="k">Block</div><div class="v">${a.block}</div></div>
+      <div class="m"><div class="k">Number</div><div class="v">${a.number}</div></div>
+      <div class="m"><div class="k">Floor</div><div class="v">${a.floor}</div></div>
+    </div>
+    <div class="hint">View details <span class="arr">${I.arrow}</span></div>
+  </article>`;
+}
+
+function paintApts(){
+  const body=$('#aptBody'); if(!body)return;
+  if(!APTS.length){ body.innerHTML=`<div class="card"><div class="empty"><div class="ei">${I.home}</div><h3 style="margin:0 0 4px;color:var(--ink)">You have no apartments yet</h3><p style="margin:0">Once a unit is linked to your account it will appear here.</p></div></div>`; return; }
+  const items=APTS.filter(a=>aptRole==='All'||a.role===aptRole);
+  if(!items.length){ body.innerHTML=`<div class="card"><div class="empty"><div class="ei">${I.home}</div><h3 style="margin:0 0 4px;color:var(--ink)">No apartments with this role</h3><p style="margin:0">Try a different role filter.</p></div></div>`; return; }
+  const groups={}; items.forEach(a=>{(groups[a.project]=groups[a.project]||[]).push(a);});
+  let html='';
+  Object.keys(groups).forEach(proj=>{
+    const list=groups[proj];
+    html+=`<div class="proj-group">
+      <div class="proj-head"><div class="pj-ic" style="background:${blockGrad(list[0])}">${I.building}</div><h2>${proj}</h2><span class="count">${list.length} ${list.length===1?'unit':'units'}</span></div>
+      <div class="apt-grid">${list.map(aptCardHtml).join('')}</div>
+    </div>`;
+  });
+  body.innerHTML=html;
+}
+
+/* ============================================================
+   APARTMENT DETAIL — tabs
+   ============================================================ */
+let aptTab='overview';
+route('aptDetail', async (id)=>{
+  setActive('apartments');
+  const a=APTS.find(x=>x.id===id)||APTS[0];
+  crumbs([{label:'Home',href:'#/news'},{label:'My Apartments',href:'#/apartments'},{label:a.code}]);
+  view.innerHTML=skAptDetail();
+  await sleep(750);
+  aptTab=aptTab||'overview';
+  paintAptDetail(a);
+});
+
+function skAptDetail(){
+  const cell=`<div class="cell"><div class="sk sk-line" style="width:55%;margin:0 0 6px"></div><div class="sk sk-line" style="width:80%;margin:0"></div></div>`;
+  const svc=`<div class="card svc"><div class="svc-head"><div class="sk" style="width:44px;height:44px;border-radius:12px"></div><div style="flex:1"><div class="sk sk-line" style="width:160px;margin:0 0 6px"></div><div class="sk sk-line" style="width:100px;margin:0"></div></div><div class="sk sk-line" style="width:70px;margin:0"></div></div></div>`;
+  return `<div class="page">
+    <a class="btn btn-ghost btn-sm" href="#/apartments" style="margin-bottom:18px">${I.back} All apartments</a>
+    <div class="page-head"><div style="display:flex;gap:18px;align-items:center"><div class="sk" style="width:74px;height:74px;border-radius:16px"></div><div><div class="sk sk-line" style="width:220px;height:24px;margin-bottom:8px"></div><div class="sk sk-line" style="width:300px;margin:0"></div></div></div></div>
+    <div class="card" style="margin-bottom:22px"><div class="ov-head"><div class="sk sk-line" style="width:180px;margin:0"></div><div class="sk sk-line" style="width:110px;height:38px;border-radius:10px;margin:0"></div></div>
+      <div class="ov-body"><div class="meta"><div class="ov-meta">${cell.repeat(8)}</div></div><div class="qr-corner"><div class="sk" style="width:108px;height:108px;border-radius:12px"></div></div></div></div>
+    <div class="sk sk-line" style="width:120px;margin:26px 0 14px"></div>
+    ${svc.repeat(5)}
+  </div>`;
+}
+
+function paintAptDetail(a){
+  const rs=ROLE_STYLE[a.role]||ROLE_STYLE.Owner;
+  view.innerHTML=`<div class="page">
+    <a class="btn btn-ghost btn-sm" href="#/apartments" style="margin-bottom:18px">${I.back} All apartments</a>
+    <div class="page-head">
+      <div style="display:flex;gap:18px;align-items:center">
+        <div class="bicon-lg" style="background:${blockGrad(a)}">${I.building}</div>
+        <div><h1 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">${a.code}
+          <span class="badge" style="background:${rs.bg};color:${rs.col}"><span class="b-dot"></span>${a.role}</span></h1>
+        <p>${I.pin} ${a.building} · Block ${a.block} · No. ${a.number}</p></div>
+      </div>
+    </div>
+    <div id="tabBody">${tabOverview(a)}</div>
+  </div>`;
+}
+
+function paintAptTab(a){
+  const body=$('#tabBody'); if(!body)return;
+  if(aptTab==='overview') return body.innerHTML=tabOverview(a);
+  if(aptTab==='invoices') return body.innerHTML=tabInvoices(a);
+  if(aptTab==='payments') return body.innerHTML=tabPayments(a);
+  if(aptTab==='reports') return body.innerHTML=tabReports(a);
+}
+
+function tabOverview(a){
+  const meta=[
+    ['Object',a.project],['Block',a.block],['Square',a.area+' m²'],['Floor',a.floor],
+    ['Number',a.number],['Cadastral number',a.cadastral],['Water Code',a.waterCode],['AP Code',a.apCode]
+  ];
+  return `
+  <div class="card" style="margin-bottom:8px">
+    <div class="ov-head"><h3>Apartment information</h3>
+      <button class="btn btn-primary" onclick="toast('Opening booking calendar…')">${I.cal} Book</button>
+    </div>
+    <div class="ov-body">
+      <div class="meta"><div class="ov-meta">${meta.map(m=>`<div class="cell"><div class="k">${m[0]}</div><div class="v">${m[0]==='Cadastral number'?`<span class="copywrap">${m[1]}<button class="copy-btn" aria-label="Copy cadastral number" title="Copy" onclick="copyText(event,'${m[1]}')">${I.copy}</button></span>`:m[1]}</div></div>`).join('')}</div></div>
+      <div class="qr-corner">
+        <div class="qr" role="button" tabindex="0" aria-label="Enlarge QR code" onclick="openQr('${a.id}')" onkeydown="if(event.key==='Enter')openQr('${a.id}')">${qrSvg(a.apCode)}</div>
+        <div class="ql">Apartment QR</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="openQr('${a.id}')">${I.expand} Show</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Services</div>
+  ${svcMaintenance(a)}
+  ${svcWater(a)}
+  ${svcElectricity(a)}
+  ${svcInternet(a)}
+  ${svcDoors(a)}
+  `;
+}
+
+/* ---- service card helpers ---- */
+function payBtn(a){return `<span class="btn btn-primary btn-sm" onclick="event.stopPropagation();go('#/pay/${a.id}')">Pay</span>`;}
+function metricHtml(label,valHtml){return `<div class="svc-metric"><div class="m-lab">${label}</div><div class="m-val">${valHtml}</div></div>`;}
+function svcShell(a,key,icon,bg,col,name,sub,headRight,inner){
+  return `<article class="card svc" id="svc-${key}-${a.id}">
+    <button class="svc-head" aria-expanded="false" onclick="toggleSvc(this)">
+      <div class="svc-ic" style="background:${bg};color:${col}">${icon}</div>
+      <div class="svc-tt"><div class="svc-name">${name}</div><div class="svc-sub">${sub}</div></div>
+      ${headRight}
+      <span class="chev" aria-hidden="true">${I.chevron}</span>
+    </button>
+    <div class="svc-body"><div class="inner"><div class="svc-inner">${inner}</div></div></div>
+  </article>`;
+}
+function svcMaintenance(a){
+  const s=SERVICES[a.id].maintenance, neg=s.balance<0;
+  const right=neg?metricHtml('Balance',`<span class="money neg">${fmt(s.balance)}</span>`):metricHtml('Balance',`<span class="money pos">${fmt(0)}</span>`);
+  const inner=`<div class="svc-grid">
+      <div class="cell"><div class="k">Balance</div><div class="v ${neg?'money neg':'money pos'}">${fmt(s.balance)}</div></div>
+      <div class="cell"><div class="k">Monthly tariff</div><div class="v">${fmt(s.tariff)}</div></div>
+      <div class="cell"><div class="k">Service start date</div><div class="v">${s.start}</div></div>
+    </div>
+    <div class="svc-cta"><button class="btn btn-ghost btn-sm" onclick="genDownload(this,'Generating invoice…','Invoice ready — downloaded')">${I.dl} Download invoice</button>${neg?`<button class="btn btn-primary btn-sm" onclick="go('#/pay/${a.id}')">Pay ${fmt(-s.balance)}</button>`:''}</div>`;
+  return svcShell(a,'maint',I.wrench,'var(--teal-soft)','var(--teal-ink)','Maintenance','Building management & common areas',right,inner);
+}
+function svcWater(a){
+  const s=SERVICES[a.id].water;
+  const right=metricHtml('Indication',s.indication);
+  const inner=`<div class="svc-grid">
+      <div class="cell"><div class="k">Counter ID</div><div class="v">${s.counter}</div></div>
+      <div class="cell"><div class="k">Indication</div><div class="v">${s.indication}</div></div>
+      <div class="cell"><div class="k">Last update</div><div class="v">${s.updated}</div></div>
+    </div>`;
+  return svcShell(a,'water',I.drop,'var(--info-bg)','var(--info-ink)','Water','Cold water metering',right,inner);
+}
+function svcElectricity(a){
+  const s=SERVICES[a.id].electricity, neg=s.balance<0;
+  const right=metricHtml('Balance',neg?`<span class="money neg">${fmt(s.balance)}</span>`:`<span class="money pos">${fmt(0)}</span>`);
+  const stCls=s.status==='Active'?'pos':(s.status==='Suspended'?'warn':'muted');
+  const inner=`<div class="svc-grid svc-2" style="grid-template-columns:repeat(4,1fr)">
+      <div class="cell"><div class="k">Counter ID</div><div class="v">${s.counter}</div></div>
+      <div class="cell"><div class="k">Status</div><div class="v"><span class="badge ${stCls}"><span class="b-dot"></span>${s.status}</span></div></div>
+      <div class="cell"><div class="k">Balance</div><div class="v ${neg?'money neg':'money pos'}">${fmt(s.balance)}</div></div>
+      <div class="cell"><div class="k">Last update</div><div class="v">${s.updated}</div></div>
+    </div>
+    <div class="svc-cta"><button class="btn btn-ghost btn-sm" onclick="openElecModal('${a.id}')">${I.doc} Electricity reports</button>${neg?`<button class="btn btn-primary btn-sm" onclick="go('#/pay/${a.id}')">Pay ${fmt(-s.balance)}</button>`:''}</div>`;
+  return svcShell(a,'elec',I.bolt,'var(--warn-bg)','var(--warn-ink)','Electricity','Metered consumption & reports',right,inner);
+}
+function progressRing(left,total){
+  const r=30,c=2*Math.PI*r,pct=Math.max(0,Math.min(1,left/total)),off=c*(1-pct);
+  return `<div class="ring" role="img" aria-label="${left} days left of ${total}">
+    <svg width="74" height="74" viewBox="0 0 74 74"><circle cx="37" cy="37" r="${r}" fill="none" stroke="var(--line-2)" stroke-width="6"/>
+      <circle cx="37" cy="37" r="${r}" fill="none" stroke="var(--teal)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg>
+    <div class="rt"><b>${left}</b><small>days left</small></div></div>`;
+}
+function svcInternet(a){
+  const s=SERVICES[a.id].internet, neg=s.balance<0, active=s.status==='Active', paused=s.status==='Paused', pl=planById(s.planId);
+  const right=metricHtml('Monthly',(active||paused)?`<span style="font-size:14px">${fmt(s.tariff)}</span>`:`<span style="font-size:13px;color:var(--muted)">Inactive</span>`);
+  let inner;
+  if(!s.planId){
+    inner=`<div class="empty" style="padding:24px"><div class="ei">${I.tv}</div><h3 style="margin:0 0 4px;color:var(--ink)">No active subscription</h3><p style="margin:0 0 14px">This unit has no Internet &amp; TV plan yet.</p><button class="btn btn-primary btn-sm" onclick="openChangePkg('${a.id}')">Choose a package</button></div>`;
+  } else if(paused){
+    inner=`<div class="warn-box" style="margin-bottom:14px"><div class="wi">${I.pause}</div><div><h4>Service paused</h4><p>${pl?pl.name:''} is paused. A pause fee of <b>${fmt(s.tariff)}</b>/mo applies. Resume anytime to restore full service.</p></div></div>
+      <div class="sub-actions"><button class="btn btn-primary btn-sm" onclick="applyResume('${a.id}')">Resume service</button><button class="btn btn-ghost btn-sm" onclick="genDownload(this,'Generating…','Subscription details downloaded')">${I.dl} Download</button></div>`;
+  } else {
+    inner=`<div class="sub-panel">
+        <div class="cell"><div class="k">Service status</div><div class="v"><span class="badge pos"><span class="b-dot"></span>Active</span></div><div style="color:var(--muted);font-size:12px;margin-top:8px">${s.provider} · ${pl?pl.name:''} (${pl?pl.mbps:''} Mbps)</div></div>
+        <div class="cell"><div class="k">Monthly tariff</div><div class="v">${fmt(s.tariff)}</div><div style="color:var(--muted);font-size:12px;margin-top:8px">Renews ${s.renewal}</div></div>
+        <div class="cell ringc">${progressRing(s.daysLeft,s.cycleDays)}<div><div class="k" style="margin:0">Billing cycle</div><div class="v" style="font-size:14px">${s.daysLeft} days left</div><div style="color:var(--muted);font-size:12px">until ${s.renewal}</div></div></div>
+      </div>
+      ${s.boost?`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--teal-soft);border-radius:10px;margin-bottom:14px;font-size:13px;color:var(--teal-ink);font-weight:600">${I.rocket} Active boost: ${s.boost.name} (${s.boost.speed}, ${s.boost.duration})</div>`:''}
+      ${neg?`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--neg-bg);background:var(--neg-bg);border-radius:10px;margin-bottom:14px"><span style="font-weight:600;color:var(--neg-ink)">Outstanding balance</span><span class="money neg">${fmt(-s.balance)}</span></div>`:''}
+      <div class="sub-actions">
+        <button class="btn btn-primary btn-sm" onclick="openChangePkg('${a.id}')">${I.swap} Change package</button>
+        <button class="btn btn-soft btn-sm" onclick="openBoost('${a.id}')">${I.rocket} Boost</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--warn-ink);border-color:#ffe1a8" onclick="openPause('${a.id}')">${I.pause} Pause</button>
+        <button class="btn btn-ghost btn-sm" onclick="genDownload(this,'Generating…','Subscription details downloaded')">${I.dl} Download</button>
+        ${neg?`<button class="btn btn-primary btn-sm" onclick="go('#/pay/${a.id}')">Pay ${fmt(-s.balance)}</button>`:''}
+      </div>`;
+  }
+  const sub=active?`${pl?pl.name:''} · ${s.provider}`:(paused?'Paused':'No active plan');
+  return svcShell(a,'net',I.wifi,'#ece7ff','#6b4bff','Internet & TV',sub,right,inner);
+}
+function applyResume(id){const n=SERVICES[id].internet;n.status='Active';n.tariff=planById(n.planId).price;closeModal();toast('Internet & TV resumed');refreshNet(id);}
+function svcDoors(a){
+  // opens a modal calendar instead of expanding
+  return `<article class="card svc">
+    <button class="svc-head" onclick="openDoorsModal('${a.id}')">
+      <div class="svc-ic" style="background:#eef0f6;color:var(--ink-2)">${I.door}</div>
+      <div class="svc-tt"><div class="svc-name">Doors history</div><div class="svc-sub">Entry log & openings calendar</div></div>
+      <div class="svc-actions"><span class="btn btn-ghost btn-sm">Open calendar ${I.arrow}</span></div>
+    </button>
+  </article>`;
+}
+function toggleSvc(btn){
+  const card=btn.closest('.svc'); const open=card.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open?'true':'false');
+}
+
+function tabInvoices(a){
+  const inv=INVOICES[a.id]||[];
+  if(!inv.length) return emptyCard('No invoices yet','Invoices for this unit will appear here once issued.');
+  return `<div class="card">
+    <div class="card-head"><div><h3>Invoices</h3><div class="sub">${inv.length} total · ${inv.filter(i=>i.status!=='paid').length} open</div></div>
+      <div style="display:flex;gap:8px"><select class="input" style="height:38px;width:auto" onchange="toast('Filtered: '+this.value)"><option>All statuses</option><option>Paid</option><option>Pending</option><option>Overdue</option></select><button class="btn btn-ghost btn-sm" onclick="genDownload(this,'Preparing…','Invoices exported')">${I.dl} Export</button></div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Invoice</th><th>Date</th><th>Description</th><th>Due</th><th>Status</th><th class="r">Amount</th><th class="r">Action</th></tr></thead>
+      <tbody>${inv.map(i=>`<tr>
+        <td style="font-weight:600;color:var(--ink)">${i.no}</td><td>${i.date}</td><td>${i.desc}</td><td>${i.due}</td>
+        <td><span class="badge ${STATUS_MAP[i.status].cls}"><span class="b-dot"></span>${STATUS_MAP[i.status].label}</span></td>
+        <td class="r money ${i.status==='overdue'?'neg':''}">${fmt(i.amount)}</td>
+        <td class="r">${i.status==='paid'?`<button class="btn btn-ghost btn-sm" onclick="genDownload(this,'Generating…','Receipt downloaded')">${I.dl} Receipt</button>`:`<button class="btn btn-soft btn-sm" onclick="go('#/pay/${a.id}')">Pay</button>`}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function tabPayments(a){
+  const p=PAYMENTS[a.id]||[];
+  if(!p.length) return emptyCard('No payments yet','Your payment history for this unit will appear here.');
+  return `<div class="card">
+    <div class="card-head"><div><h3>Payment history</h3><div class="sub">${p.length} transactions</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="genDownload(this,'Preparing…','Statement exported')">${I.dl} Export statement</button></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Method</th><th>Reference</th><th>Status</th><th class="r">Amount</th><th class="r">Receipt</th></tr></thead>
+      <tbody>${p.map(x=>`<tr><td style="font-weight:600;color:var(--ink)">${x.date}</td><td>${x.method}</td><td style="color:var(--muted)">${x.ref}</td>
+        <td><span class="badge pos"><span class="b-dot"></span>Paid</span></td>
+        <td class="r money">${fmt(x.amount)}</td>
+        <td class="r"><button class="btn btn-ghost btn-sm" onclick="genDownload(this,'…','Receipt downloaded')">${I.dl}</button></td></tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function tabReports(a){
+  const r=REPORTS[a.id]||[];
+  if(!r.length) return emptyCard('No reports available','Quarterly and annual statements will appear here when published.');
+  return `<div class="card">
+    <div class="card-head"><div><h3>Reports & statements</h3><div class="sub">Income, expense and reconciliation documents</div></div>
+      <div class="search-wrap" style="width:220px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input class="input" style="height:38px" placeholder="Filter by period…" oninput="toast('Filtering reports')"></div></div>
+    <div class="card-pad">
+      ${r.map(x=>`<div class="attach"><div class="ico">${I.doc}</div><div style="flex:1"><div class="nm">${x.name}</div><div class="sz">${x.period} · PDF · ${x.size}</div></div><button class="btn btn-soft btn-sm" onclick="genDownload(this,'Generating…','Report ready — downloaded')">${I.dl} Download</button></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function emptyCard(t,s){return `<div class="card"><div class="empty"><div class="ei">${I.empty}</div><h3 style="margin:0 0 4px;color:var(--ink)">${t}</h3><p style="margin:0">${s}</p></div></div>`;}
+
+/* ============================================================
+   PAYMENT — dedicated multi-step checkout PAGE (/pay/:id)
+   (kept as a page, not a modal)
+   ============================================================ */
+let payState={apt:null,step:1,method:'visa',amount:0,processing:false};
+route('payPage', async (id)=>{
+  setActive('apartments');
+  const a=APTS.find(x=>x.id===id)||APTS[0];
+  crumbs([{label:'Home',href:'#/news'},{label:'My Apartments',href:'#/apartments'},{label:a.code,href:'#/apartments/'+a.id},{label:'Pay'}]);
+  payState={apt:a,step:1,method:'visa',amount:Math.abs(Math.min(0,a.balance))||SERVICES[a.id].maintenance.tariff,processing:false};
+  view.innerHTML=`<div class="page"><a class="btn btn-ghost btn-sm" href="#/apartments/${a.id}" style="margin-bottom:18px">${I.back} Back to apartment</a>
+    <div class="pay-page"><div class="card card-pad">${'<div class="sk sk-line"></div>'.repeat(2)}<div class="sk sk-line" style="width:60%"></div><div class="sk sk-line" style="height:44px;border-radius:11px;margin-top:16px"></div></div></div></div>`;
+  await sleep(500);
+  renderPayPage();
+});
+function payStepsHtml(cur){
+  const s=[[1,'Amount'],[2,'Method'],[3,'Confirm']];
+  return `<div class="steps">${s.map((x,i)=>`<div class="stp ${x[0]===cur?'on':(x[0]<cur?'done':'')}"><span class="n">${x[0]<cur?'✓':x[0]}</span>${x[1]}</div>${i<s.length-1?'<span class="ln"></span>':''}`).join('')}</div>`;
+}
+function payShell(inner){
+  const a=payState.apt;
+  return `<div class="page"><a class="btn btn-ghost btn-sm" href="#/apartments/${a.id}" style="margin-bottom:18px">${I.back} Back to apartment</a>
+    <div class="pay-page"><div class="card">${inner}</div></div></div>`;
+}
+function renderPayPage(){
+  const a=payState.apt;
+  if(payState.step===1){
+    view.innerHTML=payShell(`
+      <div class="card-head"><h3>Pay services — ${a.code}</h3></div>
+      <div class="card-pad">${payStepsHtml(1)}
+        <div style="background:#fafbfe;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+          <div class="kv" style="margin-bottom:6px"><span class="k">${a.building}</span><span class="v" style="color:var(--muted);font-weight:500;font-size:12px">Block ${a.block} · No. ${a.number}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="color:var(--muted);font-size:13px">Amount due</span><span class="money ${a.balance<0?'neg':''}" style="font-size:22px">${fmt(a.balance<0?-a.balance:0)}</span></div>
+        </div>
+        <div class="field"><label for="payAmt">Amount to pay (₾)</label><input class="input" id="payAmt" type="number" value="${payState.amount.toFixed(2)}" min="1" step="0.01"></div>
+        <p style="color:var(--muted);font-size:12px;margin:10px 0 0">You can pay the full balance or a partial amount.</p>
+      </div>
+      <div class="modal-foot"><a class="btn btn-ghost" href="#/apartments/${a.id}">Cancel</a><button class="btn btn-primary" onclick="payNext()">Continue ${I.arrow}</button></div>`);
+    $('#payAmt')?.addEventListener('input',e=>payState.amount=parseFloat(e.target.value)||0);
+  }
+  else if(payState.step===2){
+    const methods=[['visa','VISA','Visa •••• 4821'],['mc','MC','Mastercard •••• 2207'],['bank','BANK','Georgian bank transfer'],['new','+','Add new card']];
+    view.innerHTML=payShell(`
+      <div class="card-head"><h3>Payment method</h3></div>
+      <div class="card-pad">${payStepsHtml(2)}
+        ${methods.map(m=>`<div class="pay-method ${payState.method===m[0]?'sel':''}" tabindex="0" role="radio" aria-checked="${payState.method===m[0]}" onclick="payState.method='${m[0]}';renderPayPage()" onkeydown="if(event.key==='Enter'){payState.method='${m[0]}';renderPayPage()}"><div class="mi">${m[1]}</div><div><div style="font-weight:600;font-size:13.5px">${m[2]}</div></div><div class="rad"></div></div>`).join('')}
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="payState.step=1;renderPayPage()">${I.back} Back</button><button class="btn btn-primary" onclick="payNext()">Review ${I.arrow}</button></div>`);
+  }
+  else if(payState.step===3){
+    if(payState.processing){
+      view.innerHTML=payShell(`<div class="card-head"><h3>Processing payment</h3></div>
+        <div class="card-pad"><div style="text-align:center;padding:14px 0 4px"><div class="sk" style="width:74px;height:74px;border-radius:50%;margin:0 auto 18px"></div><div class="sk sk-line" style="width:60%;margin:0 auto 10px"></div><div class="sk sk-line" style="width:40%;margin:0 auto"></div><p style="color:var(--muted);margin-top:18px;font-size:13px">Securely processing your payment…</p></div></div>`);
+      return;
+    }
+    view.innerHTML=payShell(`
+      <div class="card-head"><h3>Review &amp; confirm</h3></div>
+      <div class="card-pad">${payStepsHtml(3)}
+        <div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--line)"><div class="kv"><span class="k">Apartment</span><span class="v">${a.code}</span></div></div>
+          <div style="padding:14px 16px;border-bottom:1px solid var(--line)"><div class="kv"><span class="k">Payment method</span><span class="v">${{visa:'Visa •••• 4821',mc:'Mastercard •••• 2207',bank:'Bank transfer',new:'New card'}[payState.method]}</span></div></div>
+          <div style="padding:14px 16px;background:#fafbfe"><div class="kv"><span class="k" style="font-size:14px">Total</span><span class="money" style="font-size:20px;color:var(--teal-ink)">${fmt(payState.amount)}</span></div></div>
+        </div>
+        <p style="color:var(--muted);font-size:12px;margin:14px 0 0">By confirming you authorize ORBI to charge the selected method. A receipt will be emailed to you.</p>
+      </div>
+      <div class="modal-foot"><button class="btn btn-ghost" onclick="payState.step=2;renderPayPage()">${I.back} Back</button><button class="btn btn-primary" onclick="payConfirm()">Pay ${fmt(payState.amount)}</button></div>`);
+  }
+  else if(payState.step===4){
+    view.innerHTML=payShell(`
+      <div class="card-pad" style="text-align:center;padding:40px 24px">
+        <div class="success-ring">${I.check}</div>
+        <h3 style="margin:0 0 6px">Payment successful</h3>
+        <p style="color:var(--muted);margin:0 0 4px">${fmt(payState.amount)} paid for ${a.code}</p>
+        <p style="color:var(--muted);font-size:12px;margin:0 0 22px">Reference PAY-${Math.floor(9900+Math.random()*99)} · A receipt has been emailed.</p>
+        <div style="display:flex;gap:10px;justify-content:center"><button class="btn btn-ghost" onclick="toast('Receipt downloaded')">${I.dl} Receipt</button><a class="btn btn-primary" href="#/apartments/${a.id}">Back to apartment</a></div>
+      </div>`);
+  }
+}
+function payNext(){ if(payState.step===1 && (!payState.amount||payState.amount<=0)){toast('Enter a valid amount');return;} payState.step++; renderPayPage(); }
+async function payConfirm(){
+  payState.processing=true; payState.step=3; renderPayPage();
+  await sleep(1600);
+  const a=payState.apt; a.balance=Math.min(0,a.balance+payState.amount); if(Math.abs(a.balance)<0.01)a.balance=0;
+  // reflect in service balances (reduce negatives)
+  const sv=SERVICES[a.id]; let left=payState.amount;
+  ['maintenance','electricity'].forEach(k=>{ if(sv[k]&&sv[k].balance<0&&left>0){const pay=Math.min(left,-sv[k].balance);sv[k].balance+=pay;left-=pay;} });
+  payState.processing=false; payState.step=4; renderPayPage();
+}
+
+/* ============================================================
+   MODAL PRIMITIVES + feature modals — a11y (ESC, click-out, focus trap, ARIA)
+   ============================================================ */
+let lastFocused=null, modalLocked=false;
+const overlay=$('#modalOverlay');
+function openSheet(html,size=''){ $('#modalBox').className='modal '+size; $('#modalBox').innerHTML=html; lastFocused=document.activeElement; overlay.classList.add('open'); document.body.style.overflow='hidden'; trapFocus(); }
+function closeModal(){ if(modalLocked)return; overlay.classList.remove('open'); document.body.style.overflow=''; lastFocused?.focus?.(); }
+overlay.addEventListener('mousedown',e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && overlay.classList.contains('open')) closeModal(); });
+function trapFocus(){
+  const f=overlay.querySelectorAll('button:not([disabled]),input,select,[tabindex="0"],a[href]');
+  if(!f.length)return; const first=f[0],last=f[f.length-1];
+  setTimeout(()=>first.focus?.(),30);
+  overlay.onkeydown=e=>{ if(e.key!=='Tab')return;
+    if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+  };
+}
+
+/* QR enlarge */
+function openQr(id){const a=APTS.find(x=>x.id===id)||APTS[0];
+  openSheet(`<div class="modal-head"><h3 id="modalTitle">Apartment QR — ${a.code}</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body" style="text-align:center"><div style="width:240px;height:240px;margin:0 auto;border:1px solid var(--line-2);border-radius:14px;padding:14px;background:#fff">${qrSvg(a.apCode)}</div>
+  <p style="color:var(--muted);font-size:13px;margin-top:16px">AP Code: <b style="color:var(--ink)">${a.apCode}</b></p>
+  <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="toast('QR downloaded')">${I.dl} Download QR</button></div>`,'md');
+}
+/* Electricity reports modal */
+let elecState={apt:null,type:null,step:'form'};
+function openElecModal(id){elecState={apt:APTS.find(x=>x.id===id)||APTS[0],type:null,step:'form'};openSheet(elecHtml(),'md');}
+function elecRerender(){$('#modalBox').innerHTML=elecHtml();trapFocus();}
+function elecGenerate(type){elecState.type=type;elecState.step='generating';modalLocked=true;elecRerender();setTimeout(()=>{elecState.step='ready';modalLocked=false;elecRerender();},1600);}
+function elecHtml(){
+  const a=elecState.apt, s=SERVICES[a.id].electricity;
+  if(elecState.step==='generating'){
+    return `<div class="modal-head"><h3 id="modalTitle">Generating ${elecState.type.toLowerCase()} report</h3><button class="modal-x" aria-label="Close" disabled style="opacity:.4">✕</button></div>
+    <div class="modal-body"><div class="gen-box"><div class="sk" style="width:60px;height:60px;border-radius:14px;margin-bottom:16px"></div><div class="sk sk-line" style="width:60%;margin:0 auto 10px"></div><div class="sk sk-line" style="width:40%;margin:0 auto"></div><p style="color:var(--muted);font-size:13px;margin-top:18px"><span class="spin"></span> Compiling ${elecState.type.toLowerCase()} consumption for counter ${s.counter}…</p></div></div>`;
+  }
+  if(elecState.step==='ready'){
+    return `<div class="modal-head"><h3 id="modalTitle">Report ready</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" style="text-align:center"><div class="success-ring">${I.doc}</div><h3 style="margin:0 0 6px">${elecState.type} report generated</h3><p style="color:var(--muted);font-size:13px;margin:0">Counter ${s.counter} · PDF ready to download.</p></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="elecState.step='form';elecRerender()">${I.back} New report</button><button class="btn btn-primary" onclick="toast('${elecState.type} report downloaded');closeModal()">${I.dl} Download PDF</button></div>`;
+  }
+  return `<div class="modal-head"><h3 id="modalTitle">Electricity reports</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body"><p style="color:var(--muted);font-size:13px;margin:0 0 16px">Generate a consumption report for counter <b style="color:var(--ink)">${s.counter}</b>.</p>
+    <div class="date-row"><div class="field"><label for="elFrom">From</label><input id="elFrom" type="date" class="input" value="2026-05-01"></div><div class="field"><label for="elTo">To</label><input id="elTo" type="date" class="input" value="2026-06-01"></div></div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="elecGenerate('Daily')">${I.dl} Daily report</button><button class="btn btn-primary" onclick="elecGenerate('Monthly')">${I.dl} Monthly report</button></div>`;
+}
+/* Doors history calendar modal */
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let doorsState={apt:null,mode:'month',year:2026,month:5,from:'',to:''};
+function openDoorsModal(id){const a=APTS.find(x=>x.id===id)||APTS[0];doorsState={apt:a,mode:'month',year:2026,month:5,from:'',to:''};openSheet(doorsHtml(),'lg');}
+function doorsRerender(){$('#modalBox').innerHTML=doorsHtml();trapFocus();}
+function monthTotal(id,y,m){let t=0,days=new Date(y,m+1,0).getDate();for(let d=1;d<=days;d++)t+=doorCount(id,y,m,d);return t;}
+function yearTotal(id,y){let t=0;for(let m=0;m<12;m++)t+=monthTotal(id,y,m);return t;}
+function doorsHtml(){
+  const a=doorsState.apt, id=a.id;
+  let body='';
+  if(doorsState.mode==='month'){
+    const y=doorsState.year,m=doorsState.month;
+    const days=new Date(y,m+1,0).getDate();
+    const first=(new Date(y,m,1).getDay()+6)%7; // Monday-first
+    let cells='',list='',total=0;
+    for(let i=0;i<first;i++)cells+=`<div class="cal-day empty"></div>`;
+    for(let d=1;d<=days;d++){const c=doorCount(id,y,m,d);total+=c;
+      cells+=`<div class="cal-day ${c>0?'hi':''}"><span class="dnum">${d}</span><span class="cnt ${c===0?'zero':''}">${c}</span></div>`;
+      list+=`<div class="row"><span>${d} ${MONTHS[m].slice(0,3)} ${y}</span><b>Doors openings: ${c}</b></div>`;
+    }
+    body=`<div class="cal-grid">${DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('')}${cells}</div>
+      <div class="cal-list">${list}</div>
+      <div class="cal-summary"><span>Total this month: <b>${total}</b> openings</span>${doorsState.from&&doorsState.to?`<span>Selected range: <b>${doorsRangeTotal()}</b> openings</span>`:''}</div>`;
+  } else if(doorsState.mode==='year'){
+    const y=doorsState.year;
+    body=`<div class="cal-grid" style="grid-template-columns:repeat(4,1fr)">${MONTHS.map((nm,m)=>{const t=monthTotal(id,y,m);return `<div class="cal-day" style="aspect-ratio:auto;cursor:pointer" onclick="doorsState.mode='month';doorsState.month=${m};doorsRerender()"><span class="dnum">${nm.slice(0,3)}</span><span class="cnt ${t===0?'zero':''}">${t}</span></div>`;}).join('')}</div>
+      <div class="cal-summary"><span>Total ${y}: <b>${yearTotal(id,y)}</b> openings</span></div>`;
+  } else {
+    body=`<div>${[2024,2025,2026].map(y=>`<div class="row" style="display:flex;justify-content:space-between;padding:14px 6px;border-bottom:1px solid var(--line);cursor:pointer" onclick="doorsState.mode='year';doorsState.year=${y};doorsRerender()"><span style="font-weight:600">${y}</span><b>${yearTotal(id,y)} openings</b></div>`).join('')}</div>`;
+  }
+  const tabs=[['years','Years'],['year','Year'],['month','Month']];
+  return `<div class="modal-head"><h3 id="modalTitle">Doors history — ${a.code}</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <div class="cal-toolbar">
+      <div class="seg">${tabs.map(t=>`<button class="${doorsState.mode===t[0]?'on':''}" onclick="doorsState.mode='${t[0]}';doorsRerender()">${t[1]}</button>`).join('')}</div>
+      ${doorsState.mode==='month'?`<div class="cal-nav"><button aria-label="Previous month" onclick="doorsPrev()">${I.back}</button><span class="mlabel">${MONTHS[doorsState.month]} ${doorsState.year}</span><button aria-label="Next month" onclick="doorsNext()">${I.arrow}</button></div>`:''}
+    </div>
+    <div class="date-row" style="margin-bottom:16px">
+      <div class="field"><label for="dFrom">From</label><input id="dFrom" type="date" class="input" value="${doorsState.from}" onchange="doorsState.from=this.value"></div>
+      <div class="field"><label for="dTo">To</label><input id="dTo" type="date" class="input" value="${doorsState.to}" onchange="doorsState.to=this.value"></div>
+      <div class="field" style="flex:none;display:flex;align-items:flex-end"><button class="btn btn-ghost" onclick="doorsRerender()">Apply filter</button></div>
+    </div>
+    ${body}
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="genDownload(this,'Generating…','Doors history exported')">${I.dl} Download</button></div>`;
+}
+function doorsPrev(){if(doorsState.month===0){doorsState.month=11;doorsState.year--;}else doorsState.month--;doorsRerender();}
+function doorsNext(){if(doorsState.month===11){doorsState.month=0;doorsState.year++;}else doorsState.month++;doorsRerender();}
+function doorsRangeTotal(){const a=doorsState.apt;if(!doorsState.from||!doorsState.to)return 0;const f=new Date(doorsState.from),t=new Date(doorsState.to);let total=0;for(let dt=new Date(f);dt<=t;dt.setDate(dt.getDate()+1)){total+=doorCount(a.id,dt.getFullYear(),dt.getMonth(),dt.getDate());}return total;}
+
+/* re-render apartment detail and keep the Internet & TV accordion open */
+function refreshNet(id){const a=APTS.find(x=>x.id===id);if(!a)return;aptTab='overview';paintAptDetail(a);const c=document.getElementById('svc-net-'+id);if(c){c.classList.add('open');const hd=c.querySelector('.svc-head');if(hd)hd.setAttribute('aria-expanded','true');}}
+
+/* ============================================================
+   B3 — INTERNET & TV: Change package / Boost / Pause modals
+   ============================================================ */
+let pkgState={apt:null,sel:null,step:'grid'};
+function openChangePkg(id){const a=APTS.find(x=>x.id===id)||APTS[0];pkgState={apt:a,sel:null,step:'grid'};openSheet(pkgHtml(),'xl');}
+function pkgRerender(){$('#modalBox').innerHTML=pkgHtml();trapFocus();}
+function pkgHtml(){
+  const a=pkgState.apt, cur=SERVICES[a.id].internet.planId;
+  if(pkgState.step==='confirm'){
+    const np=planById(pkgState.sel), cp=planById(cur);
+    const dS=np.mbps-cp.mbps, dP=np.price-cp.price;
+    const speedTxt=dS>0?`<span class="diff-up">▲ ${np.mbps} Mbps (+${dS})</span>`:dS<0?`<span class="diff-down">▼ ${np.mbps} Mbps (${dS})</span>`:`<span class="diff-same">${np.mbps} Mbps (no change)</span>`;
+    const priceTxt=dP>0?`<span class="diff-down">${fmt(np.price)}/mo (+${fmt(dP)})</span>`:dP<0?`<span class="diff-up">${fmt(np.price)}/mo (−${fmt(-dP)})</span>`:`<span class="diff-same">${fmt(np.price)}/mo (no change)</span>`;
+    return `<div class="modal-head"><h3 id="modalTitle">Confirm package change</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:13px;margin:0 0 14px">You're switching from <b style="color:var(--ink)">${cp.name}</b> to <b style="color:var(--ink)">${np.name}</b>.</p>
+      <div style="border:1px solid var(--line);border-radius:12px;padding:4px 16px;margin-bottom:14px">
+        <div class="cmp-row"><span class="k" style="color:var(--muted)">New monthly price</span><span>${priceTxt}</span></div>
+        <div class="cmp-row"><span class="k" style="color:var(--muted)">Internet speed</span><span>${speedTxt}</span></div>
+        <div class="cmp-row"><span class="k" style="color:var(--muted)">TV channels</span><span class="diff-same">${np.ch} (no change)</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--info-bg);color:var(--info-ink);border-radius:10px;padding:11px 14px;font-size:12.5px">${I.cal} Takes effect on your next billing date — <b>${SERVICES[a.id].internet.renewal}</b>.</div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="pkgState.step='grid';pkgRerender()">${I.back} Back</button><button class="btn btn-primary" onclick="applyPkg()">Confirm change to ${np.name}</button></div>`;
+  }
+  return `<div class="modal-head"><h3 id="modalTitle">Change package</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <p style="color:var(--muted);font-size:13px;margin:0 0 16px">Choose a plan for <b style="color:var(--ink)">${a.code}</b>. Your current plan is highlighted.</p>
+    <div class="plan-grid">
+      ${PLANS.map(p=>{const isCur=p.id===cur;return `<div class="plan ${isCur?'current':''}">
+        ${isCur?`<span class="cur-badge"><span class="chip">Current plan</span></span>`:''}
+        <div class="plan-info">
+          <div class="pname">${p.name}</div>
+          <div class="price"><span class="amt">${p.price}</span><span class="cur">GEL</span></div>
+          <div class="per">per month</div>
+          <div class="plan-meta">${p.mbps} Mbps · ${p.ch} channels</div>
+        </div>
+        <div class="p-div"></div>
+        <div class="plan-specs">
+          <div class="spec"><div class="lab">Internet</div><div class="val">${p.mbps} Mbps</div></div>
+          <div class="spec"><div class="lab">TV</div><div class="val">${p.ch} channels</div></div>
+        </div>
+        <div class="plan-cta">${isCur?`<span class="btn btn-sm is-active">Active</span>`:`<button class="btn btn-primary btn-sm" onclick="pkgState.sel='${p.id}';pkgState.step='confirm';pkgRerender()">Change</button>`}</div>
+      </div>`;}).join('')}
+    </div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`;
+}
+function applyPkg(){const a=pkgState.apt,n=SERVICES[a.id].internet,np=planById(pkgState.sel);n.planId=np.id;n.tariff=np.price;closeModal();toast(`Package changed to ${np.name} — effective ${n.renewal}`);refreshNet(a.id);}
+
+let boostState={apt:null,sel:null,confirm:false};
+function openBoost(id){const a=APTS.find(x=>x.id===id)||APTS[0];boostState={apt:a,sel:null,confirm:false};openSheet(boostHtml(),'md');}
+function boostRerender(){$('#modalBox').innerHTML=boostHtml();trapFocus();}
+function boostHtml(){
+  const a=boostState.apt, active=SERVICES[a.id].internet.boost;
+  if(boostState.confirm){
+    const b=BOOSTS.find(x=>x.id===boostState.sel);
+    return `<div class="modal-head"><h3 id="modalTitle">Confirm boost</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body"><p style="font-size:14px;margin:0 0 10px">Activate <b>${b.name}</b> (${b.speed} for ${b.duration}) now?</p>
+      <p style="color:var(--muted);font-size:13px;margin:0">Your card will be charged <b style="color:var(--ink)">${fmt(b.price)}</b>.</p></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="boostState.confirm=false;boostRerender()">${I.back} Back</button><button class="btn btn-primary" onclick="applyBoost()">Charge & activate — ${b.price} GEL</button></div>`;
+  }
+  const sel=boostState.sel, selB=BOOSTS.find(x=>x.id===sel);
+  return `<div class="modal-head"><h3 id="modalTitle">Boost management</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <div class="section-label" style="margin:0 0 10px">Current active boost</div>
+    ${active?`<div class="boost sel" style="cursor:default"><div class="bi">${I.rocket}</div><div class="bt"><div class="bname">${active.name}</div><div class="bsub">${active.speed} · ${active.duration} remaining</div></div></div>`:`<div class="empty" style="padding:20px;border:1px dashed var(--line-2);border-radius:12px"><div class="ei" style="width:48px;height:48px">${I.rocket}</div><div style="color:var(--ink);font-weight:600">No active boost</div><div>Pick one below to speed things up.</div></div>`}
+    <div class="section-label">Available boosts</div>
+    ${BOOSTS.map(b=>`<div class="boost ${sel===b.id?'sel':''}" tabindex="0" role="radio" aria-checked="${sel===b.id}" onclick="boostState.sel='${b.id}';boostRerender()" onkeydown="if(event.key==='Enter'){boostState.sel='${b.id}';boostRerender()}">
+      <div class="bi">${I.rocket}</div><div class="bt"><div class="bname">${b.name}</div><div class="bsub">${b.speed} · ${b.duration}</div></div>
+      <div class="bprice">${fmt(b.price)}</div><div class="check">${sel===b.id?I.check.replace('width="34" height="34"','width="13" height="13"'):''}</div>
+    </div>`).join('')}
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" ${sel?'':'disabled'} onclick="boostState.confirm=true;boostRerender()">${sel?`Activate — ${selB.price} GEL`:'Activate now'}</button></div>`;
+}
+function applyBoost(){const a=boostState.apt,b=BOOSTS.find(x=>x.id===boostState.sel);SERVICES[a.id].internet.boost={name:b.name,speed:b.speed,duration:b.duration};closeModal();toast(`${b.name} activated — charged ${fmt(b.price)}`);refreshNet(a.id);}
+
+function openPause(id){const a=APTS.find(x=>x.id===id)||APTS[0];const fee=6;
+  openSheet(`<div class="modal-head"><h3 id="modalTitle">Pause Internet &amp; TV</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <div class="warn-box"><div class="wi">${I.warn}</div><div>
+      <h4>Your service will be paused</h4>
+      <p>While paused, Internet &amp; TV will stop working and a reduced monthly pause fee of <b>${fmt(fee)}</b> applies instead of your regular tariff. You can resume anytime from this screen; billing returns to normal on resume.</p>
+    </div></div>
+  </div>
+  <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-warn" onclick="applyPause('${a.id}')">${I.pause} Pause service</button></div>`,'md');
+}
+function applyPause(id){const a=APTS.find(x=>x.id===id);const n=SERVICES[id].internet;n.status='Paused';n.tariff=6;closeModal();toast('Internet & TV paused — 6 GEL/mo pause fee applies');refreshNet(id);}
+
+/* ============================================================
+   SUPPORT — ticket list, chat, create-ticket flow
+   ============================================================ */
+function escHtml(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return escHtml(s).replace(/"/g,'&quot;');}
+
+const SUPPORT_TOPICS=[
+  {id:'payment',  label:'Payment & Billing Issues', desc:'Problems with payments, charges or your account', icon:I.wallet, tintBg:'var(--pos-bg)',  tintCol:'var(--pos-ink)'},
+  {id:'technical',label:'Technical Problem',         desc:"Technical issues or something isn't working",     icon:I.wrench,  tintBg:'var(--info-bg)', tintCol:'var(--info-ink)'},
+  {id:'booking',  label:'Booking Questions',         desc:'Questions about your booking or reservation',     icon:I.cal,     tintBg:'#ece7ff',        tintCol:'#6b4bff'},
+  {id:'access',   label:'Access Card Request',       desc:'Request a new access card (Digital Key)',         icon:I.card,    tintBg:'var(--warn-bg)', tintCol:'var(--warn-ink)'},
+  {id:'internet', label:'Internet & TV Issue',       desc:'Problems with internet or TV services',           icon:I.wifi,    tintBg:'var(--teal-soft)',tintCol:'var(--teal-ink)'},
+  {id:'other',    label:'Other Request',             desc:'Other issues or requests',                        icon:I.dots,    tintBg:'#eef0f6',        tintCol:'var(--muted)'},
+];
+const topicById=id=>SUPPORT_TOPICS.find(t=>t.id===id);
+const TSTATUS={active:{cls:'pos',label:'Active'},resolved:{cls:'info',label:'Resolved'},closed:{cls:'muted',label:'Closed'}};
+const SUP_FILTERS=['all','active','resolved','closed'];
+const SUP_FILTER_LABEL={all:'All',active:'Active',resolved:'Resolved',closed:'Closed'};
+
+let TICKET_SEQ=101245;
+const TICKETS=[
+  {id:101245,topic:'technical',apt:null,status:'active',created:'2026-07-10 07:51',preview:'Test 123 — the app keeps logging me out on the dashboard.',
+    msgs:[{me:true,date:'10.07.2026',time:'07:51',text:'Test 123 — the app keeps logging me out on the dashboard.'}]},
+  {id:101244,topic:'internet',apt:'A1',status:'active',created:'2026-07-09 14:20',preview:'Internet in OCT.A.30.3026 is very slow since yesterday evening.',
+    msgs:[{me:true,date:'09.07.2026',time:'14:20',text:'The internet in my apartment (OCT.A.30.3026) has been very slow since yesterday evening.'},
+          {me:false,who:'ORBI Support',date:'09.07.2026',time:'14:35',text:'Hello Nadiia, thank you for reaching out. We have logged the issue with the ISP and will update you within 24 hours.'}]},
+  {id:101243,topic:'payment',apt:'A3',status:'resolved',created:'2026-07-07 09:20',preview:'Double charge on my July management fee for OCT.B.21.2105.',
+    msgs:[{me:true,date:'07.07.2026',time:'09:20',text:'I was charged twice for the July management fee on OCT.B.21.2105.'},
+          {me:false,who:'ORBI Support',date:'07.07.2026',time:'11:02',text:'We confirmed the duplicate charge and issued a refund of ₾95.00. It should appear within 3–5 business days.'},
+          {me:true,date:'07.07.2026',time:'11:20',text:'Received, thank you!'}]},
+  {id:101232,topic:'access',apt:'A2',status:'active',created:'2026-07-07 09:18',preview:'Requesting a new digital key for OCT.A.14.1408 — lost my phone.',
+    msgs:[{me:true,date:'07.07.2026',time:'09:18',text:'I lost my phone and need a new digital key issued for OCT.A.14.1408.'}]},
+  {id:101210,topic:'booking',apt:null,status:'closed',created:'2026-06-28 16:05',preview:'How do I extend a guest booking past the current month?',
+    msgs:[{me:true,date:'28.06.2026',time:'16:05',text:'How do I extend a guest booking past the current month?'},
+          {me:false,who:'ORBI Support',date:'28.06.2026',time:'16:40',text:'You can extend from Bookings and Visits → open the booking → Extend. Let us know if you need a hand.'}]},
+  {id:101198,topic:'other',apt:null,status:'closed',created:'2026-06-20 10:30',preview:'Can I get a copy of the 2025 annual reconciliation statement?',
+    msgs:[{me:true,date:'20.06.2026',time:'10:30',text:'Can I get a copy of the 2025 annual reconciliation statement?'},
+          {me:false,who:'ORBI Support',date:'20.06.2026',time:'12:15',text:'Sure — it is attached here and also available under Reports for each unit.'}]},
+];
+
+let supFilter='all', supQuery='', newTicket=null, supNav=0;
+
+route('support',async (sub=[])=>{
+  setActive('support');
+  let mode='list', tid=null;
+  if(sub[0]==='new'){ mode='create'; if(!newTicket) newTicket={topic:null,apt:null,text:'',files:[],aptOpen:false}; }
+  else if(sub[0]==='t' && sub[1]){ mode='chat'; tid=parseInt(sub[1],10); }
+  crumbs(mode==='create'?[{label:'Home',href:'#/news'},{label:'Support',href:'#/support'},{label:'New ticket'}]
+       : mode==='chat' ?[{label:'Home',href:'#/news'},{label:'Support',href:'#/support'},{label:'#'+tid}]
+       :                 [{label:'Home',href:'#/news'},{label:'Support'}]);
+  if(mode==='create'){ renderSupport('create',null,false); return; }
+  const token=++supNav;                 // guard: ignore if user navigates away mid-load
+  renderSupport(mode,tid,true);          // show skeletons
+  await sleep(mode==='chat'?650:800);
+  if(token!==supNav) return;
+  renderSupport(mode,tid,false);         // real content
+});
+
+function renderSupport(mode,tid,loading){
+  const listLoading = loading && mode==='list';   // list skeleton only on the list screen
+  let detail;
+  if(mode==='create') detail=supCreateHtml();
+  else if(mode==='chat'){ const t=TICKETS.find(x=>x.id===tid); if(t){detail=supChatHtml(t,loading);} else {mode='list';detail=supEmptyHtml();} }
+  else detail=supEmptyHtml();
+  view.innerHTML=`<div class="page sup-page">
+    <div class="page-head"><div><h1>Support</h1><p>Get help from the ORBI team — track your tickets and chat with support.</p></div></div>
+    <div class="sup-wrap" data-mode="${mode}">
+      <aside class="sup-list card">${supListHtml(listLoading)}</aside>
+      <section class="sup-detail card">${detail}</section>
+    </div>
+  </div>`;
+  wireSupport(mode,tid);
+  if(LANG!=='en') translateAll();
+}
+
+function supListHtml(loading){
+  return `<div class="sup-list-top">
+    <div class="row1">
+      <div class="search-wrap">${I.search}<input class="input" id="supSearch" type="search" placeholder="Search tickets…" value="${escAttr(supQuery)}" aria-label="Search tickets"></div>
+      <button class="btn btn-primary btn-sm" id="supNew" aria-label="New ticket">${I.plus} New</button>
+    </div>
+    <div class="sup-tabs" role="tablist" aria-label="Filter tickets by status">
+      ${SUP_FILTERS.map(f=>`<button role="tab" aria-selected="${f===supFilter}" class="${f===supFilter?'on':''}" data-f="${f}">${SUP_FILTER_LABEL[f]}</button>`).join('')}
+    </div>
+  </div>
+  <div class="sup-items" id="supItems">${loading?skSupItems():supItemsHtml()}</div>`;
+}
+
+/* skeleton loaders — same shimmer system as News / Apartments */
+function skSupItems(){
+  let rows='';
+  for(let i=0;i<6;i++) rows+=`<div class="sup-item" style="pointer-events:none">
+    <div class="sk" style="width:40px;height:40px;border-radius:11px;flex:none"></div>
+    <div class="si-main" style="flex:1">
+      <div class="sk sk-line" style="width:54%;height:13px;margin:2px 0 0"></div>
+      <div class="sk sk-line" style="width:86%;height:12px;margin:9px 0 0"></div>
+      <div class="sk sk-line" style="width:38%;height:10px;margin:9px 0 0"></div>
+    </div>
+  </div>`;
+  return rows;
+}
+function skChatBody(){
+  const b=[[ 'them','58%',52],['me','44%',36],['them','66%',60],['me','38%',36]];
+  return `<div class="chat-day"><span class="sk" style="display:inline-block;width:74px;height:18px;border-radius:999px"></span></div>`
+    + b.map(([side,w,h])=>`<div class="msg ${side}"><div class="sk" style="width:${w};height:${h}px;border-radius:15px"></div></div>`).join('');
+}
+
+function supItemsHtml(){
+  let items=TICKETS.filter(t=>supFilter==='all'||t.status===supFilter);
+  const q=supQuery.trim().toLowerCase();
+  if(q) items=items.filter(t=>{const tp=topicById(t.topic);return (tp&&tp.label.toLowerCase().includes(q))||t.preview.toLowerCase().includes(q)||String(t.id).includes(q);});
+  if(!items.length) return `<div class="empty" style="padding:44px 16px"><div class="ei">${I.chat}</div><h3 style="margin:0 0 4px;color:var(--ink);font-size:14px">No tickets found</h3><p style="margin:0;font-size:12.5px">Try a different filter or search term.</p></div>`;
+  const cur=(location.hash.split('/')[2]==='t')?parseInt(location.hash.split('/')[3],10):null;
+  return items.map(t=>supItemHtml(t,cur)).join('');
+}
+
+function supItemHtml(t,activeId){
+  const tp=topicById(t.topic), st=TSTATUS[t.status];
+  const apt=t.apt?APTS.find(a=>a.id===t.apt):null;
+  return `<div class="sup-item ${t.id===activeId?'on':''}" tabindex="0" role="link" aria-label="Ticket #${t.id}" onclick="openTicket(${t.id})" onkeydown="if(event.key==='Enter')openTicket(${t.id})">
+    <div class="si-ic" style="background:${tp.tintBg};color:${tp.tintCol}">${tp.icon}</div>
+    <div class="si-main">
+      <div class="si-top"><span class="si-title">${tp.label}</span><span class="badge ${st.cls}"><span class="b-dot"></span>${st.label}</span></div>
+      <div class="si-prev">${escHtml(t.preview)}</div>
+      <div class="si-meta">${apt?`<span class="si-apt">${I.pin}${apt.code}</span>`:''}<span>#${t.id}</span><span>·</span><span>${t.created.split(' ')[0]}</span></div>
+    </div>
+  </div>`;
+}
+
+function supEmptyHtml(){
+  return `<div class="sup-empty"><div class="ei" style="width:64px;height:64px;border-radius:16px;background:var(--teal-soft);color:var(--teal-ink);display:grid;place-items:center;margin:0 auto 14px">${I.chat}</div>
+    <h3 style="margin:0 0 4px;color:var(--ink)">Select a ticket</h3>
+    <p style="margin:0 0 16px;max-width:330px">Choose a ticket from the list to view the conversation, or start a new one.</p>
+    <button class="btn btn-primary btn-sm" onclick="startNewTicket()">${I.plus} New ticket</button></div>`;
+}
+
+/* ----- create form ----- */
+function supCreateHtml(){
+  const tp=newTicket.topic?topicById(newTicket.topic):null;
+  const apt=newTicket.apt?APTS.find(a=>a.id===newTicket.apt):null;
+  const canSubmit=!!newTicket.topic && newTicket.text.trim().length>0;
+  return `<div class="sup-dhead">
+      <button class="sup-back" aria-label="Back" onclick="go('#/support')">${I.back}</button>
+      <div class="dh-main"><h3>New ticket</h3><div class="dh-sub">Tell us what you need help with</div></div>
+    </div>
+    <div class="sup-dbody sup-create-body">
+      <form class="sup-form" id="supForm" onsubmit="return false">
+        <div class="sup-row2">
+          <div class="field">
+            <label>Topic <span class="req">*</span></label>
+            <button type="button" class="topic-picker ${tp?'chosen':''}" onclick="openTopicModal()">
+              <span class="tp-ic" ${tp?`style="background:${tp.tintBg};color:${tp.tintCol}"`:''}>${tp?tp.icon:I.tag}</span>
+              <span class="tp-main"><span class="tp-t">${tp?tp.label:'Select a topic'}</span></span>
+              <span class="tp-act">${tp?'Change':'Select'}</span>
+            </button>
+          </div>
+          <div class="field">
+            <label>Apartment <span style="color:var(--muted);font-weight:500">(optional)</span></label>
+            <div class="combo ${newTicket.aptOpen?'open':''}" id="aptCombo">
+              <button type="button" class="combo-btn" onclick="toggleAptCombo(event)">
+                ${apt?`<span style="width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:#fff;background:${blockGrad(apt)};flex:none">${I.building}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="font-weight:600">${apt.code}</b></span>`
+                      :`<span>General — not apartment-specific</span>`}
+                <span class="cb-chev">${I.chevron}</span>
+              </button>
+              <div class="combo-panel">
+                <div class="combo-search search-wrap">${I.search}<input class="input" type="search" id="aptSearch" placeholder="Search apartments…" oninput="filterAptOpts(this.value)" aria-label="Search apartments"></div>
+                <div class="combo-opts" id="aptOpts">${aptOptsHtml('')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field grow">
+          <label>Describe your issue <span class="req">*</span></label>
+          <div class="ta-wrap">
+            <textarea class="input" id="supText" maxlength="2000" placeholder="Describe your issue" oninput="onSupText(this)">${escHtml(newTicket.text)}</textarea>
+            <span class="ta-count" id="supCount">${newTicket.text.length} / 2000</span>
+          </div>
+        </div>
+        <div class="sup-attach-row">
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin:0">${I.clip} Attach files<input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none" onchange="onSupFiles(this)"></label>
+          <span class="hint">PDF, JPG, PNG · max 5MB</span>
+          <div class="file-chips" id="supFiles">${supFileChips()}</div>
+        </div>
+      </form>
+    </div>
+    <div class="sup-foot">
+      <button class="btn btn-ghost" onclick="go('#/support')">Close</button>
+      <button class="btn btn-primary" id="supSubmit" ${canSubmit?'':'disabled'} onclick="submitTicket()">${I.plus} Create ticket</button>
+    </div>`;
+}
+
+function aptOptsHtml(q){
+  q=(q||'').trim().toLowerCase();
+  let list=APTS.slice();
+  if(q) list=list.filter(a=>a.code.toLowerCase().includes(q));
+  const showGen=(!q)||('general'.includes(q));
+  const gen=showGen?`<div class="combo-opt general ${!newTicket.apt?'sel':''}" onclick="pickApt(null)"><span class="co-ic">${I.home}</span><span><div class="co-t">General</div><div class="co-s">Not apartment-specific</div></span></div>`:'';
+  const opts=list.map(a=>`<div class="combo-opt ${newTicket.apt===a.id?'sel':''}" onclick="pickApt('${a.id}')"><span class="co-ic" style="background:${blockGrad(a)}">${I.building}</span><span><div class="co-t">${a.code}</div></span></div>`).join('');
+  return (gen+opts)||`<div style="padding:14px;text-align:center;color:var(--muted);font-size:12.5px">No apartments found</div>`;
+}
+
+function startNewTicket(){ newTicket={topic:null,apt:null,text:'',files:[],aptOpen:false}; go('#/support/new'); }
+function openTicket(id){ go('#/support/t/'+id); }
+function toggleAptCombo(e){ if(e)e.stopPropagation(); newTicket.aptOpen=!newTicket.aptOpen; const c=$('#aptCombo'); c.classList.toggle('open',newTicket.aptOpen);
+  if(newTicket.aptOpen){ const s=$('#aptSearch'); if(s){ s.value=''; $('#aptOpts').innerHTML=aptOptsHtml(''); setTimeout(()=>s.focus(),20);} } }
+function filterAptOpts(v){ const o=$('#aptOpts'); if(o)o.innerHTML=aptOptsHtml(v); }
+function pickApt(id){ newTicket.apt=id; newTicket.aptOpen=false; renderSupport('create',null); }
+function onSupText(el){ newTicket.text=el.value; const c=$('#supCount'); if(c)c.textContent=el.value.length+' / 2000'; const b=$('#supSubmit'); if(b)b.disabled=!(newTicket.topic&&el.value.trim().length>0); }
+function onSupFiles(input){ const max=5*1024*1024; [...input.files].forEach(f=>{ if(f.size>max){toast(f.name+' exceeds 5MB');return;} if(newTicket.files.length>=6){toast('Up to 6 files');return;} newTicket.files.push(f.name); }); input.value=''; const el=$('#supFiles'); if(el)el.innerHTML=supFileChips(); }
+function supFileChips(){ return ((newTicket&&newTicket.files)||[]).map((n,i)=>`<span class="file-chip">${I.clip}${escHtml(n)}<button aria-label="Remove file" onclick="removeSupFile(${i})">✕</button></span>`).join(''); }
+function removeSupFile(i){ newTicket.files.splice(i,1); const el=$('#supFiles'); if(el)el.innerHTML=supFileChips(); }
+
+function openTopicModal(){
+  openSheet(`<div class="modal-head"><h3 id="modalTitle">Choose a Topic</h3><button class="modal-x" aria-label="Close" onclick="closeModal()">✕</button></div>
+  <div class="modal-body">
+    <p style="margin:0 0 16px;color:var(--muted);text-align:center">Select the category that best describes your inquiry</p>
+    <div class="topic-grid">
+      ${SUPPORT_TOPICS.map(t=>`<button class="topic-card ${newTicket&&newTicket.topic===t.id?'sel':''}" onclick="chooseTopic('${t.id}')">
+        <span class="tc-ic" style="background:${t.tintBg};color:${t.tintCol}">${t.icon}</span>
+        <span class="tc-t">${t.label}</span><span class="tc-d">${t.desc}</span></button>`).join('')}
+    </div>
+  </div>`,'md');
+}
+function chooseTopic(id){ newTicket.topic=id; closeModal(); renderSupport('create',null); }
+
+function submitTicket(){
+  if(!newTicket.topic||!newTicket.text.trim())return;
+  const b=$('#supSubmit'); if(b){ b.disabled=true; b.innerHTML=`<span class="spin"></span> Creating…`; }
+  setTimeout(()=>{
+    const id=++TICKET_SEQ, now=new Date();
+    const dd=String(now.getDate()).padStart(2,'0'),mm=String(now.getMonth()+1).padStart(2,'0'),yy=now.getFullYear();
+    const hh=String(now.getHours()).padStart(2,'0'),mi=String(now.getMinutes()).padStart(2,'0');
+    const t={id,topic:newTicket.topic,apt:newTicket.apt,status:'active',created:`${yy}-${mm}-${dd} ${hh}:${mi}`,
+      preview:newTicket.text.trim().slice(0,90),
+      msgs:[{me:true,date:`${dd}.${mm}.${yy}`,time:`${hh}:${mi}`,text:newTicket.text.trim(),files:newTicket.files.slice()}]};
+    TICKETS.unshift(t); newTicket=null; toast('Ticket #'+id+' created');
+    go('#/support/t/'+id);
+    setTimeout(()=>{ const tk=TICKETS.find(x=>x.id===id); if(tk){ tk.msgs.push({me:false,who:'ORBI Support',date:`${dd}.${mm}.${yy}`,time:`${hh}:${mi}`,text:'Thanks for reaching out! Your ticket has been received. Our team will reply shortly.'}); if(location.hash==='#/support/t/'+id){ renderSupport('chat',id); const c=$('#chatBody'); if(c)c.scrollTop=c.scrollHeight; } } },1400);
+  },900);
+}
+
+/* ----- chat thread ----- */
+function supChatHtml(t,loading){
+  const tp=topicById(t.topic), st=TSTATUS[t.status];
+  const apt=t.apt?APTS.find(a=>a.id===t.apt):null;
+  let body='', lastDate=null;
+  if(loading){ body=skChatBody(); }
+  else t.msgs.forEach(m=>{
+    if(m.date!==lastDate){ body+=`<div class="chat-day"><span>${m.date}</span></div>`; lastDate=m.date; }
+    const files=(m.files&&m.files.length)?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">${m.files.map(f=>`<span class="file-chip" style="background:#fff">${I.clip}${escHtml(f)}</span>`).join('')}</div>`:'';
+    body+=`<div class="msg ${m.me?'me':'them'}"><div class="bubble">${m.me?'':`<div class="who">${escHtml(m.who||'ORBI Support')}</div>`}${escHtml(m.text)}${files}<div class="time">${m.time}</div></div></div>`;
+  });
+  const composer=loading ? ''
+    : (t.status!=='active')
+    ? `<div class="chat-closed">This ticket is ${st.label.toLowerCase()}. Start a new ticket if you need further help.</div>`
+    : `<div class="chat-composer">
+        <textarea class="input" id="chatText" placeholder="Type a message" rows="1" oninput="autoGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg(${t.id})}"></textarea>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin:0" title="Attach">${I.clip}<input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none"></label>
+        <button class="btn btn-primary" aria-label="Send" onclick="sendMsg(${t.id})">${I.send}</button>
+      </div>`;
+  return `<div class="sup-dhead">
+      <button class="sup-back" aria-label="Back" onclick="go('#/support')">${I.back}</button>
+      <div class="si-ic" style="background:${tp.tintBg};color:${tp.tintCol};width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none">${tp.icon}</div>
+      <div class="dh-main"><h3>${tp.label} <span style="color:var(--muted);font-weight:500">#${t.id}</span></h3>
+        <div class="dh-sub"><span class="badge ${st.cls}"><span class="b-dot"></span>${st.label}</span>${apt?`<span class="si-apt">${I.pin}${apt.code}</span>`:`<span>General</span>`}<span>${t.created}</span></div>
+      </div>
+    </div>
+    <div class="sup-dbody" id="chatBody">${body}</div>
+    ${composer}`;
+}
+function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function sendMsg(id){
+  const el=$('#chatText'); if(!el)return; const v=el.value.trim(); if(!v)return;
+  const t=TICKETS.find(x=>x.id===id); if(!t)return;
+  const now=new Date();
+  const dd=String(now.getDate()).padStart(2,'0'),mm=String(now.getMonth()+1).padStart(2,'0'),yy=now.getFullYear();
+  const hh=String(now.getHours()).padStart(2,'0'),mi=String(now.getMinutes()).padStart(2,'0');
+  t.msgs.push({me:true,date:`${dd}.${mm}.${yy}`,time:`${hh}:${mi}`,text:v}); t.preview=v.slice(0,90);
+  renderSupport('chat',id); let c=$('#chatBody'); if(c)c.scrollTop=c.scrollHeight;
+  setTimeout(()=>{ const tk=TICKETS.find(x=>x.id===id); if(tk&&location.hash==='#/support/t/'+id){ tk.msgs.push({me:false,who:'ORBI Support',date:`${dd}.${mm}.${yy}`,time:`${hh}:${mi}`,text:'Thank you — a support agent will follow up on this shortly.'}); renderSupport('chat',id); const cc=$('#chatBody'); if(cc)cc.scrollTop=cc.scrollHeight; } },1300);
+}
+
+function wireSupport(mode,tid){
+  const s=$('#supSearch'); if(s) s.addEventListener('input',e=>{ supQuery=e.target.value; const it=$('#supItems'); if(it)it.innerHTML=supItemsHtml(); });
+  const tabs=$('.sup-tabs'); if(tabs) tabs.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; supFilter=b.dataset.f; document.querySelectorAll('.sup-tabs button').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);}); const it=$('#supItems'); if(it)it.innerHTML=supItemsHtml(); });
+  const nb=$('#supNew'); if(nb) nb.addEventListener('click',startNewTicket);
+  if(mode==='chat'){ const cb=$('#chatBody'); if(cb)cb.scrollTop=cb.scrollHeight; }
+}
+// close the apartment dropdown when clicking outside it
+document.addEventListener('mousedown',e=>{ if(newTicket&&newTicket.aptOpen&&!e.target.closest('#aptCombo')){ newTicket.aptOpen=false; const c=$('#aptCombo'); if(c)c.classList.remove('open'); } });
+
+/* ============================================================
+   TOAST + nav wiring
+   ============================================================ */
+let toastT;
+function toast(msg){ const t=$('#toast'); t.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5"><path d="M5 13l4 4 10-11"/></svg> ${msg}`; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+// simulate generating a document before download
+function genDownload(btn,working,done,ms){ if(btn.dataset.busy)return; btn.dataset.busy='1'; const orig=btn.innerHTML; btn.disabled=true; btn.innerHTML=`<span class="spin"></span> ${working}`; setTimeout(()=>{ btn.disabled=false; btn.dataset.busy=''; btn.innerHTML=orig; toast(done); }, ms||1300); }
+// copy text to clipboard with a brief check-mark confirmation on the button
+function copyText(ev,text){ ev.stopPropagation(); const btn=ev.currentTarget;
+  const done=()=>{ const o=btn.innerHTML; btn.classList.add('ok'); btn.innerHTML=`${I.check.replace('width="34" height="34"','width="13" height="13"')}`; toast('Copied: '+text); setTimeout(()=>{btn.classList.remove('ok');btn.innerHTML=o;},1400); };
+  try{ navigator.clipboard.writeText(text).then(done,done); }catch(e){ const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(_){}ta.remove();done(); }
+}
+
+document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>{
+  const n=a.dataset.nav;
+  if(n==='news')go('#/news'); else if(n==='apartments')go('#/apartments'); else if(n==='support')go('#/support');
+  else toast(`"${a.textContent.trim()}" is outside this redesign scope`);
+}));
+$('#burger').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#scrim').classList.add('show');});
+$('#scrim').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show');});
+
+// stub routes for nav items outside scope
+['dashboard','invoices','payments','reports','settings'].forEach(r=>route(r,()=>{setActive(r);crumbs([{label:'Home',href:'#/news'},{label:r.charAt(0).toUpperCase()+r.slice(1)}]);view.innerHTML=`<div class="page"><div class="card"><div class="empty"><div class="ei">${I.empty}</div><h3 style="margin:0 0 4px;color:var(--ink)">${r.charAt(0).toUpperCase()+r.slice(1)}</h3><p style="margin:0 0 16px">This area is outside the two redesigned flows. Jump to a redesigned flow:</p><div style="display:flex;gap:10px;justify-content:center"><a class="btn btn-primary btn-sm" href="#/news">News</a><a class="btn btn-soft btn-sm" href="#/apartments">My Apartments</a></div></div></div></div>`;}));
+
+/* ============================================================
+   i18n — English / ქართული / Русский (translates rendered chrome)
+   ============================================================ */
+let LANG='en';
+const TR={
+ ka:{
+  "Owner Portal":"მფლობელის პორტალი","Main":"მთავარი","Finance":"ფინანსები","Account":"ანგარიში",
+  "Dashboard":"მთავარი","My Apartments":"ჩემი აპარტამენტები","News":"სიახლეები","Invoices":"ინვოისები","Payments":"გადახდები","Reports":"რეპორტები","Settings":"პარამეტრები","Support":"მხარდაჭერა","Home":"მთავარი","Search…":"ძებნა…",
+  "News & Announcements":"სიახლეები და განცხადებები","Updates from ORBI management — payments, maintenance, and community.":"სიახლეები ORBI-ს მენეჯმენტისგან — გადახდები, მომსახურება და საზოგადოება.",
+  "All":"ყველა","Announcement":"განცხადება","Maintenance":"მომსახურება","Financial":"ფინანსური","Community":"საზოგადოება",
+  "Search news…":"სიახლეების ძებნა…","Newest first":"ჯერ უახლესი","Oldest first":"ჯერ ძველი","Read more":"ვრცლად","Read article":"სტატიის წაკითხვა","No news yet":"სიახლეები ჯერ არ არის","Try a different category or search term.":"სცადეთ სხვა კატეგორია ან საძიებო სიტყვა.",
+  "Back to News":"სიახლეებზე დაბრუნება","Share":"გაზიარება","Attachments":"დანართები","Related news":"მსგავსი სიახლეები","View all":"ყველას ნახვა","Have a question?":"გაქვთ შეკითხვა?","Our support team replies within minutes.":"ჩვენი მხარდაჭერა წუთებში გიპასუხებთ.","Contact support":"მხარდაჭერასთან დაკავშირება","Download":"ჩამოტვირთვა",
+  "View your units, services and documents in one place.":"ნახეთ თქვენი ერთეულები, სერვისები და დოკუმენტები ერთ ადგილას.","Owner":"მფლობელი","Trusted":"ნდობით აღჭურვილი","Block":"ბლოკი","Number":"ნომერი","Floor":"სართული","View details":"დეტალების ნახვა","You have no apartments yet":"ჯერ არ გაქვთ აპარტამენტები","Once a unit is linked to your account it will appear here.":"ერთეულის მიბმის შემდეგ ის აქ გამოჩნდება.","No apartments with this role":"ამ როლით აპარტამენტი არ მოიძებნა","Try a different role filter.":"სცადეთ სხვა როლის ფილტრი.",
+  "All apartments":"ყველა აპარტამენტი","Overview":"მიმოხილვა","Apartment information":"აპარტამენტის ინფორმაცია","Book":"დაჯავშნა","Object":"ობიექტი","Square":"ფართობი","Cadastral number":"საკადასტრო კოდი","Water Code":"წყლის კოდი","AP Code":"AP კოდი","Show":"ჩვენება","Apartment QR":"აპარტამენტის QR","Services":"სერვისები",
+  "Building management & common areas":"შენობის მართვა და საერთო სივრცეები","Water":"წყალი","Cold water metering":"ცივი წყლის აღრიცხვა","Electricity":"ელექტროენერგია","Metered consumption & reports":"მოხმარების აღრიცხვა და რეპორტები","Internet & TV":"ინტერნეტი და TV","No active plan":"აქტიური გეგმა არ არის","Paused":"შეჩერებული","Doors history":"კარების ისტორია","Entry log & openings calendar":"შესვლების ჟურნალი და კალენდარი","Open calendar":"კალენდრის გახსნა",
+  "Balance":"ბალანსი","Monthly tariff":"ყოველთვიური ტარიფი","Monthly":"თვეში","Service start date":"სერვისის დაწყების თარიღი","Download invoice":"ინვოისის ჩამოტვირთვა","Counter ID":"მრიცხველის ID","Indication":"ჩვენება","Last update":"ბოლო განახლება","Status":"სტატუსი","Electricity reports":"ელექტროენერგიის რეპორტები","Active":"აქტიური","Suspended":"შეჩერებული","Inactive":"არააქტიური","Service status":"სერვისის სტატუსი","Billing cycle":"ბილინგის ციკლი","days left":"დარჩენილი დღე","Outstanding balance":"გადასახდელი ბალანსი","Pay":"გადახდა","Manage plan":"გეგმის მართვა","Resume service":"სერვისის განახლება","Service paused":"სერვისი შეჩერებულია","Choose a package":"აირჩიეთ პაკეტი","No active subscription":"აქტიური გამოწერა არ არის",
+  "Invoice":"ინვოისი","Date":"თარიღი","Description":"აღწერა","Due":"ვადა","Amount":"თანხა","Action":"მოქმედება","Receipt":"ქვითარი","Paid":"გადახდილი","Pending":"მოლოდინში","Overdue":"ვადაგადაცილებული","All statuses":"ყველა სტატუსი","Export":"ექსპორტი","Payment history":"გადახდების ისტორია","Method":"მეთოდი","Reference":"რეფერენსი","Export statement":"ამონაწერის ექსპორტი","Reports & statements":"რეპორტები და ამონაწერები","Income, expense and reconciliation documents":"შემოსავლის, ხარჯისა და შეჯერების დოკუმენტები","Filter by period…":"ფილტრი პერიოდით…","No invoices yet":"ინვოისები ჯერ არ არის","No payments yet":"გადახდები ჯერ არ არის","No reports available":"რეპორტები არ არის",
+  "Change package":"პაკეტის შეცვლა","Change":"შეცვლა","Internet":"ინტერნეტი","per month":"თვეში","Current plan":"მიმდინარე გეგმა","Switch to this plan":"ამ გეგმაზე გადასვლა","Your plan":"თქვენი გეგმა","Confirm package change":"პაკეტის შეცვლის დადასტურება","New monthly price":"ახალი ყოველთვიური ფასი","Internet speed":"ინტერნეტის სიჩქარე","TV channels":"TV არხები","Back":"უკან","Cancel":"გაუქმება",
+  "Boost management":"ბუსტის მართვა","Current active boost":"მიმდინარე აქტიური ბუსტი","No active boost":"აქტიური ბუსტი არ არის","Pick one below to speed things up.":"აირჩიეთ ქვემოთ დასაჩქარებლად.","Available boosts":"ხელმისაწვდომი ბუსტები","Activate now":"გააქტიურება","Confirm boost":"ბუსტის დადასტურება",
+  "Pause Internet & TV":"ინტერნეტისა და TV-ის შეჩერება","Your service will be paused":"თქვენი სერვისი შეჩერდება","Pause service":"სერვისის შეჩერება","Pause":"შეჩერება","Change package ":"პაკეტის შეცვლა",
+  "From":"დან","To":"მდე","Daily report":"დღიური რეპორტი","Monthly report":"თვიური რეპორტი","Report ready":"რეპორტი მზადაა","New report":"ახალი რეპორტი","Download PDF":"PDF-ის ჩამოტვირთვა","Download QR":"QR-ის ჩამოტვირთვა",
+  "Years":"წლები","Year":"წელი","Month":"თვე","Apply filter":"ფილტრის გამოყენება","Close":"დახურვა",
+  "Back to apartment":"აპარტამენტზე დაბრუნება","Amount due":"გადასახდელი თანხა","Amount to pay (₾)":"გადასახდელი თანხა (₾)","You can pay the full balance or a partial amount.":"შეგიძლიათ გადაიხადოთ სრული ან ნაწილობრივი თანხა.","Continue":"გაგრძელება","Payment method":"გადახდის მეთოდი","Review & confirm":"გადახედვა და დადასტურება","Apartment":"აპარტამენტი","Total":"სულ","Processing payment":"გადახდის დამუშავება","Securely processing your payment…":"მიმდინარეობს გადახდის უსაფრთხო დამუშავება…","Payment successful":"გადახდა წარმატებულია",
+  "Get help from the ORBI team — track your tickets and chat with support.":"მიიღეთ დახმარება ORBI-ს გუნდისგან — თვალი ადევნეთ თიქეთებს და მიმოწერეთ მხარდაჭერასთან.","New ticket":"ახალი თიქეთი","New":"ახალი","Create ticket":"თიქეთის შექმნა","Creating…":"იქმნება…","Search tickets…":"თიქეთების ძებნა…","Resolved":"გადაჭრილი","Closed":"დახურული","No tickets found":"თიქეთი ვერ მოიძებნა","Try a different filter or search term.":"სცადეთ სხვა ფილტრი ან საძიებო სიტყვა.","Select a ticket":"აირჩიეთ თიქეთი","Choose a ticket from the list to view the conversation, or start a new one.":"აირჩიეთ თიქეთი სიიდან მიმოწერის სანახავად, ან შექმენით ახალი.",
+  "Tell us what you need help with":"გვითხარით, რაში გჭირდებათ დახმარება","Topic":"თემა","Select a topic":"აირჩიეთ თემა","Choose the category that best describes your inquiry":"აირჩიეთ კატეგორია, რომელიც ყველაზე უკეთ აღწერს თქვენს საკითხს","Choose a Topic":"აირჩიეთ თემა","Select the category that best describes your inquiry":"აირჩიეთ კატეგორია, რომელიც ყველაზე უკეთ აღწერს თქვენს საკითხს","Select":"არჩევა","(optional)":"(არასავალდებულო)","General — not apartment-specific":"ზოგადი — კონკრეტულ აპარტამენტს არ უკავშირდება","General":"ზოგადი","Not apartment-specific":"არ უკავშირდება აპარტამენტს","Search apartments…":"აპარტამენტების ძებნა…","Link this ticket to a specific apartment, or leave as General.":"დააკავშირეთ თიქეთი კონკრეტულ აპარტამენტთან, ან დატოვეთ ზოგადი.","No apartments found":"აპარტამენტი ვერ მოიძებნა",
+  "Describe your issue":"აღწერეთ თქვენი პრობლემა","Type a message":"დაწერეთ შეტყობინება","Choose a category":"აირჩიეთ კატეგორია","Attach files":"ფაილების მიმაგრება","PDF, JPG, PNG · max 5MB":"PDF, JPG, PNG · მაქს. 5MB","Add attachment":"დანართის დამატება","Select files to upload":"აირჩიეთ ასატვირთი ფაილები","Browse":"არჩევა","Supported: PDF, JPG, PNG (Max 5MB per file)":"დაშვებულია: PDF, JPG, PNG (მაქს. 5MB თითო ფაილზე)","This ticket is resolved. Start a new ticket if you need further help.":"ეს თიქეთი გადაჭრილია. საჭიროების შემთხვევაში შექმენით ახალი თიქეთი.","This ticket is closed. Start a new ticket if you need further help.":"ეს თიქეთი დახურულია. საჭიროების შემთხვევაში შექმენით ახალი თიქეთი.","ORBI Support":"ORBI მხარდაჭერა",
+  "Payment & Billing Issues":"გადახდა და ბილინგი","Problems with payments, charges or your account":"პრობლემები გადახდებთან, ჩამოჭრებთან ან ანგარიშთან","Technical Problem":"ტექნიკური პრობლემა","Technical issues or something isn't working":"ტექნიკური ხარვეზი ან რაღაც არ მუშაობს","Booking Questions":"დაჯავშნის კითხვები","Questions about your booking or reservation":"კითხვები დაჯავშნასთან დაკავშირებით","Access Card Request":"წვდომის ბარათის მოთხოვნა","Request a new access card (Digital Key)":"მოითხოვეთ ახალი წვდომის ბარათი (ციფრული გასაღები)","Internet & TV Issue":"ინტერნეტისა და TV-ის პრობლემა","Problems with internet or TV services":"პრობლემები ინტერნეტთან ან TV სერვისებთან","Other Request":"სხვა მოთხოვნა","Other issues or requests":"სხვა საკითხები ან მოთხოვნები"
+ },
+ ru:{
+  "Owner Portal":"Портал владельца","Main":"Главное","Finance":"Финансы","Account":"Аккаунт",
+  "Dashboard":"Панель","My Apartments":"Мои апартаменты","News":"Новости","Invoices":"Счета","Payments":"Платежи","Reports":"Отчёты","Settings":"Настройки","Support":"Поддержка","Home":"Главная","Search…":"Поиск…",
+  "News & Announcements":"Новости и объявления","Updates from ORBI management — payments, maintenance, and community.":"Новости от управления ORBI — платежи, обслуживание и сообщество.",
+  "All":"Все","Announcement":"Объявление","Maintenance":"Обслуживание","Financial":"Финансы","Community":"Сообщество",
+  "Search news…":"Поиск новостей…","Newest first":"Сначала новые","Oldest first":"Сначала старые","Read more":"Подробнее","Read article":"Читать статью","No news yet":"Новостей пока нет","Try a different category or search term.":"Попробуйте другую категорию или запрос.",
+  "Back to News":"Назад к новостям","Share":"Поделиться","Attachments":"Вложения","Related news":"Похожие новости","View all":"Смотреть все","Have a question?":"Есть вопрос?","Our support team replies within minutes.":"Поддержка ответит в течение минут.","Contact support":"Связаться с поддержкой","Download":"Скачать",
+  "View your units, services and documents in one place.":"Просматривайте свои объекты, услуги и документы в одном месте.","Owner":"Владелец","Trusted":"Доверенный","Block":"Блок","Number":"Номер","Floor":"Этаж","View details":"Подробнее","You have no apartments yet":"У вас пока нет апартаментов","Once a unit is linked to your account it will appear here.":"Как только объект будет привязан, он появится здесь.","No apartments with this role":"Нет апартаментов с этой ролью","Try a different role filter.":"Попробуйте другой фильтр роли.",
+  "All apartments":"Все апартаменты","Overview":"Обзор","Apartment information":"Информация об апартаменте","Book":"Забронировать","Object":"Объект","Square":"Площадь","Cadastral number":"Кадастровый номер","Water Code":"Код воды","AP Code":"AP код","Show":"Показать","Apartment QR":"QR апартамента","Services":"Услуги",
+  "Building management & common areas":"Управление зданием и общие зоны","Water":"Вода","Cold water metering":"Учёт холодной воды","Electricity":"Электричество","Metered consumption & reports":"Учёт потребления и отчёты","Internet & TV":"Интернет и ТВ","No active plan":"Нет активного плана","Paused":"Приостановлено","Doors history":"История дверей","Entry log & openings calendar":"Журнал входов и календарь","Open calendar":"Открыть календарь",
+  "Balance":"Баланс","Monthly tariff":"Ежемесячный тариф","Monthly":"В месяц","Service start date":"Дата начала услуги","Download invoice":"Скачать счёт","Counter ID":"ID счётчика","Indication":"Показание","Last update":"Последнее обновление","Status":"Статус","Electricity reports":"Отчёты по электричеству","Active":"Активно","Suspended":"Приостановлено","Inactive":"Неактивно","Service status":"Статус услуги","Billing cycle":"Расчётный период","days left":"дней осталось","Outstanding balance":"Задолженность","Pay":"Оплатить","Manage plan":"Управление планом","Resume service":"Возобновить услугу","Service paused":"Услуга приостановлена","Choose a package":"Выбрать пакет","No active subscription":"Нет активной подписки",
+  "Invoice":"Счёт","Date":"Дата","Description":"Описание","Due":"Срок","Amount":"Сумма","Action":"Действие","Receipt":"Квитанция","Paid":"Оплачено","Pending":"В ожидании","Overdue":"Просрочено","All statuses":"Все статусы","Export":"Экспорт","Payment history":"История платежей","Method":"Способ","Reference":"Референс","Export statement":"Экспорт выписки","Reports & statements":"Отчёты и выписки","Income, expense and reconciliation documents":"Документы доходов, расходов и сверки","Filter by period…":"Фильтр по периоду…","No invoices yet":"Счетов пока нет","No payments yet":"Платежей пока нет","No reports available":"Отчётов нет",
+  "Change package":"Сменить пакет","Change":"Сменить","Internet":"Интернет","per month":"в месяц","Current plan":"Текущий план","Switch to this plan":"Перейти на этот план","Your plan":"Ваш план","Confirm package change":"Подтвердите смену пакета","New monthly price":"Новая ежемесячная цена","Internet speed":"Скорость интернета","TV channels":"ТВ каналы","Back":"Назад","Cancel":"Отмена",
+  "Boost management":"Управление бустом","Current active boost":"Текущий активный буст","No active boost":"Нет активного буста","Pick one below to speed things up.":"Выберите ниже, чтобы ускорить.","Available boosts":"Доступные бусты","Activate now":"Активировать","Confirm boost":"Подтвердите буст",
+  "Pause Internet & TV":"Приостановить Интернет и ТВ","Your service will be paused":"Ваша услуга будет приостановлена","Pause service":"Приостановить услугу","Pause":"Пауза",
+  "From":"С","To":"По","Daily report":"Дневной отчёт","Monthly report":"Месячный отчёт","Report ready":"Отчёт готов","New report":"Новый отчёт","Download PDF":"Скачать PDF","Download QR":"Скачать QR",
+  "Years":"Годы","Year":"Год","Month":"Месяц","Apply filter":"Применить фильтр","Close":"Закрыть",
+  "Back to apartment":"Назад к апартаменту","Amount due":"К оплате","Amount to pay (₾)":"Сумма к оплате (₾)","You can pay the full balance or a partial amount.":"Вы можете оплатить полностью или частично.","Continue":"Продолжить","Payment method":"Способ оплаты","Review & confirm":"Проверка и подтверждение","Apartment":"Апартамент","Total":"Итого","Processing payment":"Обработка платежа","Securely processing your payment…":"Безопасная обработка платежа…","Payment successful":"Платёж успешен",
+  "Get help from the ORBI team — track your tickets and chat with support.":"Получите помощь от команды ORBI — отслеживайте тикеты и общайтесь с поддержкой.","New ticket":"Новый тикет","New":"Новый","Create ticket":"Создать тикет","Creating…":"Создание…","Search tickets…":"Поиск тикетов…","Resolved":"Решён","Closed":"Закрыт","No tickets found":"Тикеты не найдены","Try a different filter or search term.":"Попробуйте другой фильтр или запрос.","Select a ticket":"Выберите тикет","Choose a ticket from the list to view the conversation, or start a new one.":"Выберите тикет из списка, чтобы открыть переписку, или создайте новый.",
+  "Tell us what you need help with":"Расскажите, с чем нужна помощь","Topic":"Тема","Select a topic":"Выберите тему","Choose the category that best describes your inquiry":"Выберите категорию, которая лучше всего описывает ваш вопрос","Choose a Topic":"Выберите тему","Select the category that best describes your inquiry":"Выберите категорию, которая лучше всего описывает ваш вопрос","Select":"Выбрать","(optional)":"(необязательно)","General — not apartment-specific":"Общий — не привязан к апартаменту","General":"Общий","Not apartment-specific":"Не привязан к апартаменту","Search apartments…":"Поиск апартаментов…","Link this ticket to a specific apartment, or leave as General.":"Привяжите тикет к конкретному апартаменту или оставьте «Общий».","No apartments found":"Апартаменты не найдены",
+  "Describe your issue":"Опишите вашу проблему","Type a message":"Введите сообщение","Choose a category":"Выберите категорию","Attach files":"Прикрепить файлы","PDF, JPG, PNG · max 5MB":"PDF, JPG, PNG · макс. 5 МБ","Add attachment":"Добавить вложение","Select files to upload":"Выберите файлы для загрузки","Browse":"Обзор","Supported: PDF, JPG, PNG (Max 5MB per file)":"Поддерживается: PDF, JPG, PNG (макс. 5 МБ на файл)","This ticket is resolved. Start a new ticket if you need further help.":"Этот тикет решён. Создайте новый тикет, если нужна помощь.","This ticket is closed. Start a new ticket if you need further help.":"Этот тикет закрыт. Создайте новый тикет, если нужна помощь.","ORBI Support":"Поддержка ORBI",
+  "Payment & Billing Issues":"Платежи и биллинг","Problems with payments, charges or your account":"Проблемы с платежами, списаниями или аккаунтом","Technical Problem":"Техническая проблема","Technical issues or something isn't working":"Технические сбои или что-то не работает","Booking Questions":"Вопросы по бронированию","Questions about your booking or reservation":"Вопросы о вашем бронировании","Access Card Request":"Запрос карты доступа","Request a new access card (Digital Key)":"Запросить новую карту доступа (Цифровой ключ)","Internet & TV Issue":"Проблема с интернетом и ТВ","Problems with internet or TV services":"Проблемы с интернетом или ТВ","Other Request":"Другой запрос","Other issues or requests":"Другие вопросы или запросы"
+ }
+};
+const PAT={
+ ka:[[/^(\d+)\s*min read$/i,(m,n)=>`${n} წთ კითხვა`],[/^(\d+)\s*units?$/i,(m,n)=>`${n} ერთეული`],[/^(\d+)\s*unit$/i,(m,n)=>`${n} ერთეული`],[/^(\d+)\s*channels$/i,(m,n)=>`${n} არხი`],[/^until\s+(.+)$/i,(m,r)=>`ვადა: ${r}`],[/^Active boost:\s*(.+)$/i,(m,r)=>`აქტიური ბუსტი: ${r}`],[/^Pay\s+(₾[\d.,]+)$/i,(m,r)=>`გადახდა ${r}`],[/^Pay balance\s+(₾[\d.,]+)$/i,(m,r)=>`ბალანსის გადახდა ${r}`]],
+ ru:[[/^(\d+)\s*min read$/i,(m,n)=>`${n} мин чтения`],[/^(\d+)\s*units?$/i,(m,n)=>`${n} об.`],[/^(\d+)\s*unit$/i,(m,n)=>`${n} об.`],[/^(\d+)\s*channels$/i,(m,n)=>`${n} каналов`],[/^until\s+(.+)$/i,(m,r)=>`до ${r}`],[/^Active boost:\s*(.+)$/i,(m,r)=>`Активный буст: ${r}`],[/^Pay\s+(₾[\d.,]+)$/i,(m,r)=>`Оплатить ${r}`],[/^Pay balance\s+(₾[\d.,]+)$/i,(m,r)=>`Оплатить баланс ${r}`]]
+};
+function trPhrase(key){ const d=TR[LANG]; if(!d)return undefined; if(d[key]!==undefined)return d[key]; for(const [re,fn] of (PAT[LANG]||[])){ if(re.test(key)) return key.replace(re,fn); } return undefined; }
+const ORIG=new WeakMap();
+function translateRoot(root){ if(!root)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null); const nodes=[]; let n; while(n=w.nextNode())nodes.push(n);
+  nodes.forEach(node=>{ let eng=ORIG.get(node); if(eng===undefined){eng=node.nodeValue;ORIG.set(node,eng);} const key=eng.trim(); if(!key||!/[A-Za-z]/.test(key))return;
+    const lead=eng.match(/^\s*/)[0],trail=eng.match(/\s*$/)[0];
+    if(LANG==='en'){ if(node.nodeValue!==eng)node.nodeValue=eng; return; }
+    const out=trPhrase(key); if(out!==undefined&&out!==key) node.nodeValue=lead+out+trail; else if(node.nodeValue!==eng) node.nodeValue=eng;
+  });
+  root.querySelectorAll&&root.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(i=>{ if(i.dataset.ph0===undefined)i.dataset.ph0=i.getAttribute('placeholder')||''; const eng=i.dataset.ph0; i.setAttribute('placeholder', LANG==='en'?eng:(trPhrase(eng.trim())||eng)); });
+}
+function translateAll(){ translateRoot(document.querySelector('.sidebar')); translateRoot($('#crumbs')); translateRoot(document.querySelector('.header')); translateRoot(view); translateRoot($('#modalBox')); }
+function setLang(l){ LANG=l; document.documentElement.lang=l; document.querySelectorAll('#langSwitch button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l)); translateAll(); }
+$('#langSwitch').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setLang(b.dataset.lang);});
+// re-apply translation whenever the view or a modal re-renders
+new MutationObserver(()=>{ if(LANG!=='en') translateAll(); }).observe(document.body,{childList:true,subtree:true});
+
+// boot
+if(!location.hash) location.hash='#/news';
+render();
+</script>
+</body>
+</html>
