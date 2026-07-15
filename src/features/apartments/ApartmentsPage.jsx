@@ -115,7 +115,7 @@ function ApartmentsSkeleton() {
 
 function ApartmentCardSkeleton() {
   return (
-    <div className={cardStyles.card}>
+    <div className={`${cardStyles.card} ${styles['apt-card']}`}>
       <div className={styles.top}>
         <Skeleton w={54} h={54} r={13} />
         <div className={styles.hd} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
