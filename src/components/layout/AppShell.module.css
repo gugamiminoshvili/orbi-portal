@@ -1,0 +1,47 @@
+/* Ported from reference/orbi-portal-redesign.html lines 74, 112, 145-149 (app/main/page) */
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  margin-left: var(--shell-w);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page {
+  padding: 28px;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  animation: fade .35s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Ported from reference lines 676 (.scrim) */
+.scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 20, 45, .4);
+  z-index: 55;
+}
+
+/* Ported from reference line 685 (mobile: --shell-w collapses so .main fills the screen
+   while the sidebar itself keeps a fixed width and slides off-screen via transform)
+   and line 690 (.scrim.show) */
+@media (max-width: 880px) {
+  :root {
+    --shell-w: 0px;
+  }
+  .scrim.show {
+    display: block;
+  }
+}

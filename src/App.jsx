@@ -1,3 +1,5 @@
+import { AppRoutes } from './routes'
+
 export default function App() {
-  return <div>ORBI Portal</div>
+  return <AppRoutes />
 }

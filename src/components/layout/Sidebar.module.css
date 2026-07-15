@@ -1,0 +1,142 @@
+/* Ported from reference/orbi-portal-redesign.html lines 77-109 (sidebar/brand/nav/side-foot) */
+.sidebar {
+  width: var(--shell-w);
+  background: linear-gradient(180deg, var(--sidebar), var(--sidebar-2));
+  color: #cdd0e6;
+  position: fixed;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 60;
+  transition: transform var(--t);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 22px 18px;
+}
+.brand .logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  flex: none;
+  background: linear-gradient(135deg, var(--teal), #28a862);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(26, 138, 78, .4);
+}
+.brand b {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+.brand span {
+  display: block;
+  color: #7c80a8;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.nav {
+  padding: 8px 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+.group {
+  color: #5d6191;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  padding: 18px 12px 8px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 14px;
+  border-radius: 11px;
+  color: #b6b9d8;
+  font-weight: 500;
+  font-size: 13.5px;
+  margin-bottom: 3px;
+  transition: var(--t);
+  cursor: pointer;
+}
+.navItem:hover {
+  background: var(--sidebar-hover);
+  color: #fff;
+}
+.navItem.active {
+  background: var(--sidebar-active);
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--teal);
+}
+.navItem.active .ic {
+  color: var(--teal);
+}
+.navItem[aria-disabled='true'] {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.navItem[aria-disabled='true']:hover {
+  background: transparent;
+  color: #b6b9d8;
+}
+.ic {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  opacity: .9;
+}
+
+.side-foot {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.av {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #2a2a52;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  flex: none;
+}
+.nm {
+  font-size: 12.5px;
+  color: #e6e7f4;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.nm small {
+  display: block;
+  color: #7c80a8;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* Ported from reference lines 684-687 (mobile sidebar slide-in) */
+@media (max-width: 880px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 264px;
+  }
+  .sidebar.open {
+    transform: none;
+  }
+}
