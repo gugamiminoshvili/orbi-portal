@@ -1,0 +1,40 @@
+/* Ported from reference/orbi-portal-redesign.html lines 191-200 */
+.field {
+  position: relative;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 7px;
+}
+.input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--line-2);
+  border-radius: 11px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: #fff;
+  transition: var(--t);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+}
+.search-wrap {
+  position: relative;
+}
+.search-wrap input {
+  padding-left: 42px;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+}

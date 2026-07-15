@@ -1,0 +1,16 @@
+/* Ported from reference/orbi-portal-redesign.html lines 522-523 */
+.empty {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--muted);
+}
+.empty .ei {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}

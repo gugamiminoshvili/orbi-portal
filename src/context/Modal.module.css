@@ -1,0 +1,94 @@
+/* Ported from reference/orbi-portal-redesign.html lines 488-498 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 20, 45, .5);
+  backdrop-filter: blur(3px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t);
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(14px) scale(.98);
+  transition: transform var(--t);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-overlay.open .modal {
+  transform: none;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.modal-head h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.modal-x {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: var(--t);
+}
+.modal-x:hover {
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+  border-color: var(--neg-bg);
+}
+.modal-x:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.modal-body {
+  padding: 22px;
+  overflow-y: auto;
+}
+.modal-foot {
+  padding: 16px 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  background: #fafbfe;
+}
+.modal-foot.split {
+  justify-content: space-between;
+}
+
+/* Ported from reference/orbi-portal-redesign.html lines 355-358 (size variants) */
+.modal.md {
+  max-width: 560px;
+}
+.modal.lg {
+  max-width: 720px;
+}
+.modal.xl {
+  max-width: 940px;
+}

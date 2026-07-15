@@ -1,0 +1,65 @@
+/* Ported from reference/orbi-portal-redesign.html lines 159-172 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: var(--t);
+  white-space: nowrap;
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.btn-primary {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(26, 138, 78, .30);
+}
+.btn-primary:hover {
+  background: var(--teal-600);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: #fff;
+  border-color: var(--line-2);
+  color: var(--ink-2);
+}
+.btn-ghost:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.btn-soft {
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.btn-soft:hover {
+  background: #b6f2ef;
+}
+/* Ported from reference/orbi-portal-redesign.html lines 439-440 */
+.btn-warn {
+  background: var(--warn);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(255, 168, 0, .28);
+}
+.btn-warn:hover {
+  background: #e89800;
+}
+.btn-sm {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 12.5px;
+  border-radius: 9px;
+}
+.btn[disabled] {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
