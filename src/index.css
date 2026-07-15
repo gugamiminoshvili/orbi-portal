@@ -1,0 +1,57 @@
+:root{
+  /* Brand + accent */
+  --teal:#1A8A4E;          /* ORBI brand green (primary accent) */
+  --teal-600:#146F3E;
+  --teal-soft:#DCF3E5;     /* chip / badge background */
+  --teal-ink:#0E6B3B;
+
+  /* Surfaces */
+  --bg:#EEF1F4;
+  --card:#ffffff;
+  --sidebar:#15663B;       /* ORBI dark green shell */
+  --sidebar-2:#0E4A2A;
+  --sidebar-hover:#1C7A48;
+  --sidebar-active:#1A7044;
+
+  /* Text */
+  --ink:#1b1b2c;
+  --ink-2:#3f425a;
+  --muted:#7E8299;
+  --line:#eceef4;
+  --line-2:#e4e7f0;
+
+  /* Semantic (replace meaningless colored stripes) */
+  --pos:#1A8A4E;  --pos-bg:#DCF3E5;  --pos-ink:#0E6B3B;   /* paid / active / positive */
+  --warn:#FFA800; --warn-bg:#FFF4DE; --warn-ink:#b57400;  /* pause / pending / warning */
+  --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
+  --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
+
+  /* Shape + depth */
+  --r:16px;
+  --r-sm:10px;
+  --r-pill:999px;
+  --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
+  --shadow-lg:0 18px 50px rgba(20,24,60,.18);
+  --ring:0 0 0 3px rgba(26,138,78,.28);
+
+  /* Spacing scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px; --s8:40px;
+
+  --shell-w:264px;
+  --header-h:68px;
+  --t:.2s cubic-bezier(.4,0,.2,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
