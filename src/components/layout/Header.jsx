@@ -15,7 +15,7 @@ export default function Header({ crumbs, onBurger }) {
 
   return (
     <header className={styles.header}>
-      <button className={styles.burger} aria-label="Open menu" onClick={onBurger}>
+      <button className={styles.burger} aria-label={t('common:ariaOpenMenu')} onClick={onBurger}>
         ☰
       </button>
       <Breadcrumbs items={crumbs} />
@@ -24,7 +24,7 @@ export default function Header({ crumbs, onBurger }) {
         <Icon name="search" />
         <input type="search" placeholder={t('common:search')} aria-label={t('common:search')} />
       </div>
-      <div className={styles['lang-switch']} role="group" aria-label="Language">
+      <div className={styles['lang-switch']} role="group" aria-label={t('common:ariaLanguage')}>
         {LANGS.map((lang) => (
           <button
             key={lang.code}
@@ -35,11 +35,11 @@ export default function Header({ crumbs, onBurger }) {
           </button>
         ))}
       </div>
-      <button className={styles['icon-btn']} aria-label="Notifications">
+      <button className={styles['icon-btn']} aria-label={t('common:ariaNotifications')}>
         <span className={styles.dot} />
         🔔
       </button>
-      <button className={`${styles['icon-btn']} ${styles['hide-sm']}`} aria-label="Help">
+      <button className={`${styles['icon-btn']} ${styles['hide-sm']}`} aria-label={t('common:ariaHelp')}>
         ?
       </button>
     </header>

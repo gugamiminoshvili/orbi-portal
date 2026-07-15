@@ -1,13 +1,15 @@
 import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import styles from './Header.module.css'
 
 // items: [{ label, to? }] — last item renders bold (current page), earlier
 // items render as links when `to` is given. Ported from the crumbs() renderer
 // at reference/orbi-portal-redesign.html lines 1024-1030.
 export default function Breadcrumbs({ items = [] }) {
+  const { t } = useTranslation()
   return (
-    <nav className={styles.crumbs} aria-label="Breadcrumb">
+    <nav className={styles.crumbs} aria-label={t('common:ariaBreadcrumb')}>
       {items.map((item, i) => {
         const last = i === items.length - 1
         return (

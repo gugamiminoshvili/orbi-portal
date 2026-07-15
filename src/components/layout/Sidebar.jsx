@@ -26,7 +26,7 @@ export default function Sidebar({ open, onNavigate }) {
   return (
     <aside
       className={`${styles.sidebar} ${open ? styles.open : ''}`}
-      aria-label="Main navigation"
+      aria-label={t('common:ariaMainNav')}
     >
       <div className={styles.brand}>
         <div className={styles.logo}>O</div>
