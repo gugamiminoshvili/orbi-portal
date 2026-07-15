@@ -1,0 +1,47 @@
+{
+  "common": {
+    "ownerPortal": "Портал владельца",
+    "main": "Главное",
+    "finance": "Финансы",
+    "account": "Аккаунт",
+    "dashboard": "Панель",
+    "myApartments": "Мои апартаменты",
+    "news": "Новости",
+    "invoices": "Счета",
+    "payments": "Платежи",
+    "reports": "Отчёты",
+    "settings": "Настройки",
+    "support": "Поддержка",
+    "home": "Главная",
+    "search": "Поиск…",
+    "comingSoon": "Скоро появится",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "download": "Скачать",
+    "back": "Назад",
+    "pay": "Оплатить",
+    "continue": "Продолжить"
+  },
+  "news": {
+    "title": "Новости и объявления",
+    "subtitle": "Новости от управления ORBI — платежи, обслуживание и сообщество.",
+    "searchPlaceholder": "Поиск новостей…",
+    "newestFirst": "Сначала новые",
+    "oldestFirst": "Сначала старые",
+    "readMore": "Подробнее",
+    "minRead": "{{count}} мин чтения",
+    "attachments": "Вложения",
+    "related": "Похожие новости",
+    "empty": "Новости не найдены",
+    "cats": {
+      "All": "Все",
+      "Announcement": "Объявление",
+      "Maintenance": "Обслуживание",
+      "Financial": "Финансы",
+      "Community": "Сообщество"
+    }
+  },
+  "apartments": {},
+  "pay": {},
+  "support": {}
+}

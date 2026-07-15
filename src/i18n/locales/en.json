@@ -1,0 +1,47 @@
+{
+  "common": {
+    "ownerPortal": "Owner Portal",
+    "main": "Main",
+    "finance": "Finance",
+    "account": "Account",
+    "dashboard": "Dashboard",
+    "myApartments": "My Apartments",
+    "news": "News",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "reports": "Reports",
+    "settings": "Settings",
+    "support": "Support",
+    "home": "Home",
+    "search": "Search…",
+    "comingSoon": "Coming soon",
+    "cancel": "Cancel",
+    "close": "Close",
+    "download": "Download",
+    "back": "Back",
+    "pay": "Pay",
+    "continue": "Continue"
+  },
+  "news": {
+    "title": "News & Announcements",
+    "subtitle": "Updates from ORBI management — payments, maintenance, and community.",
+    "searchPlaceholder": "Search news…",
+    "newestFirst": "Newest first",
+    "oldestFirst": "Oldest first",
+    "readMore": "Read more",
+    "minRead": "{{count}} min read",
+    "attachments": "Attachments",
+    "related": "Related news",
+    "empty": "No news found",
+    "cats": {
+      "All": "All",
+      "Announcement": "Announcement",
+      "Maintenance": "Maintenance",
+      "Financial": "Financial",
+      "Community": "Community"
+    }
+  },
+  "apartments": {},
+  "pay": {},
+  "support": {}
+}

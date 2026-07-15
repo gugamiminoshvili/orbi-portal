@@ -1,0 +1,47 @@
+{
+  "common": {
+    "ownerPortal": "მფლობელის პორტალი",
+    "main": "მთავარი",
+    "finance": "ფინანსები",
+    "account": "ანგარიში",
+    "dashboard": "მთავარი",
+    "myApartments": "ჩემი აპარტამენტები",
+    "news": "სიახლეები",
+    "invoices": "ინვოისები",
+    "payments": "გადახდები",
+    "reports": "რეპორტები",
+    "settings": "პარამეტრები",
+    "support": "მხარდაჭერა",
+    "home": "მთავარი",
+    "search": "ძებნა…",
+    "comingSoon": "მალე დაემატება",
+    "cancel": "გაუქმება",
+    "close": "დახურვა",
+    "download": "ჩამოტვირთვა",
+    "back": "უკან",
+    "pay": "გადახდა",
+    "continue": "გაგრძელება"
+  },
+  "news": {
+    "title": "სიახლეები და განცხადებები",
+    "subtitle": "სიახლეები ORBI-ს მენეჯმენტისგან — გადახდები, მომსახურება და საზოგადოება.",
+    "searchPlaceholder": "სიახლეების ძებნა…",
+    "newestFirst": "ჯერ უახლესი",
+    "oldestFirst": "ჯერ ძველი",
+    "readMore": "ვრცლად",
+    "minRead": "{{count}} წთ კითხვა",
+    "attachments": "დანართები",
+    "related": "მსგავსი სიახლეები",
+    "empty": "სიახლეები ვერ მოიძებნა",
+    "cats": {
+      "All": "ყველა",
+      "Announcement": "განცხადება",
+      "Maintenance": "მომსახურება",
+      "Financial": "ფინანსური",
+      "Community": "საზოგადოება"
+    }
+  },
+  "apartments": {},
+  "pay": {},
+  "support": {}
+}
