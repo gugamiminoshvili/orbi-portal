@@ -1,0 +1,213 @@
+/* Ported from reference/orbi-portal-redesign.html lines 145-149 (page-head),
+   270-305 (proj-group / apt-grid / apt-card / apt-summary) */
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.page-head h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  letter-spacing: -.3px;
+}
+.page-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.role-seg {
+  margin-bottom: 22px;
+}
+
+/* ---------- Apartments ---------- */
+.proj-group {
+  margin-bottom: 30px;
+}
+.proj-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.proj-head .pj-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex: none;
+}
+.proj-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -.2px;
+}
+.proj-head .count {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  padding: 3px 11px;
+}
+.apt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+@media (max-width: 980px) {
+  .apt-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .apt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.apt-card {
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(228, 231, 240, .7);
+  text-decoration: none;
+  transition: transform var(--t), box-shadow var(--t), border-color var(--t);
+}
+.apt-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--teal);
+}
+.apt-card:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.apt-card .top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 18px 14px;
+}
+.apt-card .bicon {
+  width: 54px;
+  height: 54px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex: none;
+  box-shadow: 0 6px 14px rgba(20, 24, 60, .12);
+}
+.apt-card .hd {
+  flex: 1;
+  min-width: 0;
+}
+.apt-card .code {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.2px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+.apt-card .role {
+  margin-top: 7px;
+}
+.apt-card .metarow {
+  display: flex;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.apt-card .metarow .m {
+  flex: 1;
+  padding: 12px 18px;
+}
+.apt-card .metarow .m + .m {
+  border-left: 1px solid var(--line);
+}
+.apt-card .metarow .k {
+  font-size: 10.5px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.apt-card .metarow .v {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.apt-card .hint {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 13px 18px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  transition: color var(--t);
+}
+.apt-card .hint .arr {
+  display: inline-flex;
+  transition: transform var(--t);
+}
+.apt-card:hover .hint {
+  color: var(--teal-ink);
+}
+.apt-card:hover .hint .arr {
+  transform: translateX(4px);
+}
+
+/* Summary strip */
+.apt-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  align-items: center;
+  padding: 20px 24px;
+  margin-bottom: 26px;
+}
+.apt-summary .item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.apt-summary .item .si {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.apt-summary .item .lab {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.apt-summary .item .num {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.apt-summary .divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line-2);
+}

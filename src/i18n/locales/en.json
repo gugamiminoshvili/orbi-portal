@@ -70,7 +70,26 @@
       "Community": "Community"
     }
   },
-  "apartments": {},
+  "apartments": {
+    "title": "My Apartments",
+    "subtitle": "View your units, services and documents in one place.",
+    "filterAria": "Filter by ownership role",
+    "roles": {
+      "All": "All",
+      "Owner": "Owner",
+      "Trusted": "Trusted"
+    },
+    "block": "Block",
+    "number": "Number",
+    "floor": "Floor",
+    "viewDetails": "View details",
+    "unit_one": "{{count}} unit",
+    "unit_other": "{{count}} units",
+    "emptyTitle": "You have no apartments yet",
+    "emptyHint": "Once a unit is linked to your account it will appear here.",
+    "emptyRoleTitle": "No apartments with this role",
+    "emptyRoleHint": "Try a different role filter."
+  },
   "pay": {},
   "support": {}
 }

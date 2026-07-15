@@ -2,8 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import NewsListPage from './features/news/NewsListPage'
 import NewsDetailPage from './features/news/NewsDetailPage'
+import ApartmentsPage from './features/apartments/ApartmentsPage'
 import {
-  ApartmentsPage,
   ApartmentDetailPage,
   PayPage,
   SupportPage,

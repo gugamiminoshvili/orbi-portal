@@ -3,14 +3,6 @@
 // (News was replaced by src/features/news/* in Task 10.)
 import { Outlet, useParams } from 'react-router-dom'
 
-export function ApartmentsPage() {
-  return (
-    <div className="page">
-      <h1>My Apartments</h1>
-    </div>
-  )
-}
-
 export function ApartmentDetailPage() {
   const { id } = useParams()
   return (

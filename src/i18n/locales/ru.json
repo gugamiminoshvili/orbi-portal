@@ -70,7 +70,28 @@
       "Community": "Сообщество"
     }
   },
-  "apartments": {},
+  "apartments": {
+    "title": "Мои апартаменты",
+    "subtitle": "Просматривайте свои объекты, услуги и документы в одном месте.",
+    "filterAria": "Фильтр по роли владения",
+    "roles": {
+      "All": "Все",
+      "Owner": "Владелец",
+      "Trusted": "Доверенный"
+    },
+    "block": "Блок",
+    "number": "Номер",
+    "floor": "Этаж",
+    "viewDetails": "Подробнее",
+    "unit_one": "{{count}} об.",
+    "unit_few": "{{count}} об.",
+    "unit_many": "{{count}} об.",
+    "unit_other": "{{count}} об.",
+    "emptyTitle": "У вас пока нет апартаментов",
+    "emptyHint": "Как только объект будет привязан, он появится здесь.",
+    "emptyRoleTitle": "Нет апартаментов с этой ролью",
+    "emptyRoleHint": "Попробуйте другой фильтр роли."
+  },
   "pay": {},
   "support": {}
 }
