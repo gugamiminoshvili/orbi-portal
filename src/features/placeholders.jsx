@@ -1,23 +1,7 @@
 // Placeholder pages for routes not yet implemented.
-// Tasks 10-15 replace these with the real feature pages one at a time.
+// Tasks 11-15 replace these with the real feature pages one at a time.
+// (News was replaced by src/features/news/* in Task 10.)
 import { Outlet, useParams } from 'react-router-dom'
-
-export function NewsListPage() {
-  return (
-    <div className="page">
-      <h1>News</h1>
-    </div>
-  )
-}
-
-export function NewsDetailPage() {
-  const { id } = useParams()
-  return (
-    <div className="page">
-      <h1>News {id}</h1>
-    </div>
-  )
-}
 
 export function ApartmentsPage() {
   return (

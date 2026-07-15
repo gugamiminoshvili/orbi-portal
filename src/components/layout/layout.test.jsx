@@ -38,7 +38,7 @@ test('sidebar footer shows fixed 5 units, not the prototype 3-unit bug', () => {
 
 test('root redirects to /news and unknown paths redirect to /news', () => {
   renderApp(['/'])
-  expect(screen.getByRole('heading', { name: 'News' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'News & Announcements' })).toBeInTheDocument()
 })
 
 test('breadcrumbs render a separator and bold the last (current) item', () => {
