@@ -27,7 +27,9 @@ test('renders info grid without duplicated block and toggles accordion', async (
 
 test('internet card shows active plan', async () => {
   renderApp(['/apartments/A1'])
-  expect(await screen.findByText(/Package 2/)).toBeInTheDocument()
+  // plan name appears twice by design: header sub + provider line (ref 1406/1420)
+  expect((await screen.findAllByText(/Package 2/)).length).toBeGreaterThanOrEqual(2)
+  expect(screen.getByText('Magti · Package 2 (75 Mbps)')).toBeInTheDocument()
   // days left ring + the "40 days left" billing-cycle value
   expect(screen.getByRole('img', { name: '40 days left of 60' })).toBeInTheDocument()
   expect(screen.getByText('40 days left')).toBeInTheDocument()

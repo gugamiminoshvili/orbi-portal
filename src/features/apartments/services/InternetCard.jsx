@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useToast } from '../../../context/ToastContext'
 import { resumeInternet } from '../../../api/endpoints/apartments'
 import { planById } from '../../../api/mock/plans'
@@ -68,7 +68,11 @@ export default function InternetCard({ apt, onReload }) {
           <div>
             <h4>{t('apartments:servicePausedTitle')}</h4>
             <p>
-              {t('apartments:servicePausedBody', { plan: pl ? pl.name : '', fee: fmt(s.tariff) })}
+              <Trans
+                i18nKey="apartments:servicePausedBody"
+                values={{ plan: pl ? pl.name : '', fee: fmt(s.tariff) }}
+                components={{ b: <b /> }}
+              />
             </p>
           </div>
         </div>
@@ -90,6 +94,13 @@ export default function InternetCard({ apt, onReload }) {
             <div className={styles.k}>{t('apartments:serviceStatus')}</div>
             <div className={styles.v}>
               <Badge tone="pos" dot>{t('apartments:active')}</Badge>
+            </div>
+            <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>
+              {t('apartments:providerPlanLine', {
+                provider: s.provider,
+                plan: pl ? pl.name : '',
+                mbps: pl ? pl.mbps : '',
+              })}
             </div>
           </div>
           <div className={styles.cell}>

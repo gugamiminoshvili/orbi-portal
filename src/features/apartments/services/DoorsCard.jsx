@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '../../../context/ToastContext'
 import Icon from '../../../components/ui/Icon'
 import buttonStyles from '../../../components/ui/Button.module.css'
+import cardStyles from '../../../components/ui/Card.module.css'
 import styles from '../Detail.module.css'
 
 // Ported from svcDoors() at reference/orbi-portal-redesign.html lines 1424-1433.
@@ -12,7 +13,7 @@ export default function DoorsCard({ apt }) {
   const toast = useToast()
 
   return (
-    <article className={styles.svc}>
+    <article className={`${cardStyles.card} ${styles.svc}`}>
       <button
         type="button"
         className={styles['svc-head']}

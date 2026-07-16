@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import Icon from '../../../components/ui/Icon'
+import cardStyles from '../../../components/ui/Card.module.css'
 import styles from '../Detail.module.css'
 
 // Accordion shell shared by the Maintenance / Water / Electricity / Internet
@@ -11,7 +12,7 @@ export default function ServiceShell({ id, icon, iconBg, iconColor, name, sub, r
   const bodyId = useId()
 
   return (
-    <article id={id} className={`${styles.svc} ${open ? styles.open : ''}`}>
+    <article id={id} className={`${cardStyles.card} ${styles.svc} ${open ? styles.open : ''}`}>
       <button
         type="button"
         className={styles['svc-head']}
