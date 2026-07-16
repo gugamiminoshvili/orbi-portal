@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useToast } from '../../../context/ToastContext'
+import { useModal } from '../../../context/ModalContext'
 import { fmt } from '../../../utils/format'
 import Icon from '../../../components/ui/Icon'
 import Button from '../../../components/ui/Button'
 import buttonStyles from '../../../components/ui/Button.module.css'
 import Badge from '../../../components/ui/Badge'
 import ServiceShell, { Metric } from './ServiceShell'
+import ElectricityReportModal from '../modals/ElectricityReportModal'
 import styles from '../Detail.module.css'
 
 const STATUS_TONE = { Active: 'pos', Suspended: 'warn' }
@@ -15,7 +16,7 @@ const STATUS_KEY = { Active: 'active', Suspended: 'suspended', Inactive: 'inacti
 // Ported from svcElectricity() at reference/orbi-portal-redesign.html lines 1375-1386.
 export default function ElectricityCard({ apt }) {
   const { t } = useTranslation()
-  const toast = useToast()
+  const { openModal } = useModal()
   const s = apt.services.electricity
   const neg = s.balance < 0
   const tone = STATUS_TONE[s.status] || 'muted'
@@ -55,7 +56,11 @@ export default function ElectricityCard({ apt }) {
         </div>
       </div>
       <div className={styles['svc-cta']}>
-        <Button variant="ghost" size="sm" onClick={() => toast(t('apartments:electricityReportsToast'))}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => openModal(<ElectricityReportModal apartment={apt} />, { size: 'md' })}
+        >
           <Icon name="doc" /> {t('apartments:electricityReports')}
         </Button>
         {neg && (

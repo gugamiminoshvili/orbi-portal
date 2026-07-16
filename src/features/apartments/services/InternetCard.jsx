@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { useToast } from '../../../context/ToastContext'
+import { useModal } from '../../../context/ModalContext'
 import { resumeInternet } from '../../../api/endpoints/apartments'
 import { planById } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
@@ -11,6 +12,9 @@ import Badge from '../../../components/ui/Badge'
 import EmptyState from '../../../components/ui/EmptyState'
 import ProgressRing from '../../../components/ui/ProgressRing'
 import ServiceShell, { Metric } from './ServiceShell'
+import ChangePackageModal from '../modals/ChangePackageModal'
+import BoostModal from '../modals/BoostModal'
+import PauseModal from '../modals/PauseModal'
 import styles from '../Detail.module.css'
 
 // Ported from svcInternet() at reference/orbi-portal-redesign.html lines 1395-1422.
@@ -20,6 +24,7 @@ import styles from '../Detail.module.css'
 export default function InternetCard({ apt, onReload }) {
   const { t } = useTranslation()
   const toast = useToast()
+  const { openModal } = useModal()
   const s = apt.services.internet
   const neg = s.balance < 0
   const active = s.status === 'Active'
@@ -48,12 +53,22 @@ export default function InternetCard({ apt, onReload }) {
     toast(t('apartments:resumedToast'))
   }
 
+  function openChangePackage() {
+    openModal(<ChangePackageModal apartment={apt} onDone={onReload} />, { size: 'xl' })
+  }
+  function openBoost() {
+    openModal(<BoostModal apartment={apt} onDone={onReload} />, { size: 'md' })
+  }
+  function openPause() {
+    openModal(<PauseModal apartment={apt} onDone={onReload} />, { size: 'md' })
+  }
+
   let body
   if (!s.planId) {
     body = (
       <EmptyState icon="tv" title={t('apartments:noActiveSubscriptionTitle')}>
         <p>{t('apartments:noActiveSubscriptionBody')}</p>
-        <Button size="sm" onClick={() => toast(t('apartments:changePackageToast'))}>
+        <Button size="sm" onClick={openChangePackage}>
           {t('apartments:choosePackage')}
         </Button>
       </EmptyState>
@@ -142,17 +157,17 @@ export default function InternetCard({ apt, onReload }) {
         )}
 
         <div className={styles['sub-actions']}>
-          <Button size="sm" onClick={() => toast(t('apartments:changePackageToast'))}>
+          <Button size="sm" onClick={openChangePackage}>
             <Icon name="swap" /> {t('apartments:changePackage')}
           </Button>
-          <Button variant="soft" size="sm" onClick={() => toast(t('apartments:boostToast'))}>
+          <Button variant="soft" size="sm" onClick={openBoost}>
             <Icon name="rocket" /> {t('apartments:boost')}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             style={{ color: 'var(--warn-ink)', borderColor: '#ffe1a8' }}
-            onClick={() => toast(t('apartments:pauseToast'))}
+            onClick={openPause}
           >
             <Icon name="pause" /> {t('apartments:pause')}
           </Button>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
+import { useModal } from '../../context/ModalContext'
 import { getApartment } from '../../api/endpoints/apartments'
 import { blockGrad, ROLE_STYLE } from '../../api/mock/apartments'
 import { qrSvg } from '../../utils/placeholder'
@@ -19,6 +20,7 @@ import WaterCard from './services/WaterCard'
 import ElectricityCard from './services/ElectricityCard'
 import InternetCard from './services/InternetCard'
 import DoorsCard from './services/DoorsCard'
+import QrModal from './modals/QrModal'
 import styles from './Detail.module.css'
 
 // Mirrors the `aptDetail` route (reference/orbi-portal-redesign.html lines
@@ -29,6 +31,7 @@ export default function ApartmentDetailPage() {
   const { t } = useTranslation()
   const toast = useToast()
 
+  const { openModal } = useModal()
   const { data: apt, loading, reload } = useAsync(() => getApartment(id), [id])
 
   // getApartment() resolves undefined for unknown ids — treat that as
@@ -143,14 +146,19 @@ export default function ApartmentDetailPage() {
               role="button"
               tabIndex={0}
               aria-label={t('apartments:enlargeQrAria')}
-              onClick={() => toast(t('apartments:qrToast'))}
+              onClick={() => openModal(<QrModal apartment={apt} />, { size: 'md' })}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') toast(t('apartments:qrToast'))
+                if (e.key === 'Enter') openModal(<QrModal apartment={apt} />, { size: 'md' })
               }}
               dangerouslySetInnerHTML={{ __html: qrSvg(apt.apCode) }}
             />
             <div className={styles.ql}>{t('apartments:qrLabel')}</div>
-            <Button variant="ghost" size="sm" style={{ marginTop: 8, width: '100%' }} onClick={() => toast(t('apartments:qrToast'))}>
+            <Button
+              variant="ghost"
+              size="sm"
+              style={{ marginTop: 8, width: '100%' }}
+              onClick={() => openModal(<QrModal apartment={apt} />, { size: 'md' })}
+            >
               <Icon name="expand" /> {t('apartments:show')}
             </Button>
           </div>

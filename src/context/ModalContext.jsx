@@ -18,8 +18,13 @@ export function ModalProvider({ children }) {
   const overlayRef = useRef(null)
   const boxRef = useRef(null)
   const lastFocusedRef = useRef(null)
+  // Mirrors `modalLocked` at reference/orbi-portal-redesign.html line 353 — while
+  // locked, neither ESC nor overlay mousedown nor an explicit closeModal() call
+  // can dismiss the modal (used by ElectricityReportModal's "generating" step).
+  const lockedRef = useRef(false)
 
   const closeModal = useCallback(() => {
+    if (lockedRef.current) return
     setModal(null)
     const toFocus = lastFocusedRef.current
     if (toFocus && typeof toFocus.focus === 'function') toFocus.focus()
@@ -27,8 +32,13 @@ export function ModalProvider({ children }) {
   }, [])
 
   const openModal = useCallback((node, { size = '' } = {}) => {
+    lockedRef.current = false
     lastFocusedRef.current = document.activeElement
     setModal({ node, size })
+  }, [])
+
+  const setModalLocked = useCallback((value) => {
+    lockedRef.current = value
   }, [])
 
   // Body scroll lock while a modal is open.
@@ -90,7 +100,7 @@ export function ModalProvider({ children }) {
   }, [closeModal])
 
   return (
-    <ModalContext.Provider value={{ openModal, closeModal }}>
+    <ModalContext.Provider value={{ openModal, closeModal, setModalLocked }}>
       {children}
       {modal && createPortal(
         <div

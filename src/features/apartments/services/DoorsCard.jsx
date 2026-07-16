@@ -1,23 +1,24 @@
 import { useTranslation } from 'react-i18next'
-import { useToast } from '../../../context/ToastContext'
+import { useModal } from '../../../context/ModalContext'
 import Icon from '../../../components/ui/Icon'
 import buttonStyles from '../../../components/ui/Button.module.css'
 import cardStyles from '../../../components/ui/Card.module.css'
+import DoorsCalendarModal from '../modals/DoorsCalendarModal'
 import styles from '../Detail.module.css'
 
 // Ported from svcDoors() at reference/orbi-portal-redesign.html lines 1424-1433.
-// Unlike the other cards this row does not expand — it opens a calendar
-// (stubbed with a toast until Task 13 builds the real modal).
+// Unlike the other cards this row does not expand — it opens the doors
+// history calendar modal.
 export default function DoorsCard({ apt }) {
   const { t } = useTranslation()
-  const toast = useToast()
+  const { openModal } = useModal()
 
   return (
     <article className={`${cardStyles.card} ${styles.svc}`}>
       <button
         type="button"
         className={styles['svc-head']}
-        onClick={() => toast(t('apartments:openCalendarToast', { code: apt.code }))}
+        onClick={() => openModal(<DoorsCalendarModal apartment={apt} />, { size: 'lg' })}
       >
         <div className={styles['svc-ic']} style={{ background: '#eef0f6', color: 'var(--ink-2)' }}>
           <Icon name="door" />

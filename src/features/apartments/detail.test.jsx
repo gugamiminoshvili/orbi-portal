@@ -2,13 +2,16 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import '../../i18n'
 import { ToastProvider } from '../../context/ToastContext'
+import { ModalProvider } from '../../context/ModalContext'
 import { AppRoutes } from '../../routes'
 
 function renderApp(initialEntries) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <ToastProvider>
-        <AppRoutes />
+        <ModalProvider>
+          <AppRoutes />
+        </ModalProvider>
       </ToastProvider>
     </MemoryRouter>
   )

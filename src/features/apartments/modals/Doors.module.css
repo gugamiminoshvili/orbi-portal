@@ -1,0 +1,127 @@
+/* Ported from reference/orbi-portal-redesign.html lines 365-381 (.cal-*) */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.nav .mlabel {
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 130px;
+  text-align: center;
+}
+.nav button {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.nav button:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.dateRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.dateRow > * {
+  flex: 1;
+  min-width: 140px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.grid.months {
+  grid-template-columns: repeat(4, 1fr);
+}
+.dow {
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  padding-bottom: 4px;
+}
+.day {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+}
+.day.month {
+  aspect-ratio: auto;
+  cursor: pointer;
+}
+.day.empty {
+  border: none;
+  background: transparent;
+}
+.day .dnum {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.day .cnt {
+  font-size: 11px;
+  font-weight: 700;
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.day .cnt.zero {
+  background: #eef0f6;
+  color: var(--muted);
+}
+.day.hi {
+  border-color: var(--teal);
+  background: #f6fefe;
+}
+.summary {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.summary b {
+  color: var(--ink);
+}
+.yearRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 6px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.yearRow:last-child {
+  border-bottom: none;
+}
+.yearRow b {
+  font-weight: 700;
+}

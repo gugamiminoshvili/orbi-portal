@@ -126,6 +126,37 @@ test('modal traps focus with Tab cycling and restores focus to the opener on clo
   expect(document.activeElement).toBe(opener)
 })
 
+test('setModalLocked blocks ESC and overlay close until unlocked', async () => {
+  function LockedBody() {
+    const { setModalLocked } = useModal()
+    return (
+      <div>
+        locked body
+        <button onClick={() => setModalLocked(true)}>lock</button>
+        <button onClick={() => setModalLocked(false)}>unlock</button>
+      </div>
+    )
+  }
+  function Demo() {
+    const { openModal } = useModal()
+    return <button onClick={() => openModal(<LockedBody />)}>open</button>
+  }
+  render(<ModalProvider><Demo /></ModalProvider>)
+  fireEvent.click(screen.getByText('open'))
+  expect(await screen.findByText(/locked body/)).toBeInTheDocument()
+  fireEvent.click(screen.getByText('lock'))
+
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(screen.getByText(/locked body/)).toBeInTheDocument()
+
+  fireEvent.mouseDown(screen.getByTestId('modal-overlay'))
+  expect(screen.getByText(/locked body/)).toBeInTheDocument()
+
+  fireEvent.click(screen.getByText('unlock'))
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(screen.queryByText(/locked body/)).not.toBeInTheDocument()
+})
+
 test('openModal size option maps to the correct modal class', async () => {
   function Demo() {
     const { openModal } = useModal()
