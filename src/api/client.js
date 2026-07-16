@@ -1,6 +1,9 @@
 // Shared API client: env-driven mock switch, artificial latency, and a thin
 // fetch wrapper for the real API (routes arrive with the API spec).
 
+import { tokenStore } from './tokenStore'
+import { ApiError, parseEnvelope } from './errors'
+
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
 
 function defaultMs() {
@@ -11,11 +14,77 @@ export function delay(ms = defaultMs()) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function http(path, opts = {}) {
-  const base = import.meta.env.VITE_API_BASE || ''
-  const res = await fetch(`${base}${path}`, opts)
-  if (!res.ok) {
-    throw new Error(`API request failed: ${opts.method || 'GET'} ${path} (${res.status})`)
+function apiBase() {
+  return import.meta.env.VITE_API_BASE || ''
+}
+
+// Single-flight refresh: concurrent 401s share one in-flight refresh call so
+// the backend only ever sees one POST /mobileApi/refresh/ per expiry.
+let refreshPromise = null
+
+async function doRefresh() {
+  const refresh = tokenStore.getRefresh()
+  if (!refresh) {
+    throw new Error('no refresh token')
   }
-  return res.json()
+  // Raw fetch, deliberately not routed through http() — the refresh call
+  // must never itself trigger the 401 handler and recurse.
+  const res = await fetch(`${apiBase()}/mobileApi/refresh/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh }),
+  })
+  if (!res.ok) {
+    throw new Error('refresh failed')
+  }
+  const data = await res.json()
+  if (!data || !data.access) {
+    throw new Error('refresh failed')
+  }
+  tokenStore.setTokens({ access: data.access, refresh: data.refresh })
+  return data
+}
+
+function refreshOnce() {
+  if (!refreshPromise) {
+    refreshPromise = doRefresh().finally(() => {
+      refreshPromise = null
+    })
+  }
+  return refreshPromise
+}
+
+export async function http(path, opts = {}) {
+  const { blob, _isRetry, ...rest } = opts
+  const headers = { ...rest.headers }
+  const access = tokenStore.getAccess()
+  if (access) {
+    headers.Authorization = `Bearer ${access}`
+  }
+  if (rest.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const res = await fetch(`${apiBase()}${path}`, { ...rest, headers })
+
+  if (res.status === 401 && !_isRetry) {
+    try {
+      await refreshOnce()
+    } catch {
+      tokenStore.clear()
+      throw new ApiError(-1, 'session expired', 'SESSION_EXPIRED')
+    }
+    return http(path, { ...opts, _isRetry: true })
+  }
+
+  if (!res.ok) {
+    throw new Error(`API request failed: ${rest.method || 'GET'} ${path} (${res.status})`)
+  }
+
+  if (blob) {
+    return res.blob()
+  }
+
+  const json = await res.json()
+  return parseEnvelope(json)
 }
