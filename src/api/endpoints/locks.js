@@ -28,8 +28,10 @@ export async function getLockHistory(apartmentId, startDate, endDate) {
 // Real-mode-only: downloads the PDF electricity statement as a Blob (via
 // http()'s existing `blob:true` passthrough). Mock branch resolves `null` —
 // ElectricityReportModal's mock path never calls this, it keeps its
-// existing fake-generate-then-toast flow.
-export async function downloadElectricityReport(flatId) {
+// existing fake-generate-then-toast flow. `startDate`/`endDate` map to
+// /mobileApi/finance/'s optional query params of the same names (docs/
+// api-reference.md) and are omitted when not provided.
+export async function downloadElectricityReport(flatId, { startDate, endDate } = {}) {
   if (USE_MOCK) {
     await delay()
     return null
@@ -39,5 +41,7 @@ export async function downloadElectricityReport(flatId) {
     accountType: 'electricity',
     response_format: 'pdf',
   })
+  if (startDate) params.set('startDate', startDate)
+  if (endDate) params.set('endDate', endDate)
   return http(`/mobileApi/finance/?${params.toString()}`, { blob: true })
 }

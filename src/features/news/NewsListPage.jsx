@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
@@ -15,6 +16,7 @@ import styles from './News.module.css'
 // GET /mobileApi/news/'s DRF pagination (docs/api-reference.md) is a fixed
 // page size of 10 — distinct from the mock's client-side PER_PAGE (9).
 const SERVER_PER_PAGE = 10
+const SEARCH_DEBOUNCE_MS = 300
 
 export default function NewsListPage() {
   const { t } = useTranslation()
@@ -59,6 +61,19 @@ function MockNewsList() {
 function RealNewsList() {
   const { t } = useTranslation()
   const { q, page, setQ, setPage } = useNewsQueryState()
+
+  // Debounced search: the input updates local state on every keystroke, but
+  // the URL query param (and therefore the GET /mobileApi/news/?search=
+  // request) only updates SEARCH_DEBOUNCE_MS after the user stops typing —
+  // one server call per pause instead of one per keypress.
+  const [draft, setDraft] = useState(q)
+  useEffect(() => {
+    if (draft === q) return undefined
+    const timer = setTimeout(() => setQ(draft), SEARCH_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft])
+
   const { data, loading } = useAsync(() => listNews({ page, search: q }), [page, q])
   const pageItems = data?.items || []
   const pages = data ? Math.max(1, Math.ceil(data.count / SERVER_PER_PAGE)) : 1
@@ -70,8 +85,8 @@ function RealNewsList() {
           className={styles['search-box']}
           placeholder={t('news:searchPlaceholder')}
           aria-label={t('news:searchPlaceholder')}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
         />
       </div>
       <NewsResults loading={loading} pageItems={pageItems} page={page} pages={pages} setPage={setPage} />

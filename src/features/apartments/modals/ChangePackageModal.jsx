@@ -1,15 +1,47 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
-import { changePackage } from '../../../api/endpoints/apartments'
-import { PLANS, planById } from '../../../api/mock/plans'
+import { USE_MOCK } from '../../../api/client'
+import { changePackage, getAgreement, getTariffs } from '../../../api/endpoints/apartments'
+import { PLANS } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
 import Button from '../../../components/ui/Button'
 import Icon from '../../../components/ui/Icon'
 import { Chip } from '../../../components/ui/Badge'
+import Skeleton from '../../../components/ui/Skeleton'
 import modalStyles from '../../../context/Modal.module.css'
 import styles from './Plans.module.css'
+
+// Real-mode data source: the plan catalog comes from GET /internettv/tariff/
+// (getTariffs) and the current plan id from GET /internettv/?flat=
+// (getAgreement) — the real-mode apartment shape carries no planId of its
+// own (/properties/ doesn't supply one; see adaptServicesFromProperty).
+// Mock mode keeps the static PLANS import and the apartment's own
+// services.internet.planId, exactly as before.
+function usePlanCatalog(apartment) {
+  const [state, setState] = useState(() =>
+    USE_MOCK
+      ? { loading: false, plans: PLANS, currentPlanId: apartment.services.internet.planId }
+      : { loading: true, plans: [], currentPlanId: null }
+  )
+
+  useEffect(() => {
+    if (USE_MOCK) return undefined
+    let cancelled = false
+    Promise.all([getTariffs(), getAgreement(apartment.objectId ?? apartment.id)]).then(
+      ([tariffs, agreement]) => {
+        if (cancelled) return
+        setState({ loading: false, plans: tariffs.plans, currentPlanId: agreement.planId })
+      }
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [apartment])
+
+  return state
+}
 
 // Ported from openChangePkg()/pkgHtml()/applyPkg() at reference/orbi-portal-redesign.html
 // lines 1683-1727 — plan grid -> confirm (with price/speed diff rows) -> changePackage().
@@ -17,10 +49,14 @@ export default function ChangePackageModal({ apartment, onDone }) {
   const { t } = useTranslation()
   const { closeModal } = useModal()
   const toast = useToast()
-  const currentPlanId = apartment.services.internet.planId
+  const { loading, plans, currentPlanId } = usePlanCatalog(apartment)
   const [step, setStep] = useState('grid') // 'grid' | 'confirm'
   const [selected, setSelected] = useState(null)
   const [saving, setSaving] = useState(false)
+
+  // Shadows mock/plans.js's planById on purpose — lookups must run against
+  // whichever catalog (mock PLANS or real tariffs) this modal is showing.
+  const planById = (id) => plans.find((p) => p.id === id)
 
   async function handleConfirm() {
     setSaving(true)
@@ -118,8 +154,15 @@ export default function ChangePackageModal({ apartment, onDone }) {
         <p style={{ color: 'var(--muted)', fontSize: 13, margin: '0 0 16px' }}>
           <Trans i18nKey="apartments:choosePlanIntro" values={{ code: apartment.code }} components={{ b: <b style={{ color: 'var(--ink)' }} /> }} />
         </p>
+        {loading ? (
+          <div className={styles.grid}>
+            {Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} h={220} r={14} />
+            ))}
+          </div>
+        ) : (
         <div className={styles.grid}>
-          {PLANS.map((p) => {
+          {plans.map((p) => {
             const isCurrent = p.id === currentPlanId
             return (
               <div key={p.id} data-testid={`plan-card-${p.id}`} className={`${styles.plan} ${isCurrent ? styles.current : ''}`}>
@@ -163,6 +206,7 @@ export default function ChangePackageModal({ apartment, onDone }) {
             )
           })}
         </div>
+        )}
       </div>
       <div className={modalStyles['modal-foot']}>
         <Button variant="ghost" onClick={closeModal}>{t('common:cancel')}</Button>

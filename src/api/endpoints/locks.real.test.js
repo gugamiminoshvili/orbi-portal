@@ -46,4 +46,15 @@ describe('downloadElectricityReport (real branch)', () => {
     )
     expect(result).toBe(fakeBlob)
   })
+
+  test('passes startDate/endDate query params when a date range is provided', async () => {
+    http.mockResolvedValueOnce({ size: 1, type: 'application/pdf' })
+
+    await downloadElectricityReport(3026, { startDate: '2026-05-01', endDate: '2026-06-01' })
+
+    expect(http).toHaveBeenCalledWith(
+      '/mobileApi/finance/?flatId=3026&accountType=electricity&response_format=pdf&startDate=2026-05-01&endDate=2026-06-01',
+      { blob: true }
+    )
+  })
 })

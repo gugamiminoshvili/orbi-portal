@@ -1,14 +1,40 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
-import { activateBoost } from '../../../api/endpoints/apartments'
+import { USE_MOCK } from '../../../api/client'
+import { activateBoost, getTariffs } from '../../../api/endpoints/apartments'
 import { BOOSTS } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
 import Button from '../../../components/ui/Button'
 import Icon from '../../../components/ui/Icon'
 import EmptyState from '../../../components/ui/EmptyState'
+import Skeleton from '../../../components/ui/Skeleton'
 import modalStyles from '../../../context/Modal.module.css'
+
+// Real-mode data source: the boost catalog comes from GET /internettv/tariff/
+// (getTariffs) — offering the static mock BOOSTS ids to a real backend would
+// POST ids the API has never heard of. Mock mode keeps the static BOOSTS
+// import exactly as before.
+function useBoostCatalog() {
+  const [state, setState] = useState(() =>
+    USE_MOCK ? { loading: false, boosts: BOOSTS } : { loading: true, boosts: [] }
+  )
+
+  useEffect(() => {
+    if (USE_MOCK) return undefined
+    let cancelled = false
+    getTariffs().then((tariffs) => {
+      if (cancelled) return
+      setState({ loading: false, boosts: tariffs.boosts })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return state
+}
 
 // Ported from openBoost()/boostHtml()/applyBoost() at
 // reference/orbi-portal-redesign.html lines 1730-1754 — select boost -> confirm -> activateBoost().
@@ -17,11 +43,12 @@ export default function BoostModal({ apartment, onDone }) {
   const { closeModal } = useModal()
   const toast = useToast()
   const active = apartment.services.internet.boost
+  const { loading, boosts } = useBoostCatalog()
   const [selected, setSelected] = useState(null)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const selectedBoost = BOOSTS.find((b) => b.id === selected)
+  const selectedBoost = boosts.find((b) => b.id === selected)
 
   async function handleActivate() {
     setSaving(true)
@@ -105,7 +132,13 @@ export default function BoostModal({ apartment, onDone }) {
         <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--muted)', margin: '18px 0 10px' }}>
           {t('apartments:availableBoostsLabel')}
         </div>
-        {BOOSTS.map((b) => {
+        {loading && (
+          <>
+            <Skeleton h={72} r={12} style={{ marginBottom: 10 }} />
+            <Skeleton h={72} r={12} style={{ marginBottom: 10 }} />
+          </>
+        )}
+        {!loading && boosts.map((b) => {
           const sel = selected === b.id
           return (
             <button

@@ -23,6 +23,8 @@ export default function ElectricityReportModal({ apartment }) {
 
   const [step, setStep] = useState('form') // 'form' | 'generating' | 'ready'
   const [type, setType] = useState(null) // 'daily' | 'monthly'
+  const [from, setFrom] = useState('2026-05-01') // same defaults the inputs previously carried via defaultValue
+  const [to, setTo] = useState('2026-06-01')
   const [reportBlob, setReportBlob] = useState(null)
   const timerRef = useRef(null)
 
@@ -45,8 +47,12 @@ export default function ElectricityReportModal({ apartment }) {
     // Real mode: GET /mobileApi/finance/?...&response_format=pdf (blob:true)
     // — no fixed timeout, the "generating" step just tracks the in-flight
     // fetch. The blob itself is only turned into a download when the user
-    // clicks "Download PDF" on the ready step (see below).
-    downloadElectricityReport(apartment.objectId ?? apartment.id)
+    // clicks "Download PDF" on the ready step (see below). The From/To
+    // inputs map to /finance/'s startDate/endDate params; `nextType`
+    // (daily/monthly) has NO API equivalent — the endpoint offers no
+    // granularity param — so type only affects the toast copy and the
+    // downloaded file's name.
+    downloadElectricityReport(apartment.objectId ?? apartment.id, { startDate: from, endDate: to })
       .then((blob) => {
         setReportBlob(blob)
         setStep('ready')
@@ -131,10 +137,10 @@ export default function ElectricityReportModal({ apartment }) {
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Field label={t('common:from')} htmlFor="elFrom" style={{ flex: 1, minWidth: 140 }}>
-            <Input id="elFrom" type="date" defaultValue="2026-05-01" />
+            <Input id="elFrom" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           </Field>
           <Field label={t('common:to')} htmlFor="elTo" style={{ flex: 1, minWidth: 140 }}>
-            <Input id="elTo" type="date" defaultValue="2026-06-01" />
+            <Input id="elTo" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </Field>
         </div>
       </div>
