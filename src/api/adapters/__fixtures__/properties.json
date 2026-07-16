@@ -1,0 +1,49 @@
+[
+  {
+    "id": 501,
+    "objectId": 3026,
+    "complex": "Orbi City",
+    "block": "A",
+    "floor": "30",
+    "square": "42",
+    "apartmentName": "OCT.A.30.3026",
+    "epcode": "GE-BAT-OCT-A-3026",
+    "room_number": "3026",
+    "apartmentBalance": "-180.00",
+    "electricityBalance": "-60.00",
+    "WaterIndication": "00512 m³",
+    "InternetTVBalanceGEL": "0.00",
+    "ownership_status": "owner"
+  },
+  {
+    "id": 502,
+    "objectId": 1702,
+    "complex": "Orbi Sea Towers",
+    "block": "A",
+    "floor": "17",
+    "square": "45",
+    "apartmentName": "OST.A.17.1702",
+    "epcode": "GE-BAT-OST-A-1702",
+    "room_number": "1702",
+    "apartmentBalance": "320.00",
+    "electricityBalance": "0.00",
+    "WaterIndication": "00150 m³",
+    "InternetTVBalanceGEL": "0.00",
+    "ownership_status": "co_owner"
+  },
+  {
+    "id": 503,
+    "objectId": 803,
+    "complex": "Orbi Sea Towers",
+    "block": "A",
+    "floor": "8",
+    "square": "60",
+    "apartmentName": "OST.A.08.0803",
+    "room_number": "0803",
+    "apartmentBalance": "n/a",
+    "electricityBalance": "0.00",
+    "WaterIndication": "00690 m³",
+    "InternetTVBalanceGEL": "0.00",
+    "ownership_status": "trustee"
+  }
+]

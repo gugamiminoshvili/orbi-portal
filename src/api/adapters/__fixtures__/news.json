@@ -1,0 +1,28 @@
+{
+  "count": 14,
+  "next": "https://api.orbi.ge/mobileApi/news/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 101,
+      "title": "New online payment methods now available for management fees",
+      "description": "Owners can now settle monthly management and utility fees directly through the portal using Visa, Mastercard, and Georgian bank transfers — with instant receipts.",
+      "category": "Announcement",
+      "created_at": "2026-06-06T09:00:00Z",
+      "image": "https://cdn.orbi.ge/news/101/cover.jpg",
+      "read_time": 3
+    },
+    {
+      "id": 102,
+      "title": "Scheduled elevator maintenance in ORBI City Block B",
+      "description": "Elevators in Block B will undergo routine inspection on June 12 between 09:00 and 14:00. Alternative access via Block A will remain available.",
+      "category": "Maintenance",
+      "created_at": "2026-06-03T08:30:00Z"
+    },
+    {
+      "id": 103,
+      "title": "Summer rooftop lounge opens for all ORBI residents",
+      "created_at": "2026-05-29T07:00:00Z"
+    }
+  ]
+}
