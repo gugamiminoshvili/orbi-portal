@@ -1,0 +1,653 @@
+/* Ported from reference/orbi-portal-redesign.html lines 145-149 (page-head, shared
+   with Apartments/Pay), 528-670 (sup-* two-pane layout, chat bubbles, combo, topic
+   cards) and the matching mobile single-pane rules ~660-670. */
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.page-head h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  letter-spacing: -.3px;
+}
+.page-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+/* ---------- Two-pane shell ---------- */
+.sup-wrap {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+  height: calc(100vh - 214px);
+  min-height: 540px;
+}
+.sup-list,
+.sup-detail {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ---------- List pane ---------- */
+.sup-list-top {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.row1 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.row1 .search-wrap {
+  flex: 1;
+}
+.sup-tabs {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sup-tabs::-webkit-scrollbar {
+  display: none;
+}
+.sup-tabs button {
+  border: none;
+  background: none;
+  padding: 7px 12px;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 9px;
+  white-space: nowrap;
+  transition: var(--t);
+}
+.sup-tabs button:hover {
+  color: var(--ink);
+}
+.sup-tabs button.on {
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.sup-items {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px;
+}
+.sup-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--t);
+  border: 1px solid transparent;
+  align-items: flex-start;
+  margin-bottom: 2px;
+  text-decoration: none;
+  color: inherit;
+}
+.sup-item:hover {
+  background: #f9fafd;
+}
+.sup-item.on {
+  background: #f4fcf7;
+  border-color: var(--teal);
+}
+.sup-item:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.si-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.si-ic svg {
+  width: 20px;
+  height: 20px;
+}
+.si-main {
+  flex: 1;
+  min-width: 0;
+}
+.si-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.si-title {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.si-prev {
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 3px;
+}
+.si-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.si-apt {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------- Detail pane shell (chat / create / empty) ---------- */
+.sup-dhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.dh-main {
+  flex: 1;
+  min-width: 0;
+}
+.dh-main h3 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dh-sub {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 3px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sup-dbody {
+  overflow-y: auto;
+  flex: 1;
+  padding: 22px;
+}
+.sup-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: none;
+  transition: var(--t);
+  text-decoration: none;
+}
+.sup-back:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.sup-back:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.sup-foot {
+  border-top: 1px solid var(--line);
+  padding: 14px 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  background: #fafbfe;
+}
+
+.sup-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--muted);
+  padding: 40px;
+}
+.sup-empty .ei {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+}
+.sup-empty h3 {
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+.sup-empty p {
+  margin: 0 0 16px;
+  max-width: 330px;
+}
+
+/* ---------- Create form ---------- */
+.sup-create-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px;
+}
+.sup-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 7px;
+}
+.req {
+  color: var(--neg-ink, #c0392b);
+}
+.optional {
+  color: var(--muted);
+  font-weight: 500;
+}
+.grow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* No min-height override here (default is `auto`, i.e. min-content) — this
+     field sits inside `.sup-form`, which scrolls (overflow-y: auto) when the
+     topic grid + apartment combo above it don't leave enough room. Forcing
+     min-height:0 let this field's flex-basis shrink to zero while its child
+     textarea (min-height 96px) still rendered at full size, overflowing on
+     top of `.sup-attach-row` below it on any viewport under ~950px tall. */
+  margin-bottom: 0;
+}
+.ta-wrap {
+  position: relative;
+}
+.grow .ta-wrap {
+  flex: 1;
+  display: flex;
+}
+.ta-count {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  background: #fff;
+  padding: 0 4px;
+  pointer-events: none;
+}
+.ta {
+  height: auto;
+  min-height: 148px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.5;
+  font-family: inherit;
+}
+.grow .ta {
+  flex: 1;
+  min-height: 96px;
+  height: auto;
+  resize: none;
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 5px;
+  padding: 16px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: var(--t);
+  font-family: inherit;
+}
+.topic-card:hover {
+  border-color: var(--teal);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.topic-card.sel {
+  border-color: var(--teal);
+  background: #f6fefe;
+  box-shadow: 0 0 0 1px var(--teal) inset;
+}
+.tc-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+}
+.tc-ic svg {
+  width: 24px;
+  height: 24px;
+}
+.tc-t {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.tc-d {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.combo {
+  position: relative;
+}
+.combo-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 12px;
+  padding: 0 14px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-align: left;
+  transition: var(--t);
+}
+.combo-btn:hover {
+  border-color: var(--teal);
+}
+.cb-chev {
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform var(--t);
+  flex: none;
+  display: inline-flex;
+}
+.combo.open .combo-btn {
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+}
+.combo.open .cb-chev {
+  transform: rotate(180deg);
+}
+.combo-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 30;
+  overflow: hidden;
+}
+.combo-search {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.combo-opts {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 6px;
+}
+.combo-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: var(--t);
+}
+.combo-opt:hover {
+  background: #f4fcf7;
+}
+.combo-opt.sel {
+  background: var(--teal-soft);
+}
+.co-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex: none;
+}
+.co-ic svg {
+  width: 18px;
+  height: 18px;
+}
+.co-t {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+.co-s {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.combo-opt.general .co-ic {
+  background: #eef0f6;
+  color: var(--muted);
+}
+.combo-empty {
+  padding: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.sup-attach-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.sup-attach-row .hint {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.spin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .5);
+  border-top-color: #fff;
+  display: inline-block;
+  animation: sup-spin .7s linear infinite;
+}
+@keyframes sup-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Chat thread ---------- */
+.chat-day {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 16px;
+}
+.chat-day span {
+  background: #eef0f6;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+.msg {
+  display: flex;
+  margin-bottom: 14px;
+}
+.msg.me {
+  justify-content: flex-end;
+}
+.msg .bubble {
+  max-width: 74%;
+  padding: 11px 14px;
+  border-radius: 15px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+.msg.them .bubble {
+  background: #f1f3f9;
+  color: var(--ink);
+  border-bottom-left-radius: 4px;
+}
+.msg.me .bubble {
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  border-bottom-right-radius: 4px;
+}
+.msg .who {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-ink);
+  margin-bottom: 4px;
+}
+.msg.them .who {
+  color: var(--muted);
+}
+.msg .time {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 5px;
+  text-align: right;
+}
+.chat-composer {
+  border-top: 1px solid var(--line);
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  background: #fafbfe;
+}
+.chat-composer textarea {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  resize: none;
+}
+.chat-composer .btn {
+  flex: none;
+}
+.chat-closed {
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12.5px;
+  border-top: 1px solid var(--line);
+  background: #fafbfe;
+}
+
+/* ---------- Responsive: single-pane on mobile ---------- */
+@media (max-width: 880px) {
+  .sup-wrap {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+  }
+  .sup-list,
+  .sup-detail {
+    height: calc(100vh - 190px);
+    min-height: 460px;
+  }
+  .sup-wrap[data-mode="list"] .sup-detail {
+    display: none;
+  }
+  .sup-wrap[data-mode="create"] .sup-list,
+  .sup-wrap[data-mode="chat"] .sup-list {
+    display: none;
+  }
+  /* natural block flow on mobile so the attach row is always reachable */
+  .sup-create-body {
+    display: block;
+    overflow-y: auto;
+  }
+  .sup-form {
+    display: block;
+    overflow-y: visible;
+  }
+  .grow {
+    display: block;
+  }
+  .grow .ta-wrap {
+    display: block;
+  }
+  .grow .ta {
+    flex: none;
+    min-height: 150px;
+  }
+  .sup-attach-row {
+    margin-top: 14px;
+  }
+}
+@media (max-width: 560px) {
+  .topic-grid {
+    grid-template-columns: 1fr;
+  }
+  .msg .bubble {
+    max-width: 86%;
+  }
+  .sup-foot .btn {
+    flex: 1;
+  }
+}
