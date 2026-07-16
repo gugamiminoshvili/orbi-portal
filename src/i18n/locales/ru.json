@@ -294,6 +294,8 @@
     "attachFiles": "Прикрепить файлы",
     "attachHint": "PDF, JPG, PNG · макс. 5 МБ",
     "attachToast": "Вложения недоступны в этой демонстрации",
+    "attachSuccessToast": "Файл прикреплён",
+    "attachErrorToast": "Не удалось прикрепить файл — попробуйте ещё раз.",
     "submit": "Отправить тикет",
     "createdToast": "Тикет #{{id}} создан",
     "chatPlaceholder": "Напишите сообщение",

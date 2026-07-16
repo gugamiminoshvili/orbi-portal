@@ -1,4 +1,4 @@
-import { http } from './client'
+import { http, httpMultipart } from './client'
 import { tokenStore } from './tokenStore'
 import { ApiError } from './errors'
 
@@ -101,6 +101,45 @@ test('non-401, non-ok responses fall back to a generic error when the body is no
   })
 
   await expect(http('/foo')).rejects.toThrow(/502/)
+})
+
+describe('httpMultipart', () => {
+  test('attaches Authorization but never sets a Content-Type header (FormData needs its own boundary)', async () => {
+    tokenStore.setTokens({ access: 'tok-1', refresh: 'ref-1' })
+    fetch.mockResolvedValueOnce(jsonResponse({ code: 1, msg: 'ok', result: 'ticket_file/1/' }))
+
+    const form = new FormData()
+    form.append('file', new Blob(['x']), 'x.png')
+    form.append('ticketId', '101244')
+
+    const result = await httpMultipart('/mobileApi/tickets/file/', { method: 'POST', body: form })
+
+    expect(result).toBe('ticket_file/1/')
+    const [url, opts] = fetch.mock.calls[0]
+    expect(url).toContain('/mobileApi/tickets/file/')
+    expect(opts.headers.Authorization).toBe('Bearer tok-1')
+    expect(opts.headers['Content-Type']).toBeUndefined()
+    expect(opts.body).toBe(form)
+  })
+
+  test('reuses the same 401-refresh-then-retry flow as http()', async () => {
+    tokenStore.setTokens({ access: 'old-access', refresh: 'ref-1' })
+    fetch.mockImplementation((url, opts) => {
+      if (url.includes('/mobileApi/refresh/')) {
+        return Promise.resolve(jsonResponse({ access: 'new-access', refresh: 'new-refresh', user_id: 1 }))
+      }
+      const usedNewToken = opts?.headers?.Authorization === 'Bearer new-access'
+      if (usedNewToken) {
+        return Promise.resolve(jsonResponse({ code: 1, msg: 'ok', result: 'ticket_file/2/' }))
+      }
+      return Promise.resolve(jsonResponse({}, { status: 401, ok: false }))
+    })
+
+    const form = new FormData()
+    const result = await httpMultipart('/mobileApi/tickets/file/', { method: 'POST', body: form })
+
+    expect(result).toBe('ticket_file/2/')
+  })
 })
 
 describe('401 refresh-on-expiry flow', () => {

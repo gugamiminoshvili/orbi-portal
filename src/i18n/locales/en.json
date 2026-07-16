@@ -292,6 +292,8 @@
     "attachFiles": "Attach files",
     "attachHint": "PDF, JPG, PNG · max 5MB",
     "attachToast": "Attachments aren't available in this demo",
+    "attachSuccessToast": "File attached",
+    "attachErrorToast": "Could not attach the file — please try again.",
     "submit": "Submit ticket",
     "createdToast": "Ticket #{{id}} created",
     "chatPlaceholder": "Write a message",

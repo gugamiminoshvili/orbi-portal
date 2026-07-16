@@ -54,14 +54,19 @@ function refreshOnce() {
   return refreshPromise
 }
 
-export async function http(path, opts = {}) {
+// Shared implementation behind http()/httpMultipart(). `multipart: true` skips
+// the auto JSON Content-Type (the caller's `body` is a FormData; the browser
+// sets its own `multipart/form-data; boundary=...` header, which a manually
+// set Content-Type would break) but otherwise behaves identically — same
+// Bearer attachment, same 401-refresh-then-retry, same envelope parsing.
+async function request(path, opts, { multipart = false } = {}) {
   const { blob, _isRetry, ...rest } = opts
   const headers = { ...rest.headers }
   const access = tokenStore.getAccess()
   if (access) {
     headers.Authorization = `Bearer ${access}`
   }
-  if (rest.body && !headers['Content-Type']) {
+  if (!multipart && rest.body && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json'
   }
 
@@ -74,7 +79,7 @@ export async function http(path, opts = {}) {
       tokenStore.clear()
       throw new ApiError(-1, 'session expired', 'SESSION_EXPIRED')
     }
-    return http(path, { ...opts, _isRetry: true })
+    return request(path, { ...opts, _isRetry: true }, { multipart })
   }
 
   if (!res.ok) {
@@ -100,4 +105,16 @@ export async function http(path, opts = {}) {
 
   const json = await res.json()
   return parseEnvelope(json)
+}
+
+export async function http(path, opts = {}) {
+  return request(path, opts, { multipart: false })
+}
+
+// For multipart/form-data uploads (currently: POST /mobileApi/tickets/file/).
+// `opts.body` must be a FormData instance — never set a Content-Type header
+// on the caller's side, since that would drop the multipart boundary the
+// browser generates for FormData bodies.
+export async function httpMultipart(path, opts = {}) {
+  return request(path, opts, { multipart: true })
 }

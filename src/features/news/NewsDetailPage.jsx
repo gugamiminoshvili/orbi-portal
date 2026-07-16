@@ -77,7 +77,10 @@ export default function NewsDetailPage() {
     )
   }
 
-  const related = (allNews || [])
+  // listNews() resolves a plain array in mock mode but `{items,count,next}`
+  // in real mode (server-paginated) — normalize to an array either way.
+  const relatedSource = Array.isArray(allNews) ? allNews : allNews?.items || []
+  const related = relatedSource
     .filter((n) => n.id !== item.id && n.cat === item.cat)
     .slice(0, 3)
 

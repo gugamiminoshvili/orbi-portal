@@ -292,6 +292,8 @@
     "attachFiles": "ფაილების მიმაგრება",
     "attachHint": "PDF, JPG, PNG · მაქს. 5MB",
     "attachToast": "დანართები ამ დემოში მიუწვდომელია",
+    "attachSuccessToast": "ფაილი მიმაგრებულია",
+    "attachErrorToast": "ფაილის მიმაგრება ვერ მოხერხდა — სცადეთ ხელახლა.",
     "submit": "თიქეთის გაგზავნა",
     "createdToast": "თიქეთი #{{id}} შეიქმნა",
     "chatPlaceholder": "დაწერეთ შეტყობინება",

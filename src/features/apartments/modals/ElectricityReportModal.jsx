@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
+import { USE_MOCK } from '../../../api/client'
+import { downloadElectricityReport } from '../../../api/endpoints/locks'
 import Button from '../../../components/ui/Button'
 import Icon from '../../../components/ui/Icon'
 import Field, { Input } from '../../../components/ui/Field'
@@ -21,6 +23,7 @@ export default function ElectricityReportModal({ apartment }) {
 
   const [step, setStep] = useState('form') // 'form' | 'generating' | 'ready'
   const [type, setType] = useState(null) // 'daily' | 'monthly'
+  const [reportBlob, setReportBlob] = useState(null)
   const timerRef = useRef(null)
 
   useEffect(() => () => {
@@ -32,10 +35,38 @@ export default function ElectricityReportModal({ apartment }) {
     setType(nextType)
     setStep('generating')
     setModalLocked(true)
-    timerRef.current = setTimeout(() => {
-      setStep('ready')
-      setModalLocked(false)
-    }, GENERATE_MS)
+    if (USE_MOCK) {
+      timerRef.current = setTimeout(() => {
+        setStep('ready')
+        setModalLocked(false)
+      }, GENERATE_MS)
+      return
+    }
+    // Real mode: GET /mobileApi/finance/?...&response_format=pdf (blob:true)
+    // — no fixed timeout, the "generating" step just tracks the in-flight
+    // fetch. The blob itself is only turned into a download when the user
+    // clicks "Download PDF" on the ready step (see below).
+    downloadElectricityReport(apartment.objectId ?? apartment.id)
+      .then((blob) => {
+        setReportBlob(blob)
+        setStep('ready')
+      })
+      .finally(() => setModalLocked(false))
+  }
+
+  function handleDownload() {
+    if (!USE_MOCK && reportBlob) {
+      const url = URL.createObjectURL(reportBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `electricity-report-${type}-${apartment.code || apartment.id}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    }
+    toast(t('apartments:reportDownloadedToast', { type: typeLabel }))
+    closeModal()
   }
 
   const typeLabel = type ? t(`apartments:reportType${type === 'daily' ? 'Daily' : 'Monthly'}`) : ''
@@ -78,12 +109,7 @@ export default function ElectricityReportModal({ apartment }) {
           <Button variant="ghost" onClick={() => setStep('form')}>
             <Icon name="back" /> {t('apartments:newReport')}
           </Button>
-          <Button
-            onClick={() => {
-              toast(t('apartments:reportDownloadedToast', { type: typeLabel }))
-              closeModal()
-            }}
-          >
+          <Button onClick={handleDownload}>
             <Icon name="dl" /> {t('apartments:downloadPdf')}
           </Button>
         </div>

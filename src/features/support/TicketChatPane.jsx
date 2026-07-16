@@ -3,7 +3,8 @@ import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
-import { getTicket, sendMessage } from '../../api/endpoints/support'
+import { USE_MOCK } from '../../api/client'
+import { getTicket, sendMessage, uploadTicketFile } from '../../api/endpoints/support'
 import { TSTATUS, topicById } from '../../api/mock/tickets'
 import { APTS } from '../../api/mock/apartments'
 import Icon from '../../components/ui/Icon'
@@ -27,6 +28,7 @@ export default function TicketChatPane() {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const bodyRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight
@@ -62,8 +64,27 @@ export default function TicketChatPane() {
     }
   }
 
+  // Mock mode keeps the existing toast-only stub (no real upload endpoint to
+  // exercise). Real mode opens a hidden file input and, once a file is
+  // picked, uploads it via POST /mobileApi/tickets/file/ (uploadTicketFile).
   function handleAttach() {
-    toast(t('support:attachToast'))
+    if (USE_MOCK) {
+      toast(t('support:attachToast'))
+      return
+    }
+    fileInputRef.current?.click()
+  }
+
+  async function handleFileChange(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file next time
+    if (!file) return
+    try {
+      await uploadTicketFile(ticket.id, file)
+      toast(t('support:attachSuccessToast'))
+    } catch {
+      toast(t('support:attachErrorToast'))
+    }
   }
 
   let lastDate = null
@@ -131,6 +152,14 @@ export default function TicketChatPane() {
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
+          {!USE_MOCK && (
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              onChange={handleFileChange}
+            />
+          )}
           <button
             type="button"
             className={`${buttonStyles.btn} ${buttonStyles['btn-ghost']} ${buttonStyles['btn-sm']}`}
