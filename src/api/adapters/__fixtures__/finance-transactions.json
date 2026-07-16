@@ -1,0 +1,32 @@
+[
+  {
+    "accountType": "electricity",
+    "apartmentName": "OCT.A.30.3026",
+    "apartmentId": 3026,
+    "service": "Electricity",
+    "event": "Invoice",
+    "docNo": "INV-2026-0598",
+    "docDate": "2026-06-01",
+    "docType": "invoice",
+    "currency": "GEL",
+    "currencySymbol": "₾",
+    "amount": "60.00",
+    "balance": "-60.00",
+    "electricity_reading": "00512"
+  },
+  {
+    "accountType": "electricity",
+    "apartmentName": "OCT.A.30.3026",
+    "apartmentId": 3026,
+    "service": "Electricity",
+    "event": "Payment",
+    "docNo": "PAY-9921",
+    "docDate": "2026-05-22",
+    "docType": "payment",
+    "currency": "GEL",
+    "currencySymbol": "₾",
+    "amount": "60.00",
+    "balance": "0.00",
+    "electricity_reading": null
+  }
+]

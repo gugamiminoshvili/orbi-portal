@@ -1,0 +1,20 @@
+{
+  "id": 55,
+  "flat_id": 3026,
+  "provider": "Silknet",
+  "tariff_net_id": "P2",
+  "tariff_name": "Package 2",
+  "price": "70.00",
+  "status": "active",
+  "start_date": "2026-01-19",
+  "next_billing_date": "2026-07-19",
+  "billing_cycle_days": 30,
+  "days_left": 3,
+  "boost": {
+    "id": "b65",
+    "name": "Boost 65",
+    "extra_mbps": 65,
+    "duration_value": 24,
+    "duration_unit": "hours"
+  }
+}

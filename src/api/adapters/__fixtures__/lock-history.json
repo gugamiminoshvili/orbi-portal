@@ -1,0 +1,6 @@
+[
+  { "id": 1, "apartmentId": 3026, "created_at": "2026-06-01T08:15:00Z", "method": "app", "success": true },
+  { "id": 2, "apartmentId": 3026, "created_at": "2026-06-01T18:42:00Z", "method": "card", "success": true },
+  { "id": 3, "apartmentId": 3026, "created_at": "2026-06-02T09:03:00Z", "method": "app", "success": true },
+  { "id": 4, "apartmentId": 3026, "created_at": "2026-06-03T07:55:00Z", "method": "code", "success": false }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "created_at": "2026-07-09T14:20:00Z",
+    "ticketId": 101244,
+    "reply": 0,
+    "author": 340,
+    "message": "The internet in my apartment (OCT.A.30.3026) has been very slow since yesterday evening.",
+    "authorFullname": "Nadiia Kovalenko",
+    "files": []
+  },
+  {
+    "id": 2,
+    "created_at": "2026-07-09T14:35:00Z",
+    "ticketId": 101244,
+    "reply": 1,
+    "author": 7,
+    "message": "Hello Nadiia, thank you for reaching out. We have logged the issue with the ISP and will update you within 24 hours.",
+    "authorFullname": "ORBI Support",
+    "files": [
+      { "id": 9, "size": "1 Mb", "type": "image/png", "url": "ticket_file/9/" }
+    ]
+  }
+]
