@@ -3,6 +3,8 @@ import { initReactI18next } from 'react-i18next'
 import en from './locales/en.json'
 import ka from './locales/ka.json'
 import ru from './locales/ru.json'
+import { tokenStore } from '../api/tokenStore'
+import { patchUserLang } from '../api/auth'
 
 const STORAGE_KEY = 'orbi-lang'
 
@@ -34,6 +36,11 @@ export function setLang(lng) {
   }
   if (typeof document !== 'undefined') {
     document.documentElement.lang = lng
+  }
+  if (tokenStore.hasSession()) {
+    // Fire-and-forget: keep the language switch instant and local; a failed
+    // sync to the backend shouldn't block or roll back the UI language.
+    patchUserLang(lng).catch(() => {})
   }
 }
 

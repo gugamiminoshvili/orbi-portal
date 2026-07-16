@@ -78,6 +78,19 @@ export async function http(path, opts = {}) {
   }
 
   if (!res.ok) {
+    // Try to recover a typed error from a JSON envelope ({code, msg, error})
+    // even on non-2xx statuses, since some endpoints answer failures with an
+    // HTTP error status AND an envelope body. Fall back to a generic error
+    // when the body isn't an envelope (or isn't JSON at all).
+    let envelope = null
+    try {
+      envelope = await res.json()
+    } catch {
+      envelope = null
+    }
+    if (envelope && typeof envelope.code === 'number' && envelope.code < 0) {
+      throw new ApiError(envelope.code, envelope.msg, envelope.error)
+    }
     throw new Error(`API request failed: ${rest.method || 'GET'} ${path} (${res.status})`)
   }
 

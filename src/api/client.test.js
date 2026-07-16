@@ -75,6 +75,34 @@ test('non-401, non-ok responses still throw a generic error', async () => {
   await expect(http('/foo')).rejects.toThrow(/500/)
 })
 
+test('non-401, non-ok responses with a JSON error envelope throw the typed ApiError', async () => {
+  fetch.mockResolvedValueOnce(
+    jsonResponse({ code: -1, msg: 'file not found', result: [], error: undefined }, { status: 404, ok: false })
+  )
+
+  try {
+    await http('/foo')
+    throw new Error('should not reach here')
+  } catch (err) {
+    expect(err).toBeInstanceOf(ApiError)
+    expect(err.code).toBe(-1)
+    expect(err.message).toBe('file not found')
+    expect(err.errorCode).toBeUndefined()
+  }
+})
+
+test('non-401, non-ok responses fall back to a generic error when the body is not a JSON envelope', async () => {
+  fetch.mockResolvedValueOnce({
+    ok: false,
+    status: 502,
+    json: async () => {
+      throw new Error('not json')
+    },
+  })
+
+  await expect(http('/foo')).rejects.toThrow(/502/)
+})
+
 describe('401 refresh-on-expiry flow', () => {
   test('refreshes once, then replays the original request with the new token', async () => {
     tokenStore.setTokens({ access: 'old-access', refresh: 'ref-1' })
