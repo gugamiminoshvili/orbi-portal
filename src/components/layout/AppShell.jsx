@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Sidebar from './Sidebar'
 import Header from './Header'
+import ScrollToTop from './ScrollToTop'
 import styles from './AppShell.module.css'
 
 const BreadcrumbsContext = createContext(null)
@@ -32,6 +33,7 @@ export function AppShell() {
 
   return (
     <BreadcrumbsContext.Provider value={setCrumbs}>
+      <ScrollToTop />
       <div className={styles.app}>
         <Sidebar open={open} onNavigate={closeSidebar} />
         <div

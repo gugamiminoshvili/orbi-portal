@@ -94,7 +94,7 @@ function TicketRow({ ticket, active, t }) {
     <Link
       to={`/support/t/${ticket.id}`}
       className={`${styles['sup-item']} ${active ? styles.on : ''}`}
-      aria-label={`Ticket #${ticket.id}`}
+      aria-label={t('support:ticketAria', { id: ticket.id })}
     >
       <div className={styles['si-ic']} style={{ background: tp.tintBg, color: tp.tintCol }}>
         <Icon name={tp.icon} />

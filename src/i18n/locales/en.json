@@ -260,6 +260,7 @@
     "subtitle": "Get help from the ORBI team — track your tickets and chat with support.",
     "searchPlaceholder": "Search tickets…",
     "searchAria": "Search tickets",
+    "ticketAria": "Ticket #{{id}}",
     "new": "New",
     "newTicket": "New ticket",
     "newTicketSub": "Tell us what you need help with",
