@@ -132,7 +132,8 @@ export default function NewTicketPane() {
                   </div>
                   <div className={styles['combo-opts']}>
                     {showGeneral && (
-                      <div
+                      <button
+                        type="button"
                         className={`${styles['combo-opt']} ${styles.general} ${!apt ? styles.sel : ''}`}
                         onClick={() => {
                           setApt(null)
@@ -146,11 +147,12 @@ export default function NewTicketPane() {
                           <div className={styles['co-t']}>{t('support:general')}</div>
                           <div className={styles['co-s']}>{t('support:generalHint')}</div>
                         </span>
-                      </div>
+                      </button>
                     )}
                     {filteredApts.map((a) => (
-                      <div
+                      <button
                         key={a.id}
+                        type="button"
                         className={`${styles['combo-opt']} ${apt === a.id ? styles.sel : ''}`}
                         onClick={() => {
                           setApt(a.id)
@@ -161,7 +163,7 @@ export default function NewTicketPane() {
                           <Icon name="building" />
                         </span>
                         <div className={styles['co-t']}>{a.code}</div>
-                      </div>
+                      </button>
                     ))}
                     {!showGeneral && filteredApts.length === 0 && (
                       <div className={styles['combo-empty']}>{t('support:noApartmentsFound')}</div>

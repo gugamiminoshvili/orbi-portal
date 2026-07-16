@@ -148,7 +148,10 @@ export default function ApartmentDetailPage() {
               aria-label={t('apartments:enlargeQrAria')}
               onClick={() => openModal(<QrModal apartment={apt} />, { size: 'md' })}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') openModal(<QrModal apartment={apt} />, { size: 'md' })
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  openModal(<QrModal apartment={apt} />, { size: 'md' })
+                }
               }}
               dangerouslySetInnerHTML={{ __html: qrSvg(apt.apCode) }}
             />
