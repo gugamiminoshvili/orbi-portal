@@ -241,6 +241,7 @@
     "stepAmount": "Amount",
     "stepMethod": "Method",
     "stepConfirm": "Confirm",
+    "stepPayment": "Payment",
     "paymentMethodLabel": "Payment method",
     "visaLabel": "Visa •••• 4821",
     "mcLabel": "Mastercard •••• 2207",
@@ -255,7 +256,10 @@
     "refLine": "Reference {{ref}} · A receipt has been emailed.",
     "receipt": "Receipt",
     "receiptDownloadedToast": "Receipt downloaded",
-    "backToApartment": "Back to apartment"
+    "backToApartment": "Back to apartment",
+    "paymentOpenedTitle": "Payment window opened",
+    "paymentOpenedBody": "We opened the secure payment page in a new tab. Complete your payment there — once it's done you can close that tab and return here.",
+    "reopen": "Reopen payment page"
   },
   "support": {
     "title": "Support",

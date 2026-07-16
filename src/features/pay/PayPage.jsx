@@ -6,6 +6,8 @@ import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
 import { getApartment } from '../../api/endpoints/apartments'
 import { payService } from '../../api/endpoints/pay'
+import { USE_MOCK } from '../../api/client'
+import { langToApi } from '../../utils/lang'
 import { fmt } from '../../utils/format'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
@@ -28,7 +30,7 @@ const METHODS = [
 
 export default function PayPage() {
   const { id } = useParams()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const toast = useToast()
   const { data: apt, loading } = useAsync(() => getApartment(id), [id])
 
@@ -42,6 +44,10 @@ export default function PayPage() {
   const [method, setMethod] = useState('visa')
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
+  // Real mode only (Task I7): the payment-provider url returned by
+  // payService, kept around so [Reopen payment page] can re-open the same
+  // tab without another POST /mobileApi/payment/.
+  const [paymentUrl, setPaymentUrl] = useState(null)
 
   useCrumbs(
     apt
@@ -108,7 +114,27 @@ export default function PayPage() {
       return
     }
     setAmount(amountValue)
+    if (USE_MOCK) {
+      setStep(2)
+      return
+    }
+    handleRealPay(amountValue)
+  }
+
+  // Real mode (Task I7): no Method/Confirm steps — POST /mobileApi/payment/
+  // for a hosted-checkout url, open it in a new tab, then show the
+  // "payment opened" step with a way to reopen the same tab.
+  async function handleRealPay(amt) {
+    setProcessing(true)
+    const res = await payService(apt.id, { amount: amt, epcode: apt.epcode, lang: langToApi(i18n.language) })
+    setProcessing(false)
+    setPaymentUrl(res.url)
+    window.open(res.url, '_blank', 'noopener')
     setStep(2)
+  }
+
+  function reopenPayment() {
+    if (paymentUrl) window.open(paymentUrl, '_blank', 'noopener')
   }
 
   async function handlePay() {
@@ -131,10 +157,12 @@ export default function PayPage() {
               value={amountValue}
               onChange={(v) => setAmount(v)}
               onContinue={handleContinueAmount}
+              processing={processing}
+              mock={USE_MOCK}
               t={t}
             />
           )}
-          {step === 2 && (
+          {USE_MOCK && step === 2 && (
             <MethodStep
               method={method}
               onSelect={setMethod}
@@ -143,7 +171,7 @@ export default function PayPage() {
               t={t}
             />
           )}
-          {step === 3 && (
+          {USE_MOCK && step === 3 && (
             <ConfirmStep
               apt={apt}
               amount={amountValue}
@@ -154,19 +182,29 @@ export default function PayPage() {
               t={t}
             />
           )}
-          {step === 4 && result && <SuccessStep apt={apt} result={result} toast={toast} t={t} />}
+          {USE_MOCK && step === 4 && result && <SuccessStep apt={apt} result={result} toast={toast} t={t} />}
+          {!USE_MOCK && step === 2 && <PaymentOpenedStep apt={apt} onReopen={reopenPayment} t={t} />}
         </Card>
       </div>
     </div>
   )
 }
 
-function StepsHeader({ current, t }) {
-  const items = [
-    [1, t('pay:stepAmount')],
-    [2, t('pay:stepMethod')],
-    [3, t('pay:stepConfirm')],
-  ]
+// `mock` defaults true so every existing call site (MethodStep/ConfirmStep,
+// which only ever render in mock mode) keeps the original 3-item header
+// byte-identical. Real mode (Task I7) has no Method/Confirm steps, so
+// AmountStep/PaymentOpenedStep pass `mock={false}` for the 2-item version.
+function StepsHeader({ current, t, mock = true }) {
+  const items = mock
+    ? [
+        [1, t('pay:stepAmount')],
+        [2, t('pay:stepMethod')],
+        [3, t('pay:stepConfirm')],
+      ]
+    : [
+        [1, t('pay:stepAmount')],
+        [2, t('pay:stepPayment')],
+      ]
   return (
     <div className={styles.steps}>
       {items.map(([n, label], i) => (
@@ -182,14 +220,14 @@ function StepsHeader({ current, t }) {
   )
 }
 
-function AmountStep({ apt, due, value, onChange, onContinue, t }) {
+function AmountStep({ apt, due, value, onChange, onContinue, processing, mock = true, t }) {
   return (
     <>
       <Card.Head>
         <h3>{t('pay:title', { code: apt.code })}</h3>
       </Card.Head>
       <Card.Pad>
-        <StepsHeader current={1} t={t} />
+        <StepsHeader current={1} t={t} mock={mock} />
         <div className={styles['due-box']}>
           <div className={styles['due-row1']}>
             <span>{apt.building}</span>
@@ -218,7 +256,8 @@ function AmountStep({ apt, due, value, onChange, onContinue, t }) {
         <Link to={`/apartments/${apt.id}`} className={`${buttonStyles.btn} ${buttonStyles['btn-ghost']}`}>
           {t('common:cancel')}
         </Link>
-        <Button onClick={onContinue}>
+        <Button onClick={onContinue} disabled={processing}>
+          {processing && <span className={styles.spin} />}
           {t('common:continue')} <Icon name="arrow" />
         </Button>
       </div>
@@ -323,5 +362,37 @@ function SuccessStep({ apt, result, toast, t }) {
         </Link>
       </div>
     </div>
+  )
+}
+
+// Real mode only (Task I7): replaces the mock wizard's Method/Confirm/Success
+// steps. payService's POST already ran and opened the hosted-checkout url in
+// a new tab (see PayPage's handleRealPay) — this step just confirms that and
+// offers to reopen it, since the new tab can be closed or lost by accident.
+function PaymentOpenedStep({ apt, onReopen, t }) {
+  return (
+    <>
+      <Card.Head>
+        <h3>{t('pay:title', { code: apt.code })}</h3>
+      </Card.Head>
+      <Card.Pad>
+        <StepsHeader current={2} t={t} mock={false} />
+        <div className={styles.success}>
+          <div className={styles['success-ring']}>
+            <Icon name="card" size={34} />
+          </div>
+          <h3 className={styles['success-title']}>{t('pay:paymentOpenedTitle')}</h3>
+          <p className={styles['success-sub']}>{t('pay:paymentOpenedBody')}</p>
+        </div>
+      </Card.Pad>
+      <div className={styles.foot}>
+        <Button variant="ghost" onClick={onReopen}>
+          <Icon name="share" /> {t('pay:reopen')}
+        </Button>
+        <Link to={`/apartments/${apt.id}`} className={`${buttonStyles.btn} ${buttonStyles['btn-primary']}`}>
+          {t('pay:backToApartment')}
+        </Link>
+      </div>
+    </>
   )
 }

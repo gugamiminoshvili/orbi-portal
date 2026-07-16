@@ -241,6 +241,7 @@
     "stepAmount": "თანხა",
     "stepMethod": "მეთოდი",
     "stepConfirm": "დადასტურება",
+    "stepPayment": "გადახდა",
     "paymentMethodLabel": "გადახდის მეთოდი",
     "visaLabel": "Visa •••• 4821",
     "mcLabel": "Mastercard •••• 2207",
@@ -255,7 +256,10 @@
     "refLine": "რეფერენსი {{ref}} · ქვითარი გამოგზავნილია ელფოსტაზე.",
     "receipt": "ქვითარი",
     "receiptDownloadedToast": "ქვითარი ჩამოტვირთულია",
-    "backToApartment": "აპარტამენტზე დაბრუნება"
+    "backToApartment": "აპარტამენტზე დაბრუნება",
+    "paymentOpenedTitle": "გადახდის ფანჯარა გაიხსნა",
+    "paymentOpenedBody": "უსაფრთხო გადახდის გვერდი ახალ ჩანართში გაიხსნა. დაასრულეთ გადახდა იქ — დასრულების შემდეგ შეგიძლიათ დახუროთ ჩანართი და აქ დაბრუნდეთ.",
+    "reopen": "გადახდის გვერდის ხელახლა გახსნა"
   },
   "support": {
     "title": "მხარდაჭერა",

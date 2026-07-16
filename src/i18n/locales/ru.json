@@ -243,6 +243,7 @@
     "stepAmount": "Сумма",
     "stepMethod": "Способ",
     "stepConfirm": "Подтвердить",
+    "stepPayment": "Оплата",
     "paymentMethodLabel": "Способ оплаты",
     "visaLabel": "Visa •••• 4821",
     "mcLabel": "Mastercard •••• 2207",
@@ -257,7 +258,10 @@
     "refLine": "Референс {{ref}} · Квитанция отправлена на почту.",
     "receipt": "Квитанция",
     "receiptDownloadedToast": "Квитанция скачана",
-    "backToApartment": "Назад к апартаменту"
+    "backToApartment": "Назад к апартаменту",
+    "paymentOpenedTitle": "Окно оплаты открыто",
+    "paymentOpenedBody": "Мы открыли защищённую страницу оплаты в новой вкладке. Завершите платёж там — после этого вкладку можно закрыть и вернуться сюда.",
+    "reopen": "Открыть страницу оплаты заново"
   },
   "support": {
     "title": "Поддержка",
