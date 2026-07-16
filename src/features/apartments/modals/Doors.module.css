@@ -98,6 +98,32 @@
   border-color: var(--teal);
   background: #f6fefe;
 }
+.list {
+  display: none;
+}
+.list .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.list .row:last-child {
+  border-bottom: none;
+}
+
+/* Ported from reference lines 735-736 — below this width the 7-column day
+   grid no longer fits legibly, so the month view swaps to a scrollable list.
+   The year overview (.grid.months, 4 columns) stays a grid — the reference
+   itself hides it here with nothing to replace it, which we improve on. */
+@media (max-width: 620px) {
+  .grid:not(.months) {
+    display: none;
+  }
+  .list {
+    display: block;
+  }
+}
 .summary {
   display: flex;
   gap: 18px;

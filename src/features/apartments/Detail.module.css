@@ -369,7 +369,70 @@
   line-height: 1.5;
 }
 
-@media (max-width: 720px) {
+/* Ported from reference lines 692-700 (tablet breakpoint) */
+@media (max-width: 880px) {
+  .ov-meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ov-body {
+    flex-direction: column-reverse;
+    gap: 18px;
+  }
+  .qr-corner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-align: left;
+  }
+  .qr-corner .qr {
+    margin: 0;
+  }
+  .sub-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ported from reference lines 703-724, 739 (small-phone breakpoint) */
+@media (max-width: 620px) {
+  .ov-meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ov-meta .cell {
+    padding: 11px 13px;
+  }
+  .ov-meta .k {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+  .ov-meta .v {
+    font-size: 12.5px;
+  }
+  .svc-grid {
+    grid-template-columns: 1fr;
+  }
+  .svc-head {
+    gap: 11px;
+    padding: 14px;
+  }
+  .svc-ic {
+    width: 40px;
+    height: 40px;
+  }
+  .svc-metric .m-val {
+    font-size: 14px;
+  }
+  .svc-sub {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 46vw;
+  }
+  .head-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 13px;
+  }
   .sub-panel {
     grid-template-columns: 1fr;
   }
@@ -378,7 +441,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
-  .sub-actions .btn {
+  .sub-actions button {
     width: 100%;
   }
 }

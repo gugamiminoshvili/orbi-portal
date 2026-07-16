@@ -69,7 +69,11 @@
   border-color: var(--teal);
   width: 280px;
 }
-.h-search svg,
+/* Only the Icon wrapper span is absolutely positioned — the svg inside it
+   stays in normal flow. (Positioning both would make the svg's containing
+   block the already-absolute span, doubling the left offset to 28px and
+   collapsing the span to 0×0 since its only child no longer contributes to
+   its size — the bug this comment replaces.) */
 .h-search span {
   position: absolute;
   left: 14px;

@@ -30,6 +30,7 @@ export default function NewsFilters({ cat, q, sort, onCatChange, onQChange, onSo
       />
       <select
         className={`${fieldStyles.input} ${styles['sort-select']}`}
+        style={{ width: 'auto' }}
         aria-label={t('news:sortAria')}
         value={sort}
         onChange={(e) => onSortChange(e.target.value)}

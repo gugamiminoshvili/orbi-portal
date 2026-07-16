@@ -180,6 +180,7 @@
     "tabMonth": "Month",
     "prevMonthAria": "Previous month",
     "nextMonthAria": "Next month",
+    "dayOpenings": "Doors openings: {{count}}",
     "totalThisMonth": "Total this month: {{count}} openings",
     "selectedRange": "Selected range: {{count}} openings",
     "totalYear": "Total {{year}}: {{count}} openings",

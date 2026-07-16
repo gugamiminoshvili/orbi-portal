@@ -180,6 +180,7 @@
     "tabMonth": "თვე",
     "prevMonthAria": "წინა თვე",
     "nextMonthAria": "შემდეგი თვე",
+    "dayOpenings": "კარის გახსნები: {{count}}",
     "totalThisMonth": "სულ ამ თვეში: {{count}} გახსნა",
     "selectedRange": "არჩეული პერიოდი: {{count}} გახსნა",
     "totalYear": "სულ {{year}}: {{count}} გახსნა",

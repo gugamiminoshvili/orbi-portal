@@ -182,6 +182,7 @@
     "tabMonth": "Месяц",
     "prevMonthAria": "Предыдущий месяц",
     "nextMonthAria": "Следующий месяц",
+    "dayOpenings": "Открытий дверей: {{count}}",
     "totalThisMonth": "Всего за месяц: {{count}} откр.",
     "selectedRange": "За выбранный период: {{count}} откр.",
     "totalYear": "Всего за {{year}}: {{count}} откр.",

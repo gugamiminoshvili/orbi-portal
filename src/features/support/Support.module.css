@@ -284,7 +284,8 @@
   margin-bottom: 7px;
 }
 .req {
-  color: var(--neg-ink, #c0392b);
+  color: var(--neg-ink);
+  font-weight: 700;
 }
 .optional {
   color: var(--muted);
@@ -448,8 +449,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   padding: 9px 10px;
+  border: none;
   border-radius: 9px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   transition: var(--t);
 }
@@ -586,7 +593,7 @@
   max-height: 120px;
   resize: none;
 }
-.chat-composer .btn {
+.chat-composer button {
   flex: none;
 }
 .chat-closed {
@@ -647,7 +654,7 @@
   .msg .bubble {
     max-width: 86%;
   }
-  .sup-foot .btn {
+  .sup-foot button {
     flex: 1;
   }
 }

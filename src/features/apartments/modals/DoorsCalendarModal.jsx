@@ -78,6 +78,7 @@ export default function DoorsCalendarModal({ apartment }) {
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const firstDow = (new Date(year, month, 1).getDay() + 6) % 7
     const cells = []
+    const rows = []
     for (let i = 0; i < firstDow; i++) {
       cells.push(<div key={`e${i}`} className={`${styles.day} ${styles.empty}`} />)
     }
@@ -87,6 +88,12 @@ export default function DoorsCalendarModal({ apartment }) {
         <div key={d} className={`${styles.day} ${c > 0 ? styles.hi : ''}`}>
           <span className={styles.dnum}>{d}</span>
           <span className={`${styles.cnt} ${c === 0 ? styles.zero : ''}`}>{c}</span>
+        </div>
+      )
+      rows.push(
+        <div key={d} className={styles.row}>
+          <span>{d} {months[month].slice(0, 3)} {year}</span>
+          <b>{t('apartments:dayOpenings', { count: c })}</b>
         </div>
       )
     }
@@ -100,6 +107,7 @@ export default function DoorsCalendarModal({ apartment }) {
           ))}
           {cells}
         </div>
+        <div className={styles.list}>{rows}</div>
         <div className={styles.summary}>
           <span>{t('apartments:totalThisMonth', { count: total })}</span>
           {from && to && <span>{t('apartments:selectedRange', { count: range })}</span>}
@@ -146,7 +154,8 @@ export default function DoorsCalendarModal({ apartment }) {
               setMode('year')
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
                 setYear(y)
                 setMode('year')
               }

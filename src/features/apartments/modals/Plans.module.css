@@ -9,6 +9,54 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Ported from reference lines 720-732 (single-column plan row on small phones) */
+@media (max-width: 620px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .plan {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 12px;
+    padding: 14px 15px;
+  }
+  .curBadge {
+    display: none;
+  }
+  .info {
+    width: auto;
+    flex: 1;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .pname {
+    margin-bottom: 2px;
+  }
+  .price {
+    font-size: 22px;
+  }
+  .per {
+    display: none;
+  }
+  .divider {
+    display: none;
+  }
+  .specs {
+    display: none;
+  }
+  .cta {
+    width: auto;
+    margin-top: 0;
+    flex: 0 0 auto;
+  }
+  .cta button {
+    width: auto;
+    padding: 0 18px;
+  }
+}
 .plan {
   border: 1.5px solid var(--line-2);
   border-radius: 16px;
@@ -92,7 +140,7 @@
   width: 100%;
   margin-top: 15px;
 }
-.cta .btn {
+.cta button {
   width: 100%;
 }
 .activeCta {
