@@ -1,0 +1,27 @@
+/* Ported from reference/orbi-portal-redesign.html lines 322-326 */
+.copy-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  transition: var(--t);
+}
+.copy-btn:hover {
+  border-color: var(--teal);
+  color: var(--teal-ink);
+}
+.copy-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.copy-btn.ok {
+  color: var(--pos-ink);
+  border-color: var(--pos-bg);
+  background: var(--pos-bg);
+}

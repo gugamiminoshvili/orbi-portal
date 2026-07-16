@@ -1,0 +1,384 @@
+/* Ported from reference/orbi-portal-redesign.html lines 203-205 (.money),
+   308-326 (overview block / qr / copy), 329-352 (service accordion cards),
+   387-397 (sub-panel / ring), 435-438 (warn-box) */
+
+.money {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+.money.pos {
+  color: var(--pos-ink);
+}
+.money.neg {
+  color: var(--neg-ink);
+}
+
+/* ---------- Detail header ---------- */
+.head {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+.head-icon {
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex: none;
+  box-shadow: 0 8px 18px rgba(20, 24, 60, .14);
+}
+.head-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -.3px;
+}
+.head-sub {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- Apartment information card ---------- */
+.ov-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.ov-head h3 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+.ov-body {
+  padding: 22px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+.meta {
+  flex: 1;
+  min-width: 0;
+}
+.ov-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ov-meta .cell {
+  background: #fff;
+  padding: 13px 15px;
+  min-width: 0;
+}
+.cell {
+  background: #fff;
+  padding: 14px 16px;
+}
+.k {
+  color: var(--muted);
+  font-size: 10.5px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.v {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.qr-corner {
+  flex: none;
+  width: 128px;
+  text-align: center;
+}
+.qr {
+  width: 108px;
+  height: 108px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: 9px;
+  background: #fff;
+  cursor: pointer;
+  transition: var(--t);
+  margin: 0 auto;
+}
+.qr:hover {
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+}
+.qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ql {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.copywrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 26px 0 14px;
+}
+
+/* ---------- Service accordion cards ---------- */
+.svc {
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.svc-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+}
+.svc-head:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.svc-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.svc-tt {
+  min-width: 0;
+}
+.svc-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.svc-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.svc-metric {
+  margin-left: auto;
+  text-align: right;
+  padding-left: 12px;
+}
+.m-lab {
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  font-weight: 600;
+}
+.m-val {
+  font-weight: 700;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+.svc-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding-left: 12px;
+}
+.chev {
+  transition: transform var(--t);
+  color: var(--muted);
+  flex: none;
+}
+.svc.open .chev {
+  transform: rotate(180deg);
+}
+.svc-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .3s cubic-bezier(.4, 0, .2, 1);
+}
+.svc.open .svc-body {
+  grid-template-rows: 1fr;
+}
+.inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.svc-inner {
+  padding: 2px 18px 18px;
+}
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.svc-grid .cell {
+  background: #fff;
+  padding: 14px 16px;
+}
+.svc-grid .k {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.svc-grid .v {
+  font-weight: 600;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.svc-cta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Internet & TV sub-panel + ring ---------- */
+.sub-panel {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.sub-panel .cell {
+  background: #fff;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sub-panel .cell.ringc {
+  align-items: center;
+  flex-direction: row;
+  gap: 14px;
+}
+.sub-panel .k {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.sub-panel .v {
+  font-weight: 600;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.sub-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.boost-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--teal-soft);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--teal-ink);
+  font-weight: 600;
+}
+.neg-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid var(--neg-bg);
+  background: var(--neg-bg);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+/* ---------- Warning box (paused service) ---------- */
+.warn-box {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: var(--warn-bg);
+  border: 1px solid #ffe1a8;
+  border-radius: 12px;
+}
+.wi {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--warn-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.warn-box h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.warn-box p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .sub-panel {
+    grid-template-columns: 1fr;
+  }
+  .sub-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .sub-actions .btn {
+    width: 100%;
+  }
+}
