@@ -1,7 +1,18 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Icon from '../ui/Icon'
+import { useAuth } from '../../context/AuthContext'
 import styles from './Sidebar.module.css'
+
+function initials(fullname) {
+  return (fullname || '')
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+}
 
 const NAV = [
   { group: 'common:main', items: [
@@ -22,6 +33,13 @@ const NAV = [
 
 export default function Sidebar({ open, onNavigate }) {
   const { t } = useTranslation()
+  const { user, mock, logout } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/login')
+  }
 
   return (
     <aside
@@ -66,11 +84,31 @@ export default function Sidebar({ open, onNavigate }) {
         ))}
       </nav>
       <div className={styles['side-foot']}>
-        <div className={styles.av}>GM</div>
-        <div className={styles.nm}>
-          Guga M.
-          <small>Owner · 5 units</small>
-        </div>
+        {mock ? (
+          <>
+            <div className={styles.av}>GM</div>
+            <div className={styles.nm}>
+              Guga M.
+              <small>Owner · 5 units</small>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className={styles.av}>{initials(user?.fullname)}</div>
+            <div className={styles.nm}>
+              {user?.fullname}
+              <small>{t('common:owner')}</small>
+            </div>
+            <button
+              type="button"
+              className={styles.logoutBtn}
+              aria-label={t('common:logout')}
+              onClick={handleLogout}
+            >
+              <Icon name="logout" />
+            </button>
+          </>
+        )}
       </div>
     </aside>
   )

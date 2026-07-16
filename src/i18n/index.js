@@ -18,7 +18,7 @@ i18n.use(initReactI18next).init({
   },
   lng: storedLang || 'en',
   fallbackLng: 'en',
-  ns: ['common', 'news', 'apartments', 'pay', 'support'],
+  ns: ['common', 'news', 'apartments', 'pay', 'support', 'auth'],
   defaultNS: 'common',
   interpolation: {
     escapeValue: false,

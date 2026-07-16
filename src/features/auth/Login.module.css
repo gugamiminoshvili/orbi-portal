@@ -1,0 +1,88 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: var(--s6);
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(228, 231, 240, .7);
+  padding: var(--s8) var(--s7);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--s7);
+}
+.brand .logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex: none;
+  background: linear-gradient(135deg, var(--teal), #28a862);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow: 0 6px 16px rgba(26, 138, 78, .4);
+}
+.brand b {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: .2px;
+}
+.brand span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.subtitle {
+  margin: 0 0 var(--s6);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.error {
+  margin: 0;
+  color: var(--neg-ink);
+  background: var(--neg-bg);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-size: 12.5px;
+}
+
+.submitBtn {
+  width: 100%;
+}
+
+.resendBtn {
+  width: 100%;
+}

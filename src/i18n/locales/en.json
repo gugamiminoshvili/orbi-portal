@@ -21,6 +21,8 @@
     "ariaHelp": "Help",
     "ariaBreadcrumb": "Breadcrumb",
     "ariaMainNav": "Main navigation",
+    "owner": "Owner",
+    "logout": "Log out",
     "cancel": "Cancel",
     "close": "Close",
     "download": "Download",
@@ -307,6 +309,24 @@
       "access": { "label": "Access Card Request", "desc": "Request a new access card (Digital Key)" },
       "internet": { "label": "Internet & TV Issue", "desc": "Problems with internet or TV services" },
       "other": { "label": "Other Request", "desc": "Other issues or requests" }
+    }
+  },
+  "auth": {
+    "title": "Sign in to ORBI",
+    "subtitle": "Access your apartments, payments and support in one place.",
+    "username": "Username",
+    "password": "Password",
+    "signIn": "Sign in",
+    "verifyTitle": "Verify your device",
+    "verifyBody": "We've sent a 6-digit code to your registered phone. Enter it below to continue.",
+    "codePlaceholder": "6-digit code",
+    "confirm": "Confirm",
+    "resend": "Resend code",
+    "errors": {
+      "CREDENTIALS_DO_NOT_MATCH": "Incorrect username or password.",
+      "CUSTOMER_IS_BLOCKED": "This account has been blocked. Please contact support.",
+      "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
+      "generic": "Something went wrong. Please try again."
     }
   }
 }

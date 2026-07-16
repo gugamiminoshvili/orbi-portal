@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
+import { RequireAuth } from './context/AuthContext'
+import LoginPage from './features/auth/LoginPage'
 import NewsListPage from './features/news/NewsListPage'
 import NewsDetailPage from './features/news/NewsDetailPage'
 import ApartmentsPage from './features/apartments/ApartmentsPage'
@@ -13,7 +15,8 @@ import TicketChatPane from './features/support/TicketChatPane'
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<AppShell />}>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAuth><AppShell /></RequireAuth>}>
         <Route path="/" element={<Navigate to="/news" replace />} />
         <Route path="/news" element={<NewsListPage />} />
         <Route path="/news/:id" element={<NewsDetailPage />} />
