@@ -10,7 +10,7 @@ import styles from './Login.module.css'
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation()
-  const { status, login, submitVerify, mock } = useAuth()
+  const { status, login, submitVerify } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -26,14 +26,14 @@ export default function LoginPage() {
   useEffect(() => {
     if (status !== 'authed') return
     const from = location.state?.from
-    const dest = from ? `${from.pathname}${from.search || ''}` : mock ? '/' : '/apartments'
+    const dest = from ? `${from.pathname}${from.search || ''}` : '/apartments'
     navigate(dest, { replace: true })
-  }, [status, mock, location.state, navigate])
+  }, [status, location.state, navigate])
 
   function errorMessage(err) {
-    const code = err instanceof ApiError ? err.errorCode : null
-    if (code && i18n.exists(`auth:errors.${code}`)) {
-      return t(`auth:errors.${code}`)
+    const errorCode = err instanceof ApiError ? err.errorCode : null
+    if (errorCode && i18n.exists(`auth:errors.${errorCode}`)) {
+      return t(`auth:errors.${errorCode}`)
     }
     return t('auth:errors.generic')
   }

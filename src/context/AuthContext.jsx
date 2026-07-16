@@ -48,6 +48,9 @@ export function AuthProvider({ children, mock = USE_MOCK }) {
       })
       .catch(() => {
         if (cancelled) return
+        // The stored tokens couldn't produce a user — they're stale. Clear
+        // them so tokenStore.hasSession() stops reporting a session.
+        tokenStore.clear()
         setStatus('anon')
       })
     return () => {
@@ -55,17 +58,38 @@ export function AuthProvider({ children, mock = USE_MOCK }) {
     }
   }, [mock])
 
+  // The /mobileApi/auth/ response only carries a few account fields
+  // (user_id, smsPhone, mail, privileged — notably NO fullname), and the
+  // verify endpoint returns nothing user-shaped at all. The sidebar footer
+  // needs the full profile, so once a session is fully established we fetch
+  // /mobileApi/user/ and merge it over whatever login already gave us.
+  // Best-effort: a failed profile fetch must not fail the sign-in itself.
+  const hydrateProfile = useCallback(async (base = {}) => {
+    try {
+      const profile = await authApi.getUser()
+      setUser({ ...base, ...profile })
+    } catch {
+      setUser(base)
+    }
+  }, [])
+
   const login = useCallback(async (username, password) => {
     const result = await authApi.login(username, password)
     setUser(result.user)
-    setStatus(result.status === 'verify' ? 'verify' : 'authed')
+    if (result.status === 'verify') {
+      setStatus('verify')
+    } else {
+      setStatus('authed')
+      await hydrateProfile(result.user)
+    }
     return result
-  }, [])
+  }, [hydrateProfile])
 
   const submitVerify = useCallback(async (code) => {
     await authApi.verifyCode(code)
     setStatus('authed')
-  }, [])
+    await hydrateProfile()
+  }, [hydrateProfile])
 
   const logout = useCallback(async () => {
     await authApi.logout()

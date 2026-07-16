@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import '../../i18n'
-import { AuthProvider, RequireAuth } from '../../context/AuthContext'
+import { AuthProvider, RequireAuth, useAuth } from '../../context/AuthContext'
 import { ApiError } from '../../api/errors'
 import LoginPage from './LoginPage'
 import * as authApi from '../../api/auth'
@@ -90,6 +90,36 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect username or password.')
+  })
+
+  test('successful login hydrates the full profile via getUser', async () => {
+    authApi.login.mockResolvedValueOnce({ status: 'ok', user: { user_id: 1, mail: 'a@b.com' } })
+    authApi.getUser.mockResolvedValueOnce({ fullname: 'Test User', user_id: 1 })
+
+    function WhoAmI() {
+      const { user } = useAuth()
+      return <div>hello {user?.fullname}</div>
+    }
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <AuthProvider mock={false}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/apartments" element={<WhoAmI />} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    // Redirected off /login to the default destination, with the profile
+    // fetched from /mobileApi/user/ merged into the auth user.
+    expect(await screen.findByText('hello Test User')).toBeInTheDocument()
+    expect(authApi.getUser).toHaveBeenCalledTimes(1)
   })
 
   test('shows the device-verification step when login returns status verify', async () => {
