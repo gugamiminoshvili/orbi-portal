@@ -4,8 +4,8 @@ import NewsListPage from './features/news/NewsListPage'
 import NewsDetailPage from './features/news/NewsDetailPage'
 import ApartmentsPage from './features/apartments/ApartmentsPage'
 import ApartmentDetailPage from './features/apartments/ApartmentDetailPage'
+import PayPage from './features/pay/PayPage'
 import {
-  PayPage,
   SupportPage,
   NewTicketPane,
   TicketChatPane,

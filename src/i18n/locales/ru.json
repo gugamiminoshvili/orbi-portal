@@ -231,6 +231,30 @@
     "pauseServiceBtn": "Приостановить услугу",
     "pausedToast": "Интернет и ТВ приостановлены — применяется плата за паузу {{fee}}/мес"
   },
-  "pay": {},
+  "pay": {
+    "title": "Оплата услуг — {{code}}",
+    "amountDue": "К оплате",
+    "amountToPay": "Сумма к оплате (₾)",
+    "partialHint": "Вы можете оплатить полностью или частично.",
+    "invalidAmount": "Введите корректную сумму",
+    "stepAmount": "Сумма",
+    "stepMethod": "Способ",
+    "stepConfirm": "Подтвердить",
+    "paymentMethodLabel": "Способ оплаты",
+    "visaLabel": "Visa •••• 4821",
+    "mcLabel": "Mastercard •••• 2207",
+    "bankLabel": "Банковский перевод",
+    "reviewTitle": "Проверка и подтверждение",
+    "apartmentLabel": "Апартамент",
+    "totalLabel": "Итого",
+    "authNotice": "Подтверждая, вы разрешаете ORBI списать средства с выбранного способа оплаты. Квитанция будет отправлена вам на почту.",
+    "payAmount": "Оплатить {{amount}}",
+    "successTitle": "Платёж успешен",
+    "paidFor": "{{amount}} оплачено за {{code}}",
+    "refLine": "Референс {{ref}} · Квитанция отправлена на почту.",
+    "receipt": "Квитанция",
+    "receiptDownloadedToast": "Квитанция скачана",
+    "backToApartment": "Назад к апартаменту"
+  },
   "support": {}
 }

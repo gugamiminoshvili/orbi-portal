@@ -229,6 +229,30 @@
     "pauseServiceBtn": "სერვისის შეჩერება",
     "pausedToast": "ინტერნეტი და TV შეჩერდა — მოქმედებს {{fee}}/თვე შეჩერების საფასური"
   },
-  "pay": {},
+  "pay": {
+    "title": "სერვისების გადახდა — {{code}}",
+    "amountDue": "გადასახდელი თანხა",
+    "amountToPay": "გადასახდელი თანხა (₾)",
+    "partialHint": "შეგიძლიათ გადაიხადოთ სრული ან ნაწილობრივი თანხა.",
+    "invalidAmount": "შეიყვანეთ სწორი თანხა",
+    "stepAmount": "თანხა",
+    "stepMethod": "მეთოდი",
+    "stepConfirm": "დადასტურება",
+    "paymentMethodLabel": "გადახდის მეთოდი",
+    "visaLabel": "Visa •••• 4821",
+    "mcLabel": "Mastercard •••• 2207",
+    "bankLabel": "საბანკო გადარიცხვა",
+    "reviewTitle": "გადახედვა და დადასტურება",
+    "apartmentLabel": "აპარტამენტი",
+    "totalLabel": "სულ",
+    "authNotice": "დადასტურებით თქვენ ანიჭებთ ORBI-ს უფლებას ჩამოჭრას თანხა არჩეული მეთოდით. ქვითარი გამოგეგზავნებათ ელფოსტაზე.",
+    "payAmount": "გადახდა {{amount}}",
+    "successTitle": "გადახდა წარმატებულია",
+    "paidFor": "{{amount}} გადახდილია {{code}}-სთვის",
+    "refLine": "რეფერენსი {{ref}} · ქვითარი გამოგზავნილია ელფოსტაზე.",
+    "receipt": "ქვითარი",
+    "receiptDownloadedToast": "ქვითარი ჩამოტვირთულია",
+    "backToApartment": "აპარტამენტზე დაბრუნება"
+  },
   "support": {}
 }

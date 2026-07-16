@@ -229,6 +229,30 @@
     "pauseServiceBtn": "Pause service",
     "pausedToast": "Internet & TV paused — {{fee}}/mo pause fee applies"
   },
-  "pay": {},
+  "pay": {
+    "title": "Pay services — {{code}}",
+    "amountDue": "Amount due",
+    "amountToPay": "Amount to pay (₾)",
+    "partialHint": "You can pay the full balance or a partial amount.",
+    "invalidAmount": "Enter a valid amount",
+    "stepAmount": "Amount",
+    "stepMethod": "Method",
+    "stepConfirm": "Confirm",
+    "paymentMethodLabel": "Payment method",
+    "visaLabel": "Visa •••• 4821",
+    "mcLabel": "Mastercard •••• 2207",
+    "bankLabel": "Bank transfer",
+    "reviewTitle": "Review & confirm",
+    "apartmentLabel": "Apartment",
+    "totalLabel": "Total",
+    "authNotice": "By confirming you authorize ORBI to charge the selected method. A receipt will be emailed to you.",
+    "payAmount": "Pay {{amount}}",
+    "successTitle": "Payment successful",
+    "paidFor": "{{amount}} paid for {{code}}",
+    "refLine": "Reference {{ref}} · A receipt has been emailed.",
+    "receipt": "Receipt",
+    "receiptDownloadedToast": "Receipt downloaded",
+    "backToApartment": "Back to apartment"
+  },
   "support": {}
 }
