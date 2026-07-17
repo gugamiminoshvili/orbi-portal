@@ -46,8 +46,13 @@ export default function PayPage() {
   const [result, setResult] = useState(null)
   // Real mode only (Task I7): the payment-provider url returned by
   // payService, kept around so [Reopen payment page] can re-open the same
-  // tab without another POST /mobileApi/payment/.
+  // tab without another POST /mobileApi/payment/. `blocked` flips when the
+  // browser's popup blocker eats the automatic window.open — a real risk
+  // here, since that open runs after an await rather than synchronously in
+  // the click handler — and swaps the opened-step copy to point at the
+  // Reopen button, whose click-driven open will succeed.
   const [paymentUrl, setPaymentUrl] = useState(null)
+  const [blocked, setBlocked] = useState(false)
 
   useCrumbs(
     apt
@@ -121,20 +126,40 @@ export default function PayPage() {
     handleRealPay(amountValue)
   }
 
+  // Opens the hosted-checkout url in a new tab with the opener reference
+  // severed. Deliberately NOT window.open(url, '_blank', 'noopener'): the
+  // 'noopener' feature makes window.open return null by spec even when the
+  // tab opens fine, which would be indistinguishable from a popup-blocked
+  // open — so open plain '_blank', null out win.opener on the returned
+  // handle (same isolation), and let null mean "blocked".
+  function openPaymentTab(url) {
+    const win = window.open(url, '_blank')
+    if (win) win.opener = null
+    return Boolean(win)
+  }
+
   // Real mode (Task I7): no Method/Confirm steps — POST /mobileApi/payment/
   // for a hosted-checkout url, open it in a new tab, then show the
-  // "payment opened" step with a way to reopen the same tab.
+  // "payment opened" step with a way to reopen the same tab. Errors
+  // (ApiError envelope, network, failed refresh) keep the user on the
+  // Amount step with a toast and a re-enabled Continue button — same
+  // try/catch-toast shape as TicketChatPane's handleFileChange.
   async function handleRealPay(amt) {
     setProcessing(true)
-    const res = await payService(apt.id, { amount: amt, epcode: apt.epcode, lang: langToApi(i18n.language) })
-    setProcessing(false)
-    setPaymentUrl(res.url)
-    window.open(res.url, '_blank', 'noopener')
-    setStep(2)
+    try {
+      const res = await payService(apt.id, { amount: amt, epcode: apt.epcode, lang: langToApi(i18n.language) })
+      setPaymentUrl(res.url)
+      setBlocked(!openPaymentTab(res.url))
+      setStep(2)
+    } catch {
+      toast(t('pay:paymentErrorToast'))
+    } finally {
+      setProcessing(false)
+    }
   }
 
   function reopenPayment() {
-    if (paymentUrl) window.open(paymentUrl, '_blank', 'noopener')
+    if (paymentUrl && openPaymentTab(paymentUrl)) setBlocked(false)
   }
 
   async function handlePay() {
@@ -183,7 +208,9 @@ export default function PayPage() {
             />
           )}
           {USE_MOCK && step === 4 && result && <SuccessStep apt={apt} result={result} toast={toast} t={t} />}
-          {!USE_MOCK && step === 2 && <PaymentOpenedStep apt={apt} onReopen={reopenPayment} t={t} />}
+          {!USE_MOCK && step === 2 && (
+            <PaymentOpenedStep apt={apt} blocked={blocked} onReopen={reopenPayment} t={t} />
+          )}
         </Card>
       </div>
     </div>
@@ -366,10 +393,13 @@ function SuccessStep({ apt, result, toast, t }) {
 }
 
 // Real mode only (Task I7): replaces the mock wizard's Method/Confirm/Success
-// steps. payService's POST already ran and opened the hosted-checkout url in
-// a new tab (see PayPage's handleRealPay) — this step just confirms that and
-// offers to reopen it, since the new tab can be closed or lost by accident.
-function PaymentOpenedStep({ apt, onReopen, t }) {
+// steps. payService's POST already ran and (popup blockers permitting)
+// opened the hosted-checkout url in a new tab (see PayPage's handleRealPay)
+// — this step confirms that and offers to reopen it, since the new tab can
+// be closed or lost by accident. When `blocked` (the automatic open was
+// eaten by the popup blocker) the body copy points at the Reopen button
+// instead of claiming a tab opened.
+function PaymentOpenedStep({ apt, blocked, onReopen, t }) {
   return (
     <>
       <Card.Head>
@@ -382,7 +412,7 @@ function PaymentOpenedStep({ apt, onReopen, t }) {
             <Icon name="card" size={34} />
           </div>
           <h3 className={styles['success-title']}>{t('pay:paymentOpenedTitle')}</h3>
-          <p className={styles['success-sub']}>{t('pay:paymentOpenedBody')}</p>
+          <p className={styles['success-sub']}>{t(blocked ? 'pay:paymentBlockedBody' : 'pay:paymentOpenedBody')}</p>
         </div>
       </Card.Pad>
       <div className={styles.foot}>

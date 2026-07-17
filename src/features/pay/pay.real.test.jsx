@@ -52,7 +52,11 @@ beforeEach(() => {
 describe('PayPage (real mode)', () => {
   test('Continue POSTs /mobileApi/payment/ and opens the returned url in a new tab', async () => {
     http.mockResolvedValueOnce({ url: 'https://pay.example.com/session/abc123' })
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => {})
+    // window.open with the 'noopener' *feature* returns null by spec, which
+    // would be indistinguishable from a blocked popup — so PayPage opens a
+    // plain '_blank' tab and severs win.opener manually on the handle.
+    const fakeWin = { opener: {} }
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => fakeWin)
 
     renderApp(['/pay/501'])
 
@@ -67,16 +71,54 @@ describe('PayPage (real mode)', () => {
     const body = JSON.parse(opts.body)
     expect(body).toMatchObject({ epcode: 'GE-BAT-OCT-A-3026', amount: 95, serviceType: 'apartment', lang: 'en' })
 
-    expect(openSpy).toHaveBeenCalledWith('https://pay.example.com/session/abc123', '_blank', 'noopener')
+    expect(openSpy).toHaveBeenCalledWith('https://pay.example.com/session/abc123', '_blank')
+    expect(fakeWin.opener).toBeNull()
 
     // real mode shows only 2 steps (no Method/Confirm)
     expect(screen.queryByText('Method')).not.toBeInTheDocument()
     expect(screen.queryByText('Confirm')).not.toBeInTheDocument()
     expect(screen.getByText('Payment')).toBeInTheDocument()
+    // not the popup-blocked variant
+    expect(screen.queryByText(/browser blocked/)).not.toBeInTheDocument()
 
     openSpy.mockClear()
     fireEvent.click(screen.getByText(/Reopen payment/))
-    expect(openSpy).toHaveBeenCalledWith('https://pay.example.com/session/abc123', '_blank', 'noopener')
+    expect(openSpy).toHaveBeenCalledWith('https://pay.example.com/session/abc123', '_blank')
+
+    openSpy.mockRestore()
+  })
+
+  test('rejected payService shows an error toast and re-enables Continue', async () => {
+    http.mockRejectedValueOnce(new Error('provider down'))
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    renderApp(['/pay/501'])
+
+    expect(await screen.findByText(/₾95\.00/)).toBeInTheDocument()
+    const continueBtn = screen.getByText('Continue').closest('button')
+    fireEvent.click(continueBtn)
+
+    expect(await screen.findByText(/Couldn't open the payment page/)).toBeInTheDocument()
+    // still on the Amount step, button usable for a retry — not stuck on a spinner
+    expect(screen.getByLabelText(/Amount to pay/)).toBeInTheDocument()
+    expect(continueBtn).not.toBeDisabled()
+    expect(openSpy).not.toHaveBeenCalled()
+
+    openSpy.mockRestore()
+  })
+
+  test('popup-blocked window.open (null) renders the blocked fallback copy', async () => {
+    http.mockResolvedValueOnce({ url: 'https://pay.example.com/session/abc123' })
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    renderApp(['/pay/501'])
+
+    expect(await screen.findByText(/₾95\.00/)).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Continue'))
+
+    expect(await screen.findByText(/browser blocked the payment window/)).toBeInTheDocument()
+    // the Reopen button stays the clear CTA
+    expect(screen.getByText(/Reopen payment/)).toBeInTheDocument()
 
     openSpy.mockRestore()
   })

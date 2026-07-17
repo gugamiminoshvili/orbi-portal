@@ -259,6 +259,8 @@
     "backToApartment": "Back to apartment",
     "paymentOpenedTitle": "Payment window opened",
     "paymentOpenedBody": "We opened the secure payment page in a new tab. Complete your payment there — once it's done you can close that tab and return here.",
+    "paymentBlockedBody": "Your browser blocked the payment window — use the button below to open it.",
+    "paymentErrorToast": "Couldn't open the payment page — please try again.",
     "reopen": "Reopen payment page"
   },
   "support": {
