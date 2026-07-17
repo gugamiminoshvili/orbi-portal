@@ -24,14 +24,14 @@ single env switch to point at a real backend once one exists.
 ## Commands
 
 ```bash
-npm install        # install dependencies
-npm run dev         # start the Vite dev server
-npm test            # run the test suite once (vitest run)
-npm run test:watch  # run tests in watch mode
-npm run lint        # oxlint
-npm run build       # production build -> dist/
-npm run preview     # serve the production build locally
-npm run smoke       # manual live-backend check (needs VITE_API_BASE + test creds) — see "Backend integration"
+bun install        # install dependencies
+bun run dev        # start the Vite dev server
+bun run test       # run the test suite once (vitest run)
+bun run test:watch # run tests in watch mode
+bun run lint       # oxlint
+bun run build      # production build -> dist/
+bun run preview    # serve the production build locally
+bun run smoke      # manual live-backend check (needs VITE_API_BASE + test creds) — see "Backend integration"
 ```
 
 ## Environment / mock-to-real-API switch
@@ -56,7 +56,7 @@ VITE_USE_PROXY=false
   `VITE_API_BASE` directly, sidestepping CORS in local dev. See "Backend
   integration" below for the full mode matrix.
 
-Test credentials for the live smoke script (`npm run smoke`) go in
+Test credentials for the live smoke script (`bun run smoke`) go in
 `.env.local` instead — it's gitignored and never read by the app itself,
 only by the script:
 
@@ -94,7 +94,7 @@ src/
   utils/                 # format.js (fmt), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images), envFile.js (pure .env line parser, used by scripts/live-smoke.mjs)
   test/                  # vitest setup + smoke test
 scripts/
-  live-smoke.mjs         # manual, opt-in live-backend check — `npm run smoke` (see "Backend integration")
+  live-smoke.mjs         # manual, opt-in live-backend check — `bun run smoke` (see "Backend integration")
 reference/
   orbi-portal-redesign.html   # the design source of truth (do not delete)
 ```
@@ -130,8 +130,8 @@ already consumes, so `features/`/`components/` never had to change.
 | **Proxy-dev** | `VITE_USE_MOCK=false`, `VITE_API_BASE=<origin>`, `VITE_USE_PROXY=true` | Yes | Relative `/mobileApi/...`, proxied by the Vite dev server to `VITE_API_BASE` (`vite.config.js`'s `server.proxy`) | Local dev against a real backend whose CORS isn't (yet) configured for your dev origin |
 | **Direct** | `VITE_USE_MOCK=false`, `VITE_API_BASE=<origin>`, `VITE_USE_PROXY=false`/unset | Yes | `VITE_API_BASE` directly, from the browser | Production build (there's no dev server to proxy through), or local dev once the backend allows your origin via CORS |
 
-`VITE_USE_PROXY` only matters in `npm run dev` — a production build
-(`npm run build`/`preview`) always calls `VITE_API_BASE` directly, since
+`VITE_USE_PROXY` only matters in `bun run dev` — a production build
+(`bun run build`/`preview`) always calls `VITE_API_BASE` directly, since
 there's no Vite dev server running to proxy through. The interaction lives in
 two places: `vite.config.js` reads `VITE_API_BASE` via `loadEnv()` (function
 config form) and, when set, proxies `/mobileApi` → that origin; `apiBase()`
@@ -156,7 +156,7 @@ and you're back to a CORS error or a 404 against the Vite dev server.
 never run in CI) that exercises a real backend end to end:
 
 ```bash
-npm run smoke
+bun run smoke
 ```
 
 It reads `VITE_API_BASE`/`VITE_TEST_USER`/`VITE_TEST_PASS` from
@@ -217,7 +217,7 @@ comments in `src/api/adapters/*.js` for the full detail on each):
    wrong key.
 10. **Elided DTO shapes** (doc says only "..."/a bare description, no field
     names) — all guessed from context and flagged in the corresponding
-    adapter, to be corrected once real payloads are seen via `npm run
+    adapter, to be corrected once real payloads are seen via `bun run
     smoke`:
     - `GET /mobileApi/flat/{flat_id}/` (detail-only fields:
       building/addr/cadastral/waterCode/apCode)
@@ -252,7 +252,7 @@ To wire up more of a real backend once these are answered:
 2. Extend the `else` branch of the relevant `endpoints/*.js` function and,
    if the DTO needs mapping, add/adjust an `adapt*` in `adapters/*.js` —
    fixtures for adapter unit tests live in `adapters/__fixtures__/`.
-3. Run `npm run smoke` against a real account to sanity-check the new
+3. Run `bun run smoke` against a real account to sanity-check the new
    branch before it reaches the UI.
 4. Delete the corresponding mock module(s) under `api/mock/` only once
    every endpoint that reads them has been switched over — several mock

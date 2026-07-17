@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Live smoke test against a REAL backend. Manual/opt-in only (`npm run
+// Live smoke test against a REAL backend. Manual/opt-in only (`bun run
 // smoke`) — never run in CI or vitest, and deliberately plain Node (no
 // vitest, no Vite, no import.meta.env) so it can be run standalone once a
 // staging URL + test account exist (docs/specs/2026-07-16-backend-integration-design.md
@@ -40,7 +40,7 @@ function readEnvFile(name) {
 }
 
 // Precedence low -> high: .env, .env.local, real process.env — the same
-// order Vite itself applies, so `npm run smoke` reads whatever `npm run dev`
+// order Vite itself applies, so `bun run smoke` reads whatever `bun run dev`
 // would.
 const env = { ...readEnvFile('.env'), ...readEnvFile('.env.local'), ...process.env }
 
@@ -62,7 +62,7 @@ if (!API_BASE) {
 if (!TEST_USER || !TEST_PASS) {
   refuse(
     'VITE_TEST_USER and/or VITE_TEST_PASS are not set. Add them to .env.local ' +
-      '(gitignored — never commit real credentials) before running `npm run smoke`.'
+      '(gitignored — never commit real credentials) before running `bun run smoke`.'
   )
 }
 
