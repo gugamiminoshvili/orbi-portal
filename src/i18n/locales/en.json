@@ -177,8 +177,29 @@
     "subscriptionDownloaded": "Subscription details downloaded",
     "openCalendar": "Open calendar",
     "doorsModalTitle": "Doors history — {{code}}",
-    "doorsMonths": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-    "doorsDow": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "doorsMonths": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "doorsDow": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
     "tabYears": "Years",
     "tabYear": "Year",
     "tabMonth": "Month",
@@ -263,7 +284,9 @@
     "paymentOpenedBody": "We opened the secure payment page in a new tab. Complete your payment there — once it's done you can close that tab and return here.",
     "paymentBlockedBody": "Your browser blocked the payment window — use the button below to open it.",
     "paymentErrorToast": "Couldn't open the payment page — please try again.",
-    "reopen": "Reopen payment page"
+    "reopen": "Reopen payment page",
+    "comingSoonTitle": "Multi-apartment payments are coming soon",
+    "comingSoonBody": "We're building a faster way to pay maintenance and utilities across all your apartments at once. In the meantime, pay from each apartment's page."
   },
   "support": {
     "title": "Support",
@@ -313,12 +336,30 @@
       "closed": "This ticket is closed. Start a new ticket if you need further help."
     },
     "topics": {
-      "payment": { "label": "Payment & Billing Issues", "desc": "Problems with payments, charges or your account" },
-      "technical": { "label": "Technical Problem", "desc": "Technical issues or something isn't working" },
-      "booking": { "label": "Booking Questions", "desc": "Questions about your booking or reservation" },
-      "access": { "label": "Access Card Request", "desc": "Request a new access card (Digital Key)" },
-      "internet": { "label": "Internet & TV Issue", "desc": "Problems with internet or TV services" },
-      "other": { "label": "Other Request", "desc": "Other issues or requests" }
+      "payment": {
+        "label": "Payment & Billing Issues",
+        "desc": "Problems with payments, charges or your account"
+      },
+      "technical": {
+        "label": "Technical Problem",
+        "desc": "Technical issues or something isn't working"
+      },
+      "booking": {
+        "label": "Booking Questions",
+        "desc": "Questions about your booking or reservation"
+      },
+      "access": {
+        "label": "Access Card Request",
+        "desc": "Request a new access card (Digital Key)"
+      },
+      "internet": {
+        "label": "Internet & TV Issue",
+        "desc": "Problems with internet or TV services"
+      },
+      "other": {
+        "label": "Other Request",
+        "desc": "Other issues or requests"
+      }
     }
   },
   "auth": {
@@ -338,5 +379,34 @@
       "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "An overview of your balances, exchange rates, and contracts.",
+    "totalDebtTitle": "Total debt",
+    "maintenanceLabel": "Maintenance",
+    "utilitiesLabel": "Utilities",
+    "totalUsdLabel": "Total (USD)",
+    "payNow": "Pay Now",
+    "donutAria": "{{maintenance}} maintenance, {{utilities}} utilities",
+    "ratesTitle": "Exchange rates",
+    "ratesSource": "Source: {{source}}",
+    "contractsTitle": "Contracts",
+    "contractsEmpty": "No active contracts",
+    "contractsCount_one": "{{count}} contract",
+    "contractsCount_other": "{{count}} contracts",
+    "utilitiesTileTitle": "Utilities",
+    "maintenanceTileTitle": "Maintenance",
+    "unpaidInvoicesTitle": "Unpaid invoices",
+    "unpaidInvoicesCount_one": "{{count}} invoice",
+    "unpaidInvoicesCount_other": "{{count}} invoices",
+    "activeOffersTitle": "Active offers",
+    "additionalContractsTitle": "Additional contracts",
+    "payNowAction": "Pay Now",
+    "payNowActionSub": "Settle your maintenance and utility balances",
+    "requestMaintenanceAction": "Request maintenance",
+    "requestMaintenanceActionSub": "Open a new maintenance ticket",
+    "contactSupportAction": "Contact support",
+    "contactSupportActionSub": "Chat with the ORBI support team"
   }
 }

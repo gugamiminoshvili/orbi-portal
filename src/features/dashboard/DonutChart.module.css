@@ -1,0 +1,8 @@
+.donut {
+  flex: none;
+  display: inline-flex;
+}
+.donut svg {
+  transform: rotate(-90deg);
+  display: block;
+}

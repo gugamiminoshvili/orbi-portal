@@ -20,8 +20,10 @@ afterEach(() => {
 test('sidebar shows nav and disabled items do not navigate', () => {
   renderApp(['/news'])
   expect(screen.getByText('My Apartments')).toBeInTheDocument()
-  const dash = screen.getByText('Dashboard')
-  expect(dash.closest('[aria-disabled="true"]')).toBeTruthy()
+  // Dashboard became a real nav item in Phase 3 (P3-2) — Invoices is still
+  // one of the genuinely disabled/coming-soon items.
+  const invoices = screen.getByText('Invoices')
+  expect(invoices.closest('[aria-disabled="true"]')).toBeTruthy()
 })
 
 test('lang switch changes sidebar language', async () => {
@@ -36,9 +38,14 @@ test('sidebar footer shows fixed 5 units, not the prototype 3-unit bug', () => {
   expect(screen.getByText('Owner · 5 units')).toBeInTheDocument()
 })
 
-test('root redirects to /news and unknown paths redirect to /news', () => {
+test('root redirects to /dashboard and unknown paths redirect to /dashboard', () => {
   renderApp(['/'])
-  expect(screen.getByRole('heading', { name: 'News & Announcements' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+})
+
+test('unknown paths redirect to /dashboard', () => {
+  renderApp(['/some/unknown/path'])
+  expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
 })
 
 test('breadcrumbs render a separator and bold the last (current) item', () => {

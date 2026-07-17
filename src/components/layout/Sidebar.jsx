@@ -16,7 +16,7 @@ function initials(fullname) {
 
 const NAV = [
   { group: 'common:main', items: [
-    { key: 'dashboard', icon: 'home', label: 'common:dashboard', disabled: true },
+    { key: 'dashboard', icon: 'home', label: 'common:dashboard', to: '/dashboard' },
     { key: 'apartments', icon: 'building', label: 'common:myApartments', to: '/apartments' },
     { key: 'news', icon: 'doc', label: 'common:news', to: '/news' },
   ] },
