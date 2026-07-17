@@ -1,7 +1,8 @@
 import { listNews, getNews } from './news'
 import { listApartments, getApartment, changePackage, pauseInternet, resumeInternet } from './apartments'
-import { payService } from './pay'
+import { payService, payMulti, downloadInvoice } from './pay'
 import { listTickets, createTicket, sendMessage } from './support'
+import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from './dashboard'
 
 test('listNews resolves items', async () => {
   const items = await listNews()
@@ -34,4 +35,32 @@ test('create ticket + message', async () => {
   expect(t.status).toBe('active')
   const t2 = await sendMessage(t.id, 'more')
   expect(t2.msgs.length).toBe(2)
+})
+test('getCommunals resolves the mock dashboard shape', async () => {
+  const { utilities, maintenance, byApartment } = await getCommunals()
+  expect(utilities.currency).toBe('GEL')
+  expect(maintenance.currency).toBe('USD')
+  expect(byApartment.length).toBeGreaterThan(0)
+})
+test('getRates resolves the static mock NBG snapshot', async () => {
+  const { rates, source } = await getRates()
+  expect(source).toBe('NBG')
+  expect(rates.map((r) => r.pair)).toEqual(['USD/GEL', 'EUR/GEL', '100RUB/GEL'])
+})
+test('getContractsSummary resolves the mock crm-less zero-state', async () => {
+  expect(await getContractsSummary()).toEqual({ empty: true })
+})
+test('getUnpaidInvoices resolves a count + list derived from mock services', async () => {
+  const { count, invoices } = await getUnpaidInvoices()
+  expect(count).toBe(invoices.length)
+  expect(count).toBeGreaterThan(0)
+})
+test('payMulti (mock) returns a fake redirect url regardless of method', async () => {
+  const res = await payMulti({ services: [{ epcode: '60011519', amount: 100, serviceType: 'apartment' }], method: 'card' })
+  expect(res).toEqual({ url: 'https://example.test/pay' })
+})
+test('downloadInvoice (mock) resolves a placeholder Blob', async () => {
+  const blob = await downloadInvoice(19365)
+  expect(blob).toBeInstanceOf(Blob)
+  expect(blob.type).toBe('application/pdf')
 })

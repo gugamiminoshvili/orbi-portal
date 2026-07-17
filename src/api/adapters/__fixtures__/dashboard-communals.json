@@ -1,0 +1,104 @@
+{
+  "communal": {
+    "electricityBalance_sum": 71.38,
+    "internet_debt_sum": 50,
+    "currency": "GEL",
+    "detailed": {
+      "electricity": {
+        "OCT.A.15.1519": {
+          "electricityBalanceGEL": -230.73,
+          "epcode": "60011519",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        },
+        "OCT.A.30.3028": {
+          "electricityBalanceGEL": -0.34,
+          "epcode": "60013028",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        },
+        "OCT.A.30.3031": {
+          "electricityBalanceGEL": 42.62,
+          "epcode": "60013031",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        },
+        "OCT.A.30.3026": {
+          "electricityBalanceGEL": 28.76,
+          "epcode": "60013026",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        }
+      },
+      "water": {
+        "OCT.A.15.1519": {
+          "indication": "5.00",
+          "epcode": "60011519",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        },
+        "OCT.A.30.3028": {
+          "indication": "190.00",
+          "epcode": "60013028",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        },
+        "OCT.A.30.3031": {
+          "indication": "96.00",
+          "epcode": "60013031",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        },
+        "OCT.A.30.3026": {
+          "indication": "176.00",
+          "epcode": "60013026",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        }
+      },
+      "internettv": {
+        "OCT.A.30.3026": {
+          "balance": 0,
+          "penalty": 0,
+          "cost": 50,
+          "balance_with_penalty": 0,
+          "cost_with_penalty": 50,
+          "epcode": "60013026",
+          "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+          "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+        }
+      }
+    }
+  },
+  "flatBalance": {
+    "balance_sum": 657.71,
+    "debt_sum": -637.12,
+    "currency": "USD",
+    "detailed": {
+      "OCT.A.15.1519": {
+        "apartmentBalance": -637.12,
+        "epcode": "60011519",
+        "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+        "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+      },
+      "OCT.A.30.3028": {
+        "apartmentBalance": 148.13,
+        "epcode": "60013028",
+        "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+        "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+      },
+      "OCT.A.30.3031": {
+        "apartmentBalance": 346.5,
+        "epcode": "60013031",
+        "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+        "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+      },
+      "OCT.A.30.3026": {
+        "apartmentBalance": 163.08,
+        "epcode": "60013026",
+        "companyId": "ae55f3e8-8861-11e8-80c7-000c29a07c37",
+        "display_services": ["water", "maintenance", "electricity", "orbinet", "doors"]
+      }
+    }
+  }
+}

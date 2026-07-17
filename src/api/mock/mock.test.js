@@ -3,6 +3,7 @@ import { APTS, blockGrad } from './apartments'
 import { SERVICES } from './services'
 import { PLANS, planById } from './plans'
 import { TICKETS, topicById } from './tickets'
+import { RATES, mockCommunals, mockContractsSummary, mockUnpaidInvoices } from './dashboard'
 
 test('news mock shape', () => {
   expect(NEWS).toHaveLength(14)
@@ -26,4 +27,36 @@ test('internet enrichment applied', () => {
 test('tickets and topics', () => {
   expect(TICKETS.length).toBeGreaterThan(0)
   expect(topicById(TICKETS[0].topic)).toBeDefined()
+})
+test('dashboard rates snapshot matches the live-probed NBG values', () => {
+  expect(RATES).toEqual([
+    { pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 },
+    { pair: 'EUR/GEL', rate: 3.0191, delta: 0.0119 },
+    { pair: '100RUB/GEL', rate: 3.3776, delta: -0.004 },
+  ])
+})
+test('mockCommunals derives byApartment from the real mock APTS/SERVICES', () => {
+  const { utilities, maintenance, byApartment } = mockCommunals()
+  expect(byApartment).toHaveLength(APTS.length)
+  const a1 = byApartment.find((a) => a.code === 'OCT.A.30.3026')
+  expect(a1).toMatchObject({
+    epcode: APTS.find((a) => a.id === 'A1').apCode,
+    electricity: SERVICES.A1.electricity.balance,
+    maintenance: SERVICES.A1.maintenance.balance,
+  })
+  expect(utilities.currency).toBe('GEL')
+  expect(maintenance.currency).toBe('USD')
+  // sums are the positive/negative split of the per-apartment balances
+  expect(maintenance.debtSum).toBeLessThanOrEqual(0)
+  expect(maintenance.sum).toBeGreaterThanOrEqual(0)
+})
+test('mockContractsSummary mirrors the live crm-less account', () => {
+  expect(mockContractsSummary()).toEqual({ empty: true })
+})
+test('mockUnpaidInvoices lists one row per negative-balance mock service', () => {
+  const { count, invoices } = mockUnpaidInvoices()
+  expect(count).toBe(invoices.length)
+  expect(invoices.every((inv) => inv.debtAmount > 0)).toBe(true)
+  // A1 has both a negative maintenance AND electricity balance
+  expect(invoices.filter((inv) => inv.flat === 'A1')).toHaveLength(2)
 })
