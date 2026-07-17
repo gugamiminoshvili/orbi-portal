@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useToast } from '../../../context/ToastContext'
 import { useModal } from '../../../context/ModalContext'
 import { resumeInternet } from '../../../api/endpoints/apartments'
+import { flatId } from '../../../api/adapters/apartments'
 import { planById } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
 import Icon from '../../../components/ui/Icon'
@@ -57,7 +58,7 @@ export default function InternetCard({ apt, onReload }) {
   async function handleResume() {
     setResuming(true)
     try {
-      await resumeInternet(apt.id)
+      await resumeInternet(flatId(apt))
       onReload?.()
       toast(t('apartments:resumedToast'))
     } catch {

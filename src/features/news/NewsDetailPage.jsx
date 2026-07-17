@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
+import DOMPurify from 'dompurify'
 import { getNews, listNews } from '../../api/endpoints/news'
 import { USE_MOCK } from '../../api/client'
 import { ph } from '../../utils/placeholder'
@@ -142,10 +143,11 @@ export default function NewsDetailPage() {
               <p><strong>{item.excerpt}</strong></p>
             )}
             {/* item.body is the CMS's own `content_*` HTML (first-party
-                content from the ORBI back office, same trust level as the
-                rest of the API) — rendered as-is inside the existing prose
-                styles. */}
-            <div dangerouslySetInnerHTML={{ __html: item.body || '' }} />
+                content from the ORBI back office) — still sanitized through
+                DOMPurify as defense-in-depth before hitting
+                dangerouslySetInnerHTML, so a compromised/mistyped CMS entry
+                can't run script in the portal. */}
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.body || '') }} />
           </div>
         )}
 

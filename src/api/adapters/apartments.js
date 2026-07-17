@@ -46,6 +46,15 @@ function roleFromCategory(category) {
   return ROLE_BY_CATEGORY[label] || null
 }
 
+// The id the BACKEND keys flats off (what /flat/{flat_id}/ and the internet
+// mutations' `flat_id` expect) is `objectId` (live: 9910), NOT the
+// property-relation `id` (748) the UI routes on. Every call site that sends
+// a flat id to the API must go through this helper. Mock apartments have no
+// objectId, so their own id ('A1'...) passes through untouched.
+export function flatId(apartment) {
+  return apartment?.objectId ?? apartment?.id
+}
+
 // Balances may arrive as numbers (live) or strings (doc examples). Parse
 // defensively: a missing or non-numeric value becomes 0 rather than NaN,
 // since balances flow straight into fmt() (utils/format.js) and arithmetic

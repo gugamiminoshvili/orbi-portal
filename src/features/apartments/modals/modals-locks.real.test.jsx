@@ -61,6 +61,8 @@ describe('PauseModal (real mode)', () => {
     expect(await screen.findByText(/Request failed/i)).toBeInTheDocument()
     expect(pauseBtn).not.toBeDisabled()
     expect(pauseInternet).toHaveBeenCalledTimes(1)
+    // addressed by the backend flat id (objectId), not the property relation id
+    expect(pauseInternet).toHaveBeenCalledWith(3026)
   })
 })
 
@@ -92,6 +94,8 @@ describe('InternetCard Resume (real mode)', () => {
     expect(await screen.findByText(/Request failed/i)).toBeInTheDocument()
     expect(resumeBtn).not.toBeDisabled()
     expect(resumeInternet).toHaveBeenCalledTimes(1)
+    // addressed by the backend flat id (objectId), not the property relation id
+    expect(resumeInternet).toHaveBeenCalledWith(3026)
   })
 })
 

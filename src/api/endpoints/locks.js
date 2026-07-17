@@ -13,6 +13,13 @@ import { adaptLockHistory } from '../adapters/finance'
 // api-reference.md). Neither UI caller (DoorsCard/DoorsCalendarModal) is
 // gated to call this in mock mode — it's real-mode only — but the mock
 // branch still exists so the function is safe to call under either mode.
+//
+// FLAG (Task L1): which id space `apartmentId` expects is UNCONFIRMED — the
+// live capture returned an empty array either way, so it couldn't
+// discriminate. DoorsCalendarModal currently passes the flat id (objectId,
+// via the `objectId ?? id` fallback) to match /flat/{flat_id}/; if live
+// door history stays empty for a flat with door records, try the
+// property-relation id instead.
 export async function getLockHistory(apartmentId, startDate, endDate) {
   if (USE_MOCK) {
     await delay()

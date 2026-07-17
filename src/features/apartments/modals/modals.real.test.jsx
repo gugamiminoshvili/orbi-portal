@@ -89,6 +89,9 @@ describe('ChangePackageModal (real mode)', () => {
     // still on the confirm step, button usable again for a retry — not stuck
     expect(confirmBtn).not.toBeDisabled()
     expect(changePackage).toHaveBeenCalledTimes(1)
+    // addressed by the backend flat id (objectId 3026, NOT the property
+    // relation id 501), with the whole plan object (netId/tvId carrier)
+    expect(changePackage).toHaveBeenCalledWith(3026, expect.objectContaining({ id: 901, netId: 11, tvId: 21 }))
   })
 
   test('a rejected getTariffs/getAgreement shows an error state with a working retry', async () => {
@@ -129,6 +132,8 @@ describe('BoostModal (real mode)', () => {
     // still on the confirm step, button usable again for a retry — not stuck
     expect(chargeBtn).not.toBeDisabled()
     expect(activateBoost).toHaveBeenCalledTimes(1)
+    // addressed by the backend flat id (objectId), not the property relation id
+    expect(activateBoost).toHaveBeenCalledWith(3026, 801)
   })
 
   test('a rejected getTariffs shows an error state with a retry that reloads the catalog', async () => {

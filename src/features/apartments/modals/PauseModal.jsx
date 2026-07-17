@@ -3,6 +3,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { pauseInternet } from '../../../api/endpoints/apartments'
+import { flatId } from '../../../api/adapters/apartments'
 import { fmt } from '../../../utils/format'
 import Button from '../../../components/ui/Button'
 import Icon from '../../../components/ui/Icon'
@@ -20,7 +21,7 @@ export default function PauseModal({ apartment, onDone }) {
   async function handlePause() {
     setSaving(true)
     try {
-      const result = await pauseInternet(apartment.id)
+      const result = await pauseInternet(flatId(apartment))
       closeModal()
       toast(t('apartments:pausedToast', { fee: fmt(result.tariff) }))
       onDone?.()

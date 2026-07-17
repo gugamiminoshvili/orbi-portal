@@ -4,6 +4,7 @@ import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { USE_MOCK } from '../../../api/client'
 import { activateBoost, getTariffs } from '../../../api/endpoints/apartments'
+import { flatId } from '../../../api/adapters/apartments'
 import { BOOSTS } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
 import Button from '../../../components/ui/Button'
@@ -60,7 +61,7 @@ export default function BoostModal({ apartment, onDone }) {
   async function handleActivate() {
     setSaving(true)
     try {
-      await activateBoost(apartment.id, selected)
+      await activateBoost(flatId(apartment), selected)
       closeModal()
       toast(t('apartments:boostActivatedToast', { name: selectedBoost.name, amount: fmt(selectedBoost.price) }))
       onDone?.()

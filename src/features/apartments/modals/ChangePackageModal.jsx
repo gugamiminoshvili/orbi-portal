@@ -4,6 +4,7 @@ import { useModal } from '../../../context/ModalContext'
 import { useToast } from '../../../context/ToastContext'
 import { USE_MOCK } from '../../../api/client'
 import { changePackage, getAgreement, getTariffs } from '../../../api/endpoints/apartments'
+import { flatId } from '../../../api/adapters/apartments'
 import { PLANS } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
 import Button from '../../../components/ui/Button'
@@ -32,7 +33,7 @@ function usePlanCatalog(apartment) {
     if (USE_MOCK) return undefined
     let cancelled = false
     setState((s) => ({ ...s, loading: true, error: false }))
-    Promise.all([getTariffs(), getAgreement(apartment.objectId ?? apartment.id)])
+    Promise.all([getTariffs(), getAgreement(flatId(apartment))])
       .then(([tariffs, agreement]) => {
         if (cancelled) return
         setState({ loading: false, plans: tariffs.plans, currentPlanId: agreement.planId, error: false })
@@ -72,8 +73,10 @@ export default function ChangePackageModal({ apartment, onDone }) {
     setSaving(true)
     try {
       // The whole plan OBJECT is passed through — changePackage needs its
-      // netId/tvId pair for the real /internettv/update_package/ body.
-      const result = await changePackage(apartment.id, selected)
+      // netId/tvId pair for the real /internettv/update_package/ body — and
+      // the flat is addressed by its backend flat id (objectId), same as
+      // getAgreement above.
+      const result = await changePackage(flatId(apartment), selected)
       closeModal()
       toast(t('apartments:packageChangedToast', { plan: selected.name, date: result.renewal }))
       onDone?.()
