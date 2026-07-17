@@ -1,0 +1,191 @@
+import { vi, describe, test, expect, beforeEach } from 'vitest'
+import { render, screen, fireEvent, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import '../../i18n'
+import { ToastProvider } from '../../context/ToastContext'
+import { AppRoutes } from '../../routes'
+
+// Stub the data layer (same vi.mock-the-endpoints-module pattern as
+// dashboard.test.jsx) so the complex/utility grouping and owed amounts are
+// deterministic. Two complexes: "Orbi City" (2 apartments, one owing on all
+// 3 utilities, one all credit) and "Orbi Sea Towers" (1 apartment, owing
+// electricity only) — see payFlowData.js's owedFor for the owed = -balance
+// sign convention this fixture leans on.
+vi.mock('../../api/endpoints/dashboard', () => ({
+  getCommunals: vi.fn(),
+  getRates: vi.fn(),
+}))
+vi.mock('../../api/endpoints/apartments', () => ({
+  listApartments: vi.fn(),
+}))
+
+import { getCommunals, getRates } from '../../api/endpoints/dashboard'
+import { listApartments } from '../../api/endpoints/apartments'
+
+const APARTMENTS = [
+  { id: 'A1', code: 'OCT.A.30.3026', project: 'Orbi City', role: 'Owner' },
+  { id: 'A2', code: 'OCT.A.14.1408', project: 'Orbi City', role: 'Owner' },
+  { id: 'A3', code: 'OST.A.08.0803', project: 'Orbi Sea Towers', role: 'Trusted' },
+]
+
+const COMMUNALS = {
+  utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+  maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+  byApartment: [
+    {
+      code: 'OCT.A.30.3026',
+      epcode: 'EP1',
+      electricity: -50, // owed 50
+      waterIndication: '—',
+      internet: { balance: -10, cost: 5, penalty: 0 }, // owed 10
+      maintenance: -40, // USD, owed 40 -> 80 GEL at rate 2
+      displayServices: [],
+    },
+    {
+      code: 'OCT.A.14.1408',
+      epcode: 'EP2',
+      electricity: 20, // credit
+      waterIndication: '—',
+      internet: { balance: 0, cost: 5, penalty: 0 }, // zero
+      maintenance: 0, // zero
+      displayServices: [],
+    },
+    {
+      code: 'OST.A.08.0803',
+      epcode: 'EP3',
+      electricity: -5, // owed 5
+      waterIndication: '—',
+      internet: { balance: 0, cost: 0, penalty: 0 },
+      maintenance: 0,
+      displayServices: [],
+    },
+  ],
+}
+const RATES = { rates: [{ pair: 'USD/GEL', rate: 2, delta: 0 }], source: 'NBG' }
+
+function renderApp(initialEntries) {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
+    </MemoryRouter>
+  )
+}
+
+beforeEach(() => {
+  getCommunals.mockReset().mockResolvedValue(COMMUNALS)
+  getRates.mockReset().mockResolvedValue(RATES)
+  listApartments.mockReset().mockResolvedValue(APARTMENTS)
+})
+
+describe('MultiPayFlow — step 1 (complexes)', () => {
+  test('renders one card per complex with apartment/unpaid-bill counts and the GEL outstanding total', async () => {
+    renderApp(['/pay'])
+
+    expect(await screen.findByRole('heading', { name: 'Pay balances' })).toBeInTheDocument()
+    expect(screen.getByText('Orbi City')).toBeInTheDocument()
+    expect(screen.getByText('2 apartments')).toBeInTheDocument()
+    // row1 owes on all 3 utilities (50 + 10 + 80 GEL), row2 owes nothing
+    expect(screen.getByText('3 unpaid bills')).toBeInTheDocument()
+    expect(screen.getByText('₾140.00')).toBeInTheDocument()
+
+    expect(screen.getByText('Orbi Sea Towers')).toBeInTheDocument()
+    expect(screen.getByText('1 apartment')).toBeInTheDocument()
+    expect(screen.getByText('1 unpaid bill')).toBeInTheDocument()
+    expect(screen.getByText('₾5.00')).toBeInTheDocument()
+  })
+})
+
+describe('MultiPayFlow — step transitions', () => {
+  test('complex -> utility -> apartments, and Back returns to the previous step', async () => {
+    renderApp(['/pay'])
+    await screen.findByText('Orbi City')
+
+    fireEvent.click(screen.getAllByText('Select')[0])
+    expect(await screen.findByText('Maintenance')).toBeInTheDocument()
+    expect(screen.getByText('Electricity')).toBeInTheDocument()
+    expect(screen.getByText('Internet & TV')).toBeInTheDocument()
+    // only row1 owes maintenance/electricity/internettv in Orbi City
+    expect(screen.getAllByText('1 apartment owes').length).toBe(3)
+
+    fireEvent.click(screen.getByText('Electricity').closest('button'))
+    expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
+    expect(screen.getByText('OCT.A.14.1408')).toBeInTheDocument()
+
+    // Back from step 3 returns to the utility cards
+    fireEvent.click(screen.getByText('Back'))
+    expect(await screen.findByText('Maintenance')).toBeInTheDocument()
+
+    // Back from step 2 returns to the complex list
+    fireEvent.click(screen.getByText('Back'))
+    expect(await screen.findByText('Orbi Sea Towers')).toBeInTheDocument()
+  })
+})
+
+describe('MultiPayFlow — step 3 table', () => {
+  async function openOrbiCityElectricity() {
+    renderApp(['/pay'])
+    await screen.findByText('Orbi City')
+    fireEvent.click(screen.getAllByText('Select')[0])
+    fireEvent.click(await screen.findByText('Electricity').then((el) => el.closest('button')))
+    await screen.findByText('OCT.A.30.3026')
+  }
+
+  test('credit rows show the amount with a minus sign and are disabled', async () => {
+    await openOrbiCityElectricity()
+
+    const creditRow = screen.getByText('OCT.A.14.1408').closest('tr')
+    expect(within(creditRow).getByText('-₾20.00')).toBeInTheDocument()
+    expect(within(creditRow).getByRole('checkbox')).toBeDisabled()
+
+    const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
+    expect(within(debtRow).getByText('₾50.00')).toBeInTheDocument()
+    expect(within(debtRow).getByRole('checkbox')).not.toBeDisabled()
+  })
+
+  test('checking a row defaults the amount to the owed value, and editing it updates the payable total', async () => {
+    await openOrbiCityElectricity()
+
+    const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
+    fireEvent.click(within(debtRow).getByRole('checkbox'))
+
+    // Payable amount defaults to the full owed amount — shown in both the
+    // Outstanding column (red) and the summary panel's Payable amount.
+    expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
+
+    const amountInput = within(debtRow).getByRole('spinbutton')
+    fireEvent.change(amountInput, { target: { value: '30' } })
+
+    expect(screen.getByText('₾30.00')).toBeInTheDocument()
+  })
+})
+
+describe('MultiPayFlow — deep-link preselect', () => {
+  test('location.state{apartmentCode,utility} jumps straight to step 3 with that apartment checked', async () => {
+    renderApp([{ pathname: '/pay', state: { apartmentCode: 'OST.A.08.0803', utility: 'electricity' } }])
+
+    expect(await screen.findByText('OST.A.08.0803')).toBeInTheDocument()
+    // preselected complex/utility surfaced in the summary panel
+    expect(screen.getByText('Orbi Sea Towers')).toBeInTheDocument()
+    const row = screen.getByText('OST.A.08.0803').closest('tr')
+    expect(within(row).getByRole('checkbox')).toBeChecked()
+    expect(screen.getAllByText('₾5.00').length).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('/pay/:id redirect', () => {
+  test('with no router state, redirects into step 1 of the new flow (not the retired PayPage wizard)', async () => {
+    renderApp(['/pay/A1'])
+    expect(await screen.findByText('Orbi City')).toBeInTheDocument()
+    expect(screen.getByText('Pick a complex')).toBeInTheDocument()
+  })
+
+  test('forwards apartmentCode/utility router state through into step 3', async () => {
+    renderApp([{ pathname: '/pay/A1', state: { apartmentCode: 'OCT.A.30.3026', utility: 'maintenance' } }])
+
+    expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
+    const row = screen.getByText('OCT.A.30.3026').closest('tr')
+    expect(within(row).getByRole('checkbox')).toBeChecked()
+  })
+})

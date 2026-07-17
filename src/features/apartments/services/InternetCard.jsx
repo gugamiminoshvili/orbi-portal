@@ -190,7 +190,11 @@ export default function InternetCard({ apt, onReload }) {
             <Icon name="dl" /> {t('common:download')}
           </Button>
           {neg && (
-            <Link to={`/pay/${apt.id}`} className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}>
+            <Link
+              to={`/pay/${apt.id}`}
+              state={{ apartmentCode: apt.code, utility: 'internettv' }}
+              className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
+            >
               {t('apartments:payAmount', { amount: fmt(-s.balance) })}
             </Link>
           )}

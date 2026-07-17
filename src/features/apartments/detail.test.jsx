@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import '../../i18n'
 import { ToastProvider } from '../../context/ToastContext'
@@ -43,4 +43,46 @@ test('unknown apartment id shows not-found state', async () => {
   expect(await screen.findByText('Apartment not found')).toBeInTheDocument()
   const backLinks = screen.getAllByRole('link', { name: /All apartments/ })
   for (const link of backLinks) expect(link).toHaveAttribute('href', '/apartments')
+})
+
+// Task P3-3: MaintenanceCard/ElectricityCard's Pay links still point at
+// `/pay/:id` (kept working via PayRedirect) but now also carry router state
+// {apartmentCode, utility} — clicking through PayRedirect into MultiPayFlow
+// must land straight on step 3 with A1's row preselected for that utility.
+// (Link `state` isn't a DOM attribute, so this drives the actual navigation
+// rather than inspecting the anchor.)
+test('Maintenance Pay link lands on step 3 of the multi-pay flow with A1 preselected', async () => {
+  renderApp(['/apartments/A1'])
+  await screen.findByText('OCT.A.30.3026')
+  // Anchored regex — a plain /Maintenance/ would be ambiguous once other
+  // service cards render (e.g. the accordion header vs. any other button
+  // whose text happens to contain the word).
+  fireEvent.click(screen.getByRole('button', { name: /^Maintenance Building management/ }))
+
+  const maintPay = await screen.findByRole('link', { name: /Pay ₾120\.00/ })
+  expect(maintPay).toHaveAttribute('href', '/pay/A1')
+  fireEvent.click(maintPay)
+
+  expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
+  expect(screen.getByText('Orbi City')).toBeInTheDocument()
+  expect(screen.getByText('Maintenance')).toBeInTheDocument()
+  const row = screen.getByText('OCT.A.30.3026').closest('tr')
+  expect(within(row).getByRole('checkbox')).toBeChecked()
+})
+
+test('Electricity Pay link lands on step 3 of the multi-pay flow with A1 preselected', async () => {
+  renderApp(['/apartments/A1'])
+  await screen.findByText('OCT.A.30.3026')
+  // Anchored regex — plain /Electricity/ also matches the "Electricity
+  // reports" button once the accordion is open.
+  fireEvent.click(screen.getByRole('button', { name: /^Electricity Metered consumption/ }))
+
+  const elecPay = await screen.findByRole('link', { name: /Pay ₾60\.00/ })
+  expect(elecPay).toHaveAttribute('href', '/pay/A1')
+  fireEvent.click(elecPay)
+
+  expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
+  expect(screen.getByText('Electricity')).toBeInTheDocument()
+  const row = screen.getByText('OCT.A.30.3026').closest('tr')
+  expect(within(row).getByRole('checkbox')).toBeChecked()
 })

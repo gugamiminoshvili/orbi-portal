@@ -7,8 +7,8 @@ import NewsListPage from './features/news/NewsListPage'
 import NewsDetailPage from './features/news/NewsDetailPage'
 import ApartmentsPage from './features/apartments/ApartmentsPage'
 import ApartmentDetailPage from './features/apartments/ApartmentDetailPage'
-import PayPage from './features/pay/PayPage'
-import PayComingSoon from './features/pay/PayComingSoon'
+import MultiPayFlow from './features/pay/MultiPayFlow'
+import PayRedirect from './features/pay/PayRedirect'
 import SupportPage from './features/support/SupportPage'
 import EmptyPane from './features/support/EmptyPane'
 import NewTicketPane from './features/support/NewTicketPane'
@@ -25,11 +25,11 @@ export function AppRoutes() {
         <Route path="/news/:id" element={<NewsDetailPage />} />
         <Route path="/apartments" element={<ApartmentsPage />} />
         <Route path="/apartments/:id" element={<ApartmentDetailPage />} />
-        {/* P3-3 replaces this stub with the multi-pay flow entry point;
-            /pay/:id (the old single-apartment deep link) stays wired to
-            PayPage until then. */}
-        <Route path="/pay" element={<PayComingSoon />} />
-        <Route path="/pay/:id" element={<PayPage />} />
+        {/* Task P3-3: /pay is the multi-payment flow (complex -> utility ->
+            apartments); /pay/:id is the old single-apartment deep link,
+            kept working via PayRedirect (see that file for why). */}
+        <Route path="/pay" element={<MultiPayFlow />} />
+        <Route path="/pay/:id" element={<PayRedirect />} />
         <Route path="/support" element={<SupportPage />}>
           <Route index element={<EmptyPane />} />
           <Route path="new" element={<NewTicketPane />} />

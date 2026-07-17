@@ -64,7 +64,11 @@ export default function ElectricityCard({ apt }) {
           <Icon name="doc" /> {t('apartments:electricityReports')}
         </Button>
         {neg && (
-          <Link to={`/pay/${apt.id}`} className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}>
+          <Link
+            to={`/pay/${apt.id}`}
+            state={{ apartmentCode: apt.code, utility: 'electricity' }}
+            className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
+          >
             {t('apartments:payAmount', { amount: fmt(-s.balance) })}
           </Link>
         )}

@@ -1,0 +1,246 @@
+/* Multi-payment flow (Task P3-3): complex list -> utility cards -> apartment
+   table + summary. Table rules (.tbl-wrap/.tbl) are ported from
+   reference/orbi-portal-redesign.html lines 208-218 — the prototype never
+   wired them into a real screen, this is their first real use in the app. */
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.page-head h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  letter-spacing: -0.3px;
+}
+.page-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+/* ---------- Info banner (step 1 / step 2) ---------- */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--info-bg);
+  color: var(--info-ink);
+  margin-bottom: 18px;
+}
+.banner .bi {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #fff;
+}
+.banner h4 {
+  margin: 0 0 2px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.banner p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--info-ink);
+  opacity: 0.85;
+}
+
+/* ---------- Step 1: complex list ---------- */
+.complex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.complex-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+}
+.complex-icon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.complex-body {
+  flex: 1;
+  min-width: 0;
+}
+.complex-body h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.complex-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.complex-total {
+  flex: none;
+  text-align: right;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--neg-ink);
+  min-width: 100px;
+}
+
+/* ---------- Step 2: utility cards ---------- */
+.back-row {
+  margin-bottom: 12px;
+}
+.utility-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 780px) {
+  .utility-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.utility-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 20px;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+}
+.utility-card:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.utility-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+}
+.utility-card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ---------- Step 3: table + summary ---------- */
+.step3-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .step3-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.filter-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 18px 0;
+}
+
+.tbl-wrap {
+  overflow-x: auto;
+}
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.tbl th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl th.r,
+table.tbl td.r {
+  text-align: right;
+}
+table.tbl td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+table.tbl tbody tr:last-child td {
+  border-bottom: none;
+}
+table.tbl tbody tr.credit {
+  color: var(--muted);
+}
+.amount-input {
+  width: 110px;
+  text-align: right;
+}
+
+.tbl-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---------- Summary panel ---------- */
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.summary-row:last-of-type {
+  border-bottom: none;
+}
+.summary-row .k {
+  color: var(--muted);
+}
+.summary-row .v {
+  font-weight: 600;
+  text-align: right;
+}
+.summary-total {
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.summary-total .v {
+  font-size: 19px;
+  color: var(--teal-ink);
+}
