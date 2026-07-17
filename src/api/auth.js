@@ -14,8 +14,10 @@
 
 import { http } from './client'
 import { tokenStore } from './tokenStore'
+import { deviceStore } from './deviceStore'
 import { ApiError } from './errors'
 import { langToApi } from '../utils/lang'
+import { buildDeviceInfo } from '../utils/deviceInfo'
 
 // Kept in sync with client.js's apiBase() — see its comment for why
 // VITE_USE_PROXY forces a relative (proxy-hitting) path in dev.
@@ -25,10 +27,17 @@ function apiBase() {
 }
 
 export async function login(username, password) {
+  // A previously-verified device (Task L2) sends its uuid along so the
+  // backend can skip device verification (code:-2) on this login and issue
+  // top-level tokens straight away. Omitted entirely for a first-ever login
+  // from this browser, where nothing is stored yet.
+  const deviceId = deviceStore.getDeviceUuid()
+  const body = deviceId ? { username, password, device_id: deviceId } : { username, password }
+
   const res = await fetch(`${apiBase()}/mobileApi/auth/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify(body),
   })
   const json = await res.json()
 
@@ -52,11 +61,77 @@ export async function login(username, password) {
   return { status: 'ok', user }
 }
 
-export function verifyCode(code) {
-  return http('/mobileApi/auth/verify/', {
-    method: 'POST',
-    body: JSON.stringify({ code }),
-  })
+// Registers this browser as a device with the backend (Task L2), so a
+// verified device's uuid can later be sent as `device_id` on login to skip
+// the verification code entirely. Best-effort: registration failing must
+// never block sign-in, so this swallows any error and resolves to null
+// rather than throwing.
+//
+// Reuses a previously-issued device_uuid when one is already stored (e.g. a
+// prior registration succeeded but the device was never verified) — the
+// backend accepts device_uuid as optional and generates a fresh one only
+// when omitted.
+export async function registerDevice() {
+  try {
+    const uuid = await http('/mobileApi/device/', {
+      method: 'POST',
+      body: JSON.stringify({
+        device_uuid: deviceStore.getDeviceUuid() ?? undefined,
+        device_info: buildDeviceInfo(),
+      }),
+    })
+    if (uuid) deviceStore.setDeviceUuid(uuid)
+    return uuid || null
+  } catch {
+    return null
+  }
+}
+
+// Verifies the pending code against BOTH the device (durable — unlocks
+// skipping this step on future logins) and the session (what unblocks the
+// app right now), per Task L2's ground truth:
+//   - POST /mobileApi/device/verify/  {device_uuid, code} — verifies the DEVICE
+//   - POST /mobileApi/auth/verify/    {code}               — verifies the SESSION
+//
+// Device registration happens here (not earlier) only when nothing is
+// stored yet, so a fresh device_uuid exists to verify.
+//
+// FLAG for live testing: whether verifying the device consumes the
+// one-time code (so the subsequent auth/verify/ call would then fail with
+// CODE_NOT_CORRECT) is UNCONFIRMED. To stay safe under either behavior, both
+// calls are attempted unconditionally and the overall result counts as
+// success if EITHER succeeds — a device/verify failure never blocks the
+// session getting verified. The exported signature stays verifyCode(code)
+// unchanged; nothing about it changes for callers.
+export async function verifyCode(code) {
+  let deviceUuid = deviceStore.getDeviceUuid()
+  if (!deviceUuid) {
+    deviceUuid = await registerDevice()
+  }
+
+  let deviceVerified = false
+  if (deviceUuid) {
+    try {
+      await http('/mobileApi/device/verify/', {
+        method: 'POST',
+        body: JSON.stringify({ device_uuid: deviceUuid, code }),
+      })
+      deviceVerified = true
+    } catch {
+      // Tolerate failure here — e.g. the code was already consumed by the
+      // auth/verify/ call below (or vice versa, per the FLAG above).
+    }
+  }
+
+  try {
+    return await http('/mobileApi/auth/verify/', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    })
+  } catch (err) {
+    if (deviceVerified) return null
+    throw err
+  }
 }
 
 export function sendVerify() {

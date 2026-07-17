@@ -230,6 +230,21 @@ comments in `src/api/adapters/*.js` for the full detail on each):
       `internet`/`tv`/`boost`/`combined`
     - `GET /mobileApi/lockHistory/`'s per-record fields (no existing v1 mock
       shape to check field names against at all)
+11. **`POST /mobileApi/device/`'s `device_info` shape — CONFIRMED (Task L2).**
+    docs/api-reference.md doesn't name its fields; the backend developer
+    confirmed live that it must be exactly `device_name`,
+    `device_manufacturer`, `device_model`, `platform` — any other field name
+    reads as `None` server-side (previously caused a 500), and `platform`
+    must be one of `android`/`ios`/`Linux`/`Windows`/`macOS`/`Win10`/
+    `ipados`/`Android` (wrong value → code `-1` "platform is not valid").
+    `src/utils/deviceInfo.js` builds this object; `src/api/auth.js`'s
+    `registerDevice()` sends it. **Still unconfirmed and FLAGged in
+    `verifyCode()`'s comment:** whether verifying the device (`POST
+    /mobileApi/device/verify/`) consumes the same one-time code that `POST
+    /mobileApi/auth/verify/` also checks — if it does, calling both per login
+    could make the second call fail even on a correct code. `verifyCode()`
+    tolerates either call failing (treats the pair as one unit, success if
+    either succeeds) until this is verified live.
 
 To wire up more of a real backend once these are answered:
 
