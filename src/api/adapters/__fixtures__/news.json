@@ -1,28 +1,43 @@
 {
-  "count": 14,
-  "next": "https://api.orbi.ge/mobileApi/news/?page=2",
+  "count": 10,
+  "next": null,
   "previous": null,
   "results": [
     {
-      "id": 101,
-      "title": "New online payment methods now available for management fees",
-      "description": "Owners can now settle monthly management and utility fees directly through the portal using Visa, Mastercard, and Georgian bank transfers — with instant receipts.",
-      "category": "Announcement",
-      "created_at": "2026-06-06T09:00:00Z",
-      "image": "https://cdn.orbi.ge/news/101/cover.jpg",
-      "read_time": 3
+      "id": 1235,
+      "name_ge": "გუგა ტესტ სახელი",
+      "name_ru": "Гуга тестирует имя",
+      "name_en": "Guga Test Name",
+      "desc_ge": "გუგა ტესტავს აღწერას",
+      "desc_ru": "Гуга тестирует описание",
+      "desc_en": "Guga is testing description",
+      "content_ge": "<p>გუგა ტესტავს კონტენტს</p>",
+      "content_ru": "<p>Гуга тестирует контент.</p>",
+      "content_en": "<p>Guga is testing <b>Content</b></p>",
+      "created_at": "2026-01-26 09:19:50",
+      "updated_at": "2026-01-26 09:19:50",
+      "featured_image": "https://apimobile.orbi.ge:12443/mobileApi/news/files/f799105172c848de9ef7e934b509bad1.jpg",
+      "public_link": "https://myorbi.orbi.ge:14643/news/1235?lang=ge",
+      "published": true,
+      "pinned": false
     },
     {
-      "id": 102,
-      "title": "Scheduled elevator maintenance in ORBI City Block B",
-      "description": "Elevators in Block B will undergo routine inspection on June 12 between 09:00 and 14:00. Alternative access via Block A will remain available.",
-      "category": "Maintenance",
-      "created_at": "2026-06-03T08:30:00Z"
-    },
-    {
-      "id": 103,
-      "title": "Summer rooftop lounge opens for all ORBI residents",
-      "created_at": "2026-05-29T07:00:00Z"
+      "id": 1201,
+      "name_ge": "მეორე სიახლე",
+      "name_ru": "Вторая новость",
+      "name_en": "Second article",
+      "desc_ge": "",
+      "desc_ru": "",
+      "desc_en": "",
+      "content_ge": "<p>ქართული კონტენტი</p>",
+      "content_ru": "<p>Русский контент</p>",
+      "content_en": "",
+      "created_at": "2026-01-20 12:00:00",
+      "updated_at": "2026-01-20 12:00:00",
+      "featured_image": null,
+      "public_link": "https://myorbi.orbi.ge:14643/news/1201?lang=ge",
+      "published": true,
+      "pinned": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import cardStyles from '../../components/ui/Card.module.css'
 import { Chip } from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
+import { USE_MOCK } from '../../api/client'
 import { ph } from '../../utils/placeholder'
 import styles from './News.module.css'
 
@@ -17,10 +18,25 @@ export default function NewsCard({ item }) {
       aria-label={item.title}
     >
       <div className={styles.thumb}>
-        <img src={ph(item.seed, 640, 360)} alt="" loading="lazy" />
-        <div className={styles.cat}>
-          <Chip>{t(`news:cats.${item.cat}`)}</Chip>
-        </div>
+        {/* Real articles carry `featured_image` (item.img) — the seeded
+            placeholder covers missing/broken images. Mock keeps the
+            placeholder-only look. */}
+        <img
+          src={!USE_MOCK && item.img ? item.img : ph(item.seed, 640, 360)}
+          alt=""
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null
+            e.currentTarget.src = ph(item.seed, 640, 360)
+          }}
+        />
+        {/* No category field on the live API — item.cat is a fabricated
+            fallback in real mode, so the chip is mock-only. */}
+        {USE_MOCK && (
+          <div className={styles.cat}>
+            <Chip>{t(`news:cats.${item.cat}`)}</Chip>
+          </div>
+        )}
       </div>
       <div className={styles.body}>
         <div className={styles.meta}>

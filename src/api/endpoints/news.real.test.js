@@ -11,6 +11,7 @@ vi.mock('../client', async (importOriginal) => {
 })
 
 import { http } from '../client'
+import i18n from '../../i18n'
 import { listNews, getNews } from './news'
 import newsListFixture from '../adapters/__fixtures__/news.json'
 
@@ -23,9 +24,9 @@ describe('listNews (real branch)', () => {
     http.mockResolvedValueOnce(newsListFixture)
     const result = await listNews()
     expect(http).toHaveBeenCalledWith('/mobileApi/news/')
-    expect(result.count).toBe(14)
-    expect(result.items).toHaveLength(3)
-    expect(result.items[0]).toMatchObject({ id: 101, title: newsListFixture.results[0].title, cat: 'Announcement' })
+    expect(result.count).toBe(10)
+    expect(result.items).toHaveLength(2)
+    expect(result.items[0]).toMatchObject({ id: 1235, title: 'Guga Test Name' })
   })
 
   test('passes page and search as query params', async () => {
@@ -39,13 +40,30 @@ describe('listNews (real branch)', () => {
     await listNews({ page: 1, search: 'x' })
     expect(http).toHaveBeenCalledWith('/mobileApi/news/?search=x')
   })
+
+  test('adapts with the current UI language (trilingual name_/desc_/content_ fields)', async () => {
+    const original = i18n.language
+    try {
+      await i18n.changeLanguage('ru')
+      http.mockResolvedValueOnce(newsListFixture)
+      const result = await listNews()
+      expect(result.items[0].title).toBe('Гуга тестирует имя')
+    } finally {
+      await i18n.changeLanguage(original)
+    }
+  })
 })
 
 describe('getNews (real branch)', () => {
-  test('GET /mobileApi/news/{id}/ and adapts the single article', async () => {
-    http.mockResolvedValueOnce(newsListFixture.results[1])
-    const item = await getNews(102)
-    expect(http).toHaveBeenCalledWith('/mobileApi/news/102/')
-    expect(item).toMatchObject({ id: 102, cat: 'Maintenance' })
+  test('GET /mobileApi/news/{id}/ and adapts the single trilingual article', async () => {
+    http.mockResolvedValueOnce(newsListFixture.results[0])
+    const item = await getNews(1235)
+    expect(http).toHaveBeenCalledWith('/mobileApi/news/1235/')
+    expect(item).toMatchObject({
+      id: 1235,
+      title: 'Guga Test Name',
+      body: '<p>Guga is testing <b>Content</b></p>',
+      img: newsListFixture.results[0].featured_image,
+    })
   })
 })

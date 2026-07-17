@@ -4,6 +4,7 @@ import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
 import { getNews, listNews } from '../../api/endpoints/news'
+import { USE_MOCK } from '../../api/client'
 import { ph } from '../../utils/placeholder'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
@@ -92,7 +93,10 @@ export default function NewsDetailPage() {
       <article className={styles.article}>
         <header className={styles['article-head']}>
           <div className={styles.meta}>
-            <Chip>{t(`news:cats.${item.cat}`)}</Chip>
+            {/* The live API has no category field (item.cat is always the
+                'Announcement' fallback in real mode) — hide the chip rather
+                than stamp every article with a fabricated category. */}
+            {USE_MOCK && <Chip>{t(`news:cats.${item.cat}`)}</Chip>}
             <span><Icon name="cal" /> {item.date}</span>
             <span><Icon name="clock" /> {t('news:minRead', { count: minutes })}</span>
             <span style={{ flex: 1 }} />
@@ -104,46 +108,74 @@ export default function NewsDetailPage() {
         </header>
 
         <div className={styles['detail-hero']}>
-          <img src={ph(item.seed, 1200, 600)} alt="" />
+          {/* Real articles carry a `featured_image` absolute URL (adapted to
+              item.img); the seeded placeholder covers articles without one
+              and doubles as the onError fallback for a broken image URL.
+              Mock mode keeps the placeholder-only rendering. */}
+          <img
+            src={!USE_MOCK && item.img ? item.img : ph(item.seed, 1200, 600)}
+            alt=""
+            onError={(e) => {
+              e.currentTarget.onerror = null
+              e.currentTarget.src = ph(item.seed, 1200, 600)
+            }}
+          />
         </div>
 
-        <div className={styles.prose}>
-          <p><strong>{item.excerpt}</strong></p>
-          <p>{t('news:article.intro')}</p>
-          <h3>{t('news:article.whatsChanging')}</h3>
-          <p>{t('news:article.whatsChangingBody', { section: t('common:myApartments') })}</p>
-          <ul>
-            <li>{t('news:article.list1')}</li>
-            <li>{t('news:article.list2')}</li>
-            <li>{t('news:article.list3')}</li>
-          </ul>
-          <h3>{t('news:article.whatToDo')}</h3>
-          <p>{t('news:article.whatToDoBody')}</p>
-        </div>
+        {USE_MOCK ? (
+          <div className={styles.prose}>
+            <p><strong>{item.excerpt}</strong></p>
+            <p>{t('news:article.intro')}</p>
+            <h3>{t('news:article.whatsChanging')}</h3>
+            <p>{t('news:article.whatsChangingBody', { section: t('common:myApartments') })}</p>
+            <ul>
+              <li>{t('news:article.list1')}</li>
+              <li>{t('news:article.list2')}</li>
+              <li>{t('news:article.list3')}</li>
+            </ul>
+            <h3>{t('news:article.whatToDo')}</h3>
+            <p>{t('news:article.whatToDoBody')}</p>
+          </div>
+        ) : (
+          <div className={styles.prose}>
+            {item.excerpt && (
+              <p><strong>{item.excerpt}</strong></p>
+            )}
+            {/* item.body is the CMS's own `content_*` HTML (first-party
+                content from the ORBI back office, same trust level as the
+                rest of the API) — rendered as-is inside the existing prose
+                styles. */}
+            <div dangerouslySetInnerHTML={{ __html: item.body || '' }} />
+          </div>
+        )}
 
-        <Card style={{ marginTop: 26 }}>
-          <Card.Pad>
-            <h3 style={{ margin: '0 0 14px', fontSize: 15 }}>{t('news:attachments')}</h3>
-            {ATTACHMENTS.map((a) => (
-              <div
-                key={a.name}
-                className={styles.attach}
-                onClick={() => toast(t('news:downloading', { name: a.name }))}
-              >
-                <div className={styles.ico}>
-                  <Icon name="doc" />
+        {/* The live API has no attachments on news articles — the static
+            demo attachments stay mock-only. */}
+        {USE_MOCK && (
+          <Card style={{ marginTop: 26 }}>
+            <Card.Pad>
+              <h3 style={{ margin: '0 0 14px', fontSize: 15 }}>{t('news:attachments')}</h3>
+              {ATTACHMENTS.map((a) => (
+                <div
+                  key={a.name}
+                  className={styles.attach}
+                  onClick={() => toast(t('news:downloading', { name: a.name }))}
+                >
+                  <div className={styles.ico}>
+                    <Icon name="doc" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div className={styles.nm}>{a.name}</div>
+                    <div className={styles.sz}>{a.size}</div>
+                  </div>
+                  <Button variant="soft" size="sm">
+                    <Icon name="dl" /> {t('common:download')}
+                  </Button>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div className={styles.nm}>{a.name}</div>
-                  <div className={styles.sz}>{a.size}</div>
-                </div>
-                <Button variant="soft" size="sm">
-                  <Icon name="dl" /> {t('common:download')}
-                </Button>
-              </div>
-            ))}
-          </Card.Pad>
-        </Card>
+              ))}
+            </Card.Pad>
+          </Card>
+        )}
       </article>
 
       {related.length > 0 && (

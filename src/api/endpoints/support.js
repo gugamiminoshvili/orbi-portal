@@ -1,5 +1,6 @@
 import { USE_MOCK, delay, http, httpMultipart } from '../client'
 import { TICKETS, nextTicketId, topicById } from '../mock/tickets'
+import i18n from '../../i18n'
 import { adaptSubjects, adaptTicket, adaptTicketList, adaptTicketMessages } from '../adapters/support'
 
 function pad(n) {
@@ -29,11 +30,12 @@ function getSubjects() {
   return subjectsPromise
 }
 
-// Some doc-elided "list/pagination payload" responses may already be a bare
-// array; others (like /tickets/{id}/) describe a "list service result
-// containing Ticket" which could mean an array of one. Normalize either way.
+// Some responses may already be a bare array; the live list envelope nests
+// items under `data` (Task L1); older guesses used DRF's `results`.
+// Normalize any of the three to "the first item".
 function firstOrSelf(dto) {
   if (Array.isArray(dto)) return dto[0]
+  if (dto && Array.isArray(dto.data)) return dto.data[0]
   if (dto && Array.isArray(dto.results)) return dto.results[0]
   return dto
 }
@@ -44,7 +46,7 @@ export async function listTickets() {
     return TICKETS
   }
   const [dto, subjects] = await Promise.all([http('/mobileApi/tickets/'), getSubjects()])
-  return adaptTicketList(dto, subjects)
+  return adaptTicketList(dto, subjects, i18n.language)
 }
 
 export async function getTicket(id) {
@@ -59,7 +61,7 @@ export async function getTicket(id) {
   ])
   const ticketDto = firstOrSelf(ticketDtoRaw)
   if (!ticketDto) return undefined
-  const ticket = adaptTicket(ticketDto, subjects)
+  const ticket = adaptTicket(ticketDto, subjects, i18n.language)
   ticket.msgs = adaptTicketMessages(messagesDto)
   return ticket
 }
@@ -67,9 +69,10 @@ export async function getTicket(id) {
 // The doc only says ticket creation needs "ticket subject/category/message
 // data" without naming fields — FLAG: `subject` is submitted as the matching
 // subject's own English copy (round-tripping what /tickets/subject/ handed
-// back), `message` as the free-text body. `apt`/flat association has no
-// confirmed field name (see adapters/support.js's file-header note) so it's
-// deliberately left off the request body rather than guessing a wrong key.
+// back — confirmed live that stored ticket subjects exactly equal a
+// subject-catalog string), `message` as the free-text body. `apt`/flat
+// association has no field on the live Ticket shape at all, so it's
+// deliberately left off the request body.
 export async function createTicket({ topic, apt, text }) {
   if (USE_MOCK) {
     await delay()
@@ -92,7 +95,7 @@ export async function createTicket({ topic, apt, text }) {
     method: 'POST',
     body: JSON.stringify({ subject: subject?.en || topicById(topic)?.label || topic, message: text }),
   })
-  const ticket = adaptTicket(firstOrSelf(dto), subjects)
+  const ticket = adaptTicket(firstOrSelf(dto), subjects, i18n.language)
   const { msgDate, time } = timestamps()
   ticket.msgs = [{ me: true, date: msgDate, time, text }]
   return ticket

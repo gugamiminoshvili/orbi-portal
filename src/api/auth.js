@@ -72,8 +72,16 @@ export async function logout() {
   tokenStore.clear()
 }
 
-export function getUser() {
-  return http('/mobileApi/user/')
+// The live /mobileApi/user/ profile has fName/lName (+ fNameEng/lNameEng
+// variants) but NO fullname field (Task L1 capture) — compose it here so the
+// sidebar footer's name/initials (Sidebar.jsx reads user.fullname) work.
+// Eng variants fill in per-part when the local-script part is empty.
+export async function getUser() {
+  const profile = await http('/mobileApi/user/')
+  const fName = profile?.fName || profile?.fNameEng || ''
+  const lName = profile?.lName || profile?.lNameEng || ''
+  const fullname = `${fName} ${lName}`.trim()
+  return { ...profile, fullname: fullname || profile?.fullname || profile?.username || '' }
 }
 
 export function patchUserLang(uiLang) {

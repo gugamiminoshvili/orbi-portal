@@ -19,7 +19,7 @@ beforeEach(() => {
 })
 
 describe('listTickets (real branch)', () => {
-  test('fetches tickets + subjects (once) and adapts the list', async () => {
+  test('fetches tickets + subjects (once) and adapts the {data} envelope', async () => {
     http.mockImplementation((path) => {
       if (path === '/mobileApi/tickets/') return Promise.resolve(tickets)
       if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
@@ -29,8 +29,8 @@ describe('listTickets (real branch)', () => {
     const list = await listTickets()
 
     expect(list).toHaveLength(2)
-    expect(list[0]).toMatchObject({ id: 101244, topic: 'internet', status: 'active' })
-    expect(list[1]).toMatchObject({ id: 101210, status: 'closed' })
+    expect(list[0]).toMatchObject({ id: 101245, topic: 'technical', status: 'active', statusLabel: 'New', statusTone: 'pos' })
+    expect(list[1]).toMatchObject({ id: 101210, status: 'closed', statusTone: 'muted' })
   })
 
   test('module-caches the subjects fetch across calls', async () => {
@@ -61,15 +61,15 @@ describe('listTickets (real branch)', () => {
 describe('getTicket (real branch)', () => {
   test('fetches ticket + messages and merges them', async () => {
     http.mockImplementation((path) => {
-      if (path === '/mobileApi/tickets/101244/') return Promise.resolve(tickets.results[0])
-      if (path === '/mobileApi/tickets/101244/messages/') return Promise.resolve(ticketMessages)
+      if (path === '/mobileApi/tickets/101245/') return Promise.resolve(tickets.data[0])
+      if (path === '/mobileApi/tickets/101245/messages/') return Promise.resolve(ticketMessages)
       if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
       throw new Error(`unexpected path ${path}`)
     })
 
-    const ticket = await getTicket(101244)
+    const ticket = await getTicket(101245)
 
-    expect(ticket).toMatchObject({ id: 101244, topic: 'internet', status: 'active' })
+    expect(ticket).toMatchObject({ id: 101245, topic: 'technical', status: 'active', statusLabel: 'New' })
     expect(ticket.msgs).toHaveLength(2)
     expect(ticket.msgs[0]).toMatchObject({ me: true })
     expect(ticket.msgs[1]).toMatchObject({ me: false, who: 'ORBI Support' })
@@ -81,38 +81,56 @@ describe('createTicket (real branch)', () => {
     http.mockImplementation((path, opts) => {
       if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
       if (path === '/mobileApi/tickets/' && opts?.method === 'POST') {
-        return Promise.resolve({ ...tickets.results[0], id: 999, subject: JSON.parse(opts.body).subject })
+        return Promise.resolve({ ...tickets.data[0], id: 999, subject: JSON.parse(opts.body).subject })
       }
       throw new Error(`unexpected call ${path}`)
     })
 
-    const ticket = await createTicket({ topic: 'other', apt: null, text: 'hello there' })
+    const ticket = await createTicket({ topic: 'booking', apt: null, text: 'hello there' })
 
     const createCall = http.mock.calls.find(([path]) => path === '/mobileApi/tickets/')
     const body = JSON.parse(createCall[1].body)
-    expect(body).toEqual({ subject: 'Something Else', message: 'hello there' })
+    // round-trips the subject catalog's own English copy — confirmed live
+    // that stored ticket subjects exactly equal a catalog string
+    expect(body).toEqual({ subject: 'Booking questions', message: 'hello there' })
     expect(ticket.id).toBe(999)
+    expect(ticket.topic).toBe('booking')
     expect(ticket.msgs[0]).toMatchObject({ me: true, text: 'hello there' })
+  })
+
+  test('a topic with no live subject-catalog match falls back to the static label', async () => {
+    http.mockImplementation((path, opts) => {
+      if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
+      if (path === '/mobileApi/tickets/' && opts?.method === 'POST') {
+        return Promise.resolve({ ...tickets.data[0], id: 1000, subject: JSON.parse(opts.body).subject })
+      }
+      throw new Error(`unexpected call ${path}`)
+    })
+
+    await createTicket({ topic: 'other', apt: null, text: 'misc' })
+
+    const createCall = http.mock.calls.find(([path]) => path === '/mobileApi/tickets/')
+    expect(JSON.parse(createCall[1].body).subject).toBe('Other Request')
   })
 })
 
 describe('sendMessage (real branch)', () => {
   test('POSTs {message} then refetches the full ticket', async () => {
     http.mockImplementation((path, opts) => {
-      if (path === '/mobileApi/tickets/101244/messages/' && opts?.method === 'POST') {
+      if (path === '/mobileApi/tickets/101245/messages/' && opts?.method === 'POST') {
         return Promise.resolve({ result: { msgId: 5 } })
       }
-      if (path === '/mobileApi/tickets/101244/') return Promise.resolve(tickets.results[0])
-      if (path === '/mobileApi/tickets/101244/messages/') return Promise.resolve(ticketMessages)
+      if (path === '/mobileApi/tickets/101245/') return Promise.resolve(tickets.data[0])
+      if (path === '/mobileApi/tickets/101245/messages/') return Promise.resolve(ticketMessages)
       if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
       throw new Error(`unexpected call ${path}`)
     })
 
-    const ticket = await sendMessage(101244, 'more please')
+    const ticket = await sendMessage(101245, 'more please')
 
-    const sendCall = http.mock.calls.find(([path, opts]) => path === '/mobileApi/tickets/101244/messages/' && opts?.method === 'POST')
+    const sendCall = http.mock.calls.find(([path, opts]) => path === '/mobileApi/tickets/101245/messages/' && opts?.method === 'POST')
     expect(JSON.parse(sendCall[1].body)).toEqual({ message: 'more please' })
-    expect(ticket.id).toBe(101244)
+    expect(ticket.id).toBe(101245)
     expect(ticket.msgs).toHaveLength(2) // re-fetched canonical state, not a locally-appended guess
   })
 })
@@ -122,7 +140,7 @@ describe('uploadTicketFile (real branch)', () => {
     httpMultipart.mockResolvedValueOnce('ticket_file/1/')
     const file = new File(['abc'], 'photo.png', { type: 'image/png' })
 
-    const url = await uploadTicketFile(101244, file)
+    const url = await uploadTicketFile(101245, file)
 
     expect(url).toBe('ticket_file/1/')
     const [path, opts] = httpMultipart.mock.calls[0]
@@ -130,7 +148,7 @@ describe('uploadTicketFile (real branch)', () => {
     expect(opts.method).toBe('POST')
     expect(opts.body).toBeInstanceOf(FormData)
     expect(opts.body.get('file')).toBe(file)
-    expect(opts.body.get('ticketId')).toBe('101244')
+    expect(opts.body.get('ticketId')).toBe('101245')
     expect(opts.headers).toBeUndefined()
   })
 })

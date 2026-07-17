@@ -60,17 +60,22 @@ export default function ChangePackageModal({ apartment, onDone }) {
   const [selected, setSelected] = useState(null)
   const [saving, setSaving] = useState(false)
 
-  // Shadows mock/plans.js's planById on purpose — lookups must run against
-  // whichever catalog (mock PLANS or real tariffs) this modal is showing.
-  const planById = (id) => plans.find((p) => p.id === id)
+  // "Is this catalog entry the subscriber's current plan?" — two id spaces
+  // to reconcile: mock mode's currentPlanId is the plan's own id ('P2'),
+  // while the real agreement's planId is the NET tariff id
+  // (orbinet_agreement.net_tariff.id), which matches a combined entry's
+  // `netId` (internet_id), not its `id` (Task L1 live capture).
+  const isCurrentPlan = (p) => p.id === currentPlanId || (p.netId != null && p.netId === currentPlanId)
+  const currentPlan = plans.find(isCurrentPlan)
 
   async function handleConfirm() {
     setSaving(true)
     try {
+      // The whole plan OBJECT is passed through — changePackage needs its
+      // netId/tvId pair for the real /internettv/update_package/ body.
       const result = await changePackage(apartment.id, selected)
-      const np = planById(selected)
       closeModal()
-      toast(t('apartments:packageChangedToast', { plan: np.name, date: result.renewal }))
+      toast(t('apartments:packageChangedToast', { plan: selected.name, date: result.renewal }))
       onDone?.()
     } catch {
       toast(t('common:requestFailed'))
@@ -80,8 +85,8 @@ export default function ChangePackageModal({ apartment, onDone }) {
   }
 
   if (step === 'confirm') {
-    const cp = planById(currentPlanId)
-    const np = planById(selected)
+    const cp = currentPlan
+    const np = selected
     const dMbps = np.mbps - (cp ? cp.mbps : 0)
     const dPrice = np.price - (cp ? cp.price : 0)
 
@@ -181,7 +186,7 @@ export default function ChangePackageModal({ apartment, onDone }) {
         ) : (
         <div className={styles.grid}>
           {plans.map((p) => {
-            const isCurrent = p.id === currentPlanId
+            const isCurrent = isCurrentPlan(p)
             return (
               <div key={p.id} data-testid={`plan-card-${p.id}`} className={`${styles.plan} ${isCurrent ? styles.current : ''}`}>
                 {isCurrent && (
@@ -212,7 +217,7 @@ export default function ChangePackageModal({ apartment, onDone }) {
                     <Button
                       size="sm"
                       onClick={() => {
-                        setSelected(p.id)
+                        setSelected(p)
                         setStep('confirm')
                       }}
                     >

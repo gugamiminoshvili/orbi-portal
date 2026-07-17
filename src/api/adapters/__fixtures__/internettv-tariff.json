@@ -1,18 +1,29 @@
 {
-  "internet": [
-    { "id": "I1", "name": "Internet Only 50", "price": "40.00", "speed_mbps": 50 }
-  ],
-  "tv": [
-    { "id": "T1", "name": "TV Only", "price": "20.00", "channel_count": 35 }
-  ],
+  "internet": [],
+  "tv": [],
   "boost": [
-    { "id": "b65", "name": "Boost 65", "price": "10.00", "extra_mbps": 65, "duration_value": 24, "duration_unit": "hours" },
-    { "id": "b150", "name": "Boost+ 150", "price": "25.00", "extra_mbps": 150, "duration_value": 7, "duration_unit": "days" }
+    { "id": 6, "name": "Boost", "price": "10.00", "isActive": 1, "internet_speed": "65", "tv_channels": 0 }
   ],
   "combined": [
-    { "id": "P1", "name": "Package 1", "price": "50.00", "internet_speed_mbps": 50, "tv_channel_count": 35 },
-    { "id": "P2", "name": "Package 2", "price": "70.00", "internet_speed_mbps": 75, "tv_channel_count": 35 },
-    { "id": "P3", "name": "Package 3", "price": "110.00", "internet_speed_mbps": 120, "tv_channel_count": 35 },
-    { "id": "P4", "name": "Package 4", "price": "150.00", "internet_speed_mbps": 150, "tv_channel_count": 35 }
+    {
+      "id": 100,
+      "name": "Package 1",
+      "price": "50.00",
+      "isActive": 1,
+      "internet_speed": "50",
+      "tv_channels": "35",
+      "internet_id": 2,
+      "tv_id": 8
+    },
+    {
+      "id": 101,
+      "name": "Package 2",
+      "price": "70.00",
+      "isActive": 1,
+      "internet_speed": "75",
+      "tv_channels": "35",
+      "internet_id": 3,
+      "tv_id": 9
+    }
   ]
 }

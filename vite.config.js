@@ -16,6 +16,16 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       globals: true,
       setupFiles: './src/test/setup.js',
+      // Tests must behave identically whether or not a developer's local
+      // .env/.env.local points at a real backend (loadEnv pulls those files
+      // in for mode 'test' too) — pin the connection-related vars so every
+      // http()/fetch assertion sees relative /mobileApi/... paths and mock
+      // mode stays the default.
+      env: {
+        VITE_API_BASE: '',
+        VITE_USE_PROXY: '',
+        VITE_USE_MOCK: '',
+      },
     },
   }
 

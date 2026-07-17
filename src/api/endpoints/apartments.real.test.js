@@ -18,7 +18,7 @@ import {
   getAgreement,
   getTariffs,
 } from './apartments'
-import properties from '../adapters/__fixtures__/properties.json'
+import complexes from '../adapters/__fixtures__/properties.json'
 import flat from '../adapters/__fixtures__/flat.json'
 import agreement from '../adapters/__fixtures__/internettv-agreement.json'
 import tariffs from '../adapters/__fixtures__/internettv-tariff.json'
@@ -28,48 +28,56 @@ beforeEach(() => {
 })
 
 describe('listApartments (real branch)', () => {
-  test('GET /mobileApi/properties/v2/ with no params by default', async () => {
-    http.mockResolvedValueOnce(properties)
+  test('GET /mobileApi/properties/v2/ and flattens complexes to a flat list', async () => {
+    http.mockResolvedValueOnce(complexes)
     const result = await listApartments()
     expect(http).toHaveBeenCalledWith('/mobileApi/properties/v2/')
-    expect(result).toHaveLength(3)
-    expect(result[0]).toMatchObject({ id: 501, objectId: 3026, code: 'OCT.A.30.3026' })
+    // fixture: complex "Orbi Plaza" has 0 flats, "Orbi City" has 2
+    expect(result).toHaveLength(2)
+    expect(result[0]).toMatchObject({ id: 748, objectId: 9910, code: 'OCT.A.15.1519', project: 'Orbi City' })
   })
 
   test('adds apartment_type when a role filter is passed', async () => {
-    http.mockResolvedValueOnce(properties)
+    http.mockResolvedValueOnce(complexes)
     await listApartments({ apartment_type: 'owner' })
     expect(http).toHaveBeenCalledWith('/mobileApi/properties/v2/?apartment_type=owner')
   })
 })
 
 describe('getApartment (real branch)', () => {
-  test('merges the matched property with /flat/{flat_id}/, property fields winning on id/project/code/block', async () => {
-    http.mockResolvedValueOnce(properties) // GET /mobileApi/properties/v2/
+  test('merges the matched flat with /flat/{objectId}/, property fields winning on overlaps', async () => {
+    http.mockResolvedValueOnce(complexes) // GET /mobileApi/properties/v2/
     http.mockResolvedValueOnce(flat) // GET /mobileApi/flat/{objectId}/
 
-    const apt = await getApartment('501')
+    const apt = await getApartment('748')
 
     expect(http).toHaveBeenNthCalledWith(1, '/mobileApi/properties/v2/')
-    expect(http).toHaveBeenNthCalledWith(2, '/mobileApi/flat/3026/')
+    expect(http).toHaveBeenNthCalledWith(2, '/mobileApi/flat/9910/')
 
     // property's values win for the overlapping keys
-    expect(apt.id).toBe(501)
+    expect(apt.id).toBe(748)
     expect(apt.project).toBe('Orbi City')
-    expect(apt.code).toBe('OCT.A.30.3026')
+    expect(apt.code).toBe('OCT.A.15.1519')
     expect(apt.block).toBe('A')
     // flat-detail-only fields still come through
-    expect(apt.building).toBe('Orbi City, Block A')
-    expect(apt.addr).toBe('Sherif Khimshiashvili St 5, Batumi')
-    expect(apt.cadastral).toBe('05.32.03.129.22')
-    expect(apt.waterCode).toBe('WTR-3026')
-    expect(apt.apCode).toBe('AP-OCTA303026')
-    // services synthesized from the property, not clobbered by flat detail
-    expect(apt.services.maintenance.balance).toBe(-180)
+    expect(apt.building).toBe('Orbi Plaza, Block A')
+    expect(apt.cadastral).toBe('05.24.03.036.01.543')
+    expect(apt.waterCode).toBe('271/4a-205a')
+    expect(apt.apCode).toBe('—') // live flat epcode is ""
+    // services synthesized from the flat record, not clobbered by flat detail
+    expect(apt.services.maintenance.balance).toBe(-1677.73)
+    expect(apt.services.internet.planId).toBe(3)
   })
 
-  test('resolves undefined when no property matches the id', async () => {
-    http.mockResolvedValueOnce(properties)
+  test('also matches by objectId', async () => {
+    http.mockResolvedValueOnce(complexes)
+    http.mockResolvedValueOnce(flat)
+    const apt = await getApartment('9911')
+    expect(apt.id).toBe(749)
+  })
+
+  test('resolves undefined when no flat matches the id', async () => {
+    http.mockResolvedValueOnce(complexes)
     const apt = await getApartment('nope')
     expect(apt).toBeUndefined()
     expect(http).toHaveBeenCalledTimes(1) // never fetches /flat/ for a non-match
@@ -77,14 +85,14 @@ describe('getApartment (real branch)', () => {
 })
 
 describe('changePackage (real branch)', () => {
-  test('POSTs update_package with flat_id and the selected plan', async () => {
+  test('POSTs update_package with flat_id and the selected plan\'s netId/tvId pair', async () => {
     http.mockResolvedValueOnce(agreement)
-    await changePackage(3026, 'P2')
+    await changePackage(9910, { id: 101, name: 'Package 2', netId: 3, tvId: 9 })
     const [path, opts] = http.mock.calls[0]
     expect(path).toBe('/mobileApi/internettv/update_package/')
     expect(opts.method).toBe('POST')
     const body = JSON.parse(opts.body)
-    expect(body).toMatchObject({ flat_id: 3026, tariff_net_id: 'P2', tariff_tv_id: 'P2' })
+    expect(body).toMatchObject({ flat_id: 9910, tariff_net_id: 3, tariff_tv_id: 9 })
     expect(typeof body.date).toBe('string')
   })
 })
@@ -92,19 +100,19 @@ describe('changePackage (real branch)', () => {
 describe('pauseInternet / resumeInternet (real branch)', () => {
   test('PATCHes pause:true for pauseInternet', async () => {
     http.mockResolvedValueOnce(agreement)
-    await pauseInternet(3026)
+    await pauseInternet(9910)
     expect(http).toHaveBeenCalledWith('/mobileApi/internettv/pause/', {
       method: 'PATCH',
-      body: JSON.stringify({ flat_id: 3026, pause: true }),
+      body: JSON.stringify({ flat_id: 9910, pause: true }),
     })
   })
 
   test('PATCHes pause:false for resumeInternet', async () => {
     http.mockResolvedValueOnce(agreement)
-    await resumeInternet(3026)
+    await resumeInternet(9910)
     expect(http).toHaveBeenCalledWith('/mobileApi/internettv/pause/', {
       method: 'PATCH',
-      body: JSON.stringify({ flat_id: 3026, pause: false }),
+      body: JSON.stringify({ flat_id: 9910, pause: false }),
     })
   })
 })
@@ -112,27 +120,35 @@ describe('pauseInternet / resumeInternet (real branch)', () => {
 describe('activateBoost (real branch)', () => {
   test('POSTs tariffId + flat_id to boost-net/activate/', async () => {
     http.mockResolvedValueOnce({ ok: true })
-    await activateBoost(3026, 'b65')
+    await activateBoost(9910, 6)
     expect(http).toHaveBeenCalledWith('/mobileApi/internettv/boost-net/activate/', {
       method: 'POST',
-      body: JSON.stringify({ tariffId: 'b65', flat_id: 3026 }),
+      body: JSON.stringify({ tariffId: 6, flat_id: 9910 }),
     })
   })
 })
 
 describe('getAgreement / getTariffs (real branch)', () => {
-  test('getAgreement fetches /internettv/?flat= and adapts it', async () => {
+  test('getAgreement fetches /internettv/?flat= and adapts the nested orbinet_agreement', async () => {
     http.mockResolvedValueOnce(agreement)
-    const result = await getAgreement(3026)
-    expect(http).toHaveBeenCalledWith('/mobileApi/internettv/?flat=3026')
-    expect(result).toMatchObject({ provider: 'Silknet', planId: 'P2', status: 'Active' })
+    const result = await getAgreement(9910)
+    expect(http).toHaveBeenCalledWith('/mobileApi/internettv/?flat=9910')
+    expect(result).toMatchObject({ planId: 3, planName: 'Package 2', tariff: 70, status: 'Active' })
+  })
+
+  test('getAgreement with an empty orbinet_agreement resolves the no-plan shape', async () => {
+    http.mockResolvedValueOnce({ internet: { showInternetBanner: true, internetStatus: null }, orbinet_agreement: {}, orbinet_request: {} })
+    const result = await getAgreement(9911)
+    expect(result.planId).toBeNull()
+    expect(result.status).toBeNull()
   })
 
   test('getTariffs fetches /internettv/tariff/ and adapts plans+boosts', async () => {
     http.mockResolvedValueOnce(tariffs)
     const result = await getTariffs()
     expect(http).toHaveBeenCalledWith('/mobileApi/internettv/tariff/')
-    expect(result.plans).toHaveLength(4)
-    expect(result.boosts).toHaveLength(2)
+    expect(result.plans).toHaveLength(2)
+    expect(result.plans[0]).toMatchObject({ id: 100, netId: 2, tvId: 8 })
+    expect(result.boosts).toHaveLength(1)
   })
 })

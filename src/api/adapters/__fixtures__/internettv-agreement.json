@@ -1,20 +1,19 @@
 {
-  "id": 55,
-  "flat_id": 3026,
-  "provider": "Silknet",
-  "tariff_net_id": "P2",
-  "tariff_name": "Package 2",
-  "price": "70.00",
-  "status": "active",
-  "start_date": "2026-01-19",
-  "next_billing_date": "2026-07-19",
-  "billing_cycle_days": 30,
-  "days_left": 3,
-  "boost": {
-    "id": "b65",
-    "name": "Boost 65",
-    "extra_mbps": 65,
-    "duration_value": 24,
-    "duration_unit": "hours"
-  }
+  "internet": { "showInternetBanner": false, "internetStatus": "active" },
+  "orbinet_agreement": {
+    "id": 1029,
+    "name": "OCT.A.15196",
+    "active": 1,
+    "status": 1,
+    "agr_status": 1,
+    "status_name": "active",
+    "start": "2026-03-26",
+    "end": "2026-08-26",
+    "balance_gel": 95.13,
+    "cost_gel": 70,
+    "penalty_gel": 6,
+    "net_tariff": { "id": 3, "name": "Package 2" },
+    "tv_tariff": { "id": 9, "name": "Package 2" }
+  },
+  "orbinet_request": {}
 }

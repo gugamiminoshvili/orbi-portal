@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, afterEach, vi } from 'vitest'
 import { adaptProperty, adaptFlatDetail } from './apartments'
 import { adaptNewsList, adaptNewsItem } from './news'
 import { adaptAgreement, adaptTariffs } from './internet'
@@ -8,10 +8,10 @@ import { APTS } from '../mock/apartments'
 import { SERVICES } from '../mock/services'
 import { PLANS, BOOSTS } from '../mock/plans'
 import { TICKETS, SUPPORT_TOPICS, topicById } from '../mock/tickets'
-import properties from './__fixtures__/properties.json'
+import complexes from './__fixtures__/properties.json'
 import flat from './__fixtures__/flat.json'
 import news from './__fixtures__/news.json'
-import agreement from './__fixtures__/internettv-agreement.json'
+import agreementWrapper from './__fixtures__/internettv-agreement.json'
 import tariffs from './__fixtures__/internettv-tariff.json'
 import tickets from './__fixtures__/tickets.json'
 import ticketMessages from './__fixtures__/ticket-messages.json'
@@ -19,87 +19,114 @@ import subjects from './__fixtures__/subjects.json'
 import lockHistory from './__fixtures__/lock-history.json'
 import financeTransactions from './__fixtures__/finance-transactions.json'
 
+// The fixture mirrors the live /properties/v2/ shape: COMPLEXES with a
+// `flats` array. adaptProperty maps one FLAT record.
+const flats = complexes[1].flats
+const agreement = agreementWrapper.orbinet_agreement
+
 describe('adaptProperty', () => {
-  test('maps verbatim /properties/ fields into the v1 Apt shape', () => {
-    const apt = adaptProperty(properties[0])
+  test('maps live flat fields into the v1 Apt shape, reading the *GEL balance', () => {
+    const apt = adaptProperty(flats[0])
     expect(apt).toMatchObject({
-      id: 501,
-      objectId: 3026,
+      id: 748,
+      objectId: 9910,
       project: 'Orbi City',
-      code: 'OCT.A.30.3026',
+      code: 'OCT.A.15.1519',
       block: 'A',
-      number: '3026',
-      floor: 30,
-      area: 42,
-      epcode: 'GE-BAT-OCT-A-3026',
-      balance: -180,
+      number: '1519',
+      floor: 15,
+      area: 30,
+      epcode: '60011519',
+      balance: -1677.73, // apartmentBalanceGEL, NOT the USD apartmentBalance (-637.12)
       role: 'Owner',
     })
   })
 
-  test('maps ownership_status to Co-Owner and Trusted', () => {
-    expect(adaptProperty(properties[1]).role).toBe('Co-Owner')
-    expect(adaptProperty(properties[2]).role).toBe('Trusted')
+  test('maps ownership_status to Co-Owner and Trusted (doc vocabulary, unverified live)', () => {
+    expect(adaptProperty({ ...flats[0], ownership_status: 'co_owner' }).role).toBe('Co-Owner')
+    expect(adaptProperty({ ...flats[0], ownership_status: 'trustee' }).role).toBe('Trusted')
   })
 
-  test('unmapped/missing ownership_status falls back to Owner', () => {
+  test('missing ownership_status falls back to apartmentCategory, then Owner', () => {
+    expect(adaptProperty({ apartmentCategory: 'OWN - OWNER' }).role).toBe('Owner')
     expect(adaptProperty({ ownership_status: 'something_else' }).role).toBe('Owner')
     expect(adaptProperty({}).role).toBe('Owner')
   })
 
-  test('non-numeric apartmentBalance parses to 0, not NaN', () => {
-    const apt = adaptProperty(properties[2])
+  test('non-numeric balance parses to 0, not NaN', () => {
+    const apt = adaptProperty({ ...flats[0], apartmentBalanceGEL: 'n/a' })
     expect(apt.balance).toBe(0)
     expect(Number.isNaN(apt.balance)).toBe(false)
   })
 
   test('missing epcode falls back to the em-dash placeholder', () => {
-    expect(adaptProperty(properties[2]).epcode).toBe('—')
+    expect(adaptProperty({}).epcode).toBe('—')
   })
 
-  test('synthesizes services with real balances/indication from the property fields', () => {
-    const { services } = adaptProperty(properties[0])
-    expect(services.maintenance.balance).toBe(-180)
-    expect(services.electricity.balance).toBe(-60)
-    expect(services.water.indication).toBe('00512 m³')
+  test('synthesizes services with real GEL balances, counters and indication', () => {
+    const { services } = adaptProperty(flats[0])
+    expect(services.maintenance.balance).toBe(-1677.73)
+    expect(services.electricity.balance).toBe(-230.73)
+    expect(services.electricity.counter).toBe('35010009')
+    expect(services.electricity.status).toBe('Active') // display_services includes electricity
+    expect(services.water.counter).toBe('291-71519')
+    expect(services.water.indication).toBe('5.00')
+    // negative-when-owed, straight from InternetTVBalanceGEL — no sign flip
+    expect(services.internet.balance).toBe(-95.13)
+  })
+
+  test('synthesizes services.internet from the embedded orbinet_agreement', () => {
+    const { services } = adaptProperty(flats[0])
+    expect(services.internet).toMatchObject({
+      planId: 3, // net_tariff.id
+      planName: 'Package 2',
+      tariff: 70, // cost_gel
+      status: 'Active', // status_name 'active'
+      renewal: '26 Aug 2026', // end date
+      cycleDays: 153, // 2026-03-26 .. 2026-08-26
+      penalty: 6, // penalty_gel
+      boost: null,
+    })
+    expect(services.internet.daysLeft).toBeGreaterThanOrEqual(0)
+  })
+
+  test('a flat with an empty orbinet_agreement gets the no-active-subscription shape', () => {
+    const { services } = adaptProperty(flats[1])
+    expect(services.internet.planId).toBeNull()
+    expect(services.internet.status).toBeNull()
+    expect(services.internet.tariff).toBe(0)
     expect(services.internet.balance).toBe(0)
+    // display_services without electricity -> Inactive
+    expect(services.electricity.status).toBe('Inactive')
   })
 
-  test('fields the properties list does not carry get documented, render-safe fallbacks', () => {
-    const { services } = adaptProperty(properties[0])
+  test('fields with no live source get documented, render-safe fallbacks', () => {
+    const { services } = adaptProperty(flats[0])
     // numeric fields piped through fmt() -> 0, never NaN/undefined
     expect(services.maintenance.tariff).toBe(0)
-    expect(services.internet.tariff).toBe(0)
-    expect(services.internet.daysLeft).toBe(0)
-    expect(services.internet.cycleDays).toBe(0)
     // plain-text fields -> the app's '—' unknown placeholder
     expect(services.maintenance.start).toBe('—')
-    expect(services.water.counter).toBe('—')
     expect(services.water.updated).toBe('—')
-    expect(services.electricity.counter).toBe('—')
     expect(services.electricity.updated).toBe('—')
     expect(services.internet.provider).toBe('—')
-    expect(services.internet.renewal).toBe('—')
-    // internet has no known active plan from this endpoint -> falsy, so
-    // InternetCard's `!s.planId` empty-state branch renders instead of a
-    // fabricated Active/Paused status
-    expect(services.internet.planId).toBeNull()
-    expect(services.internet.boost).toBeNull()
   })
 })
 
 describe('adaptFlatDetail', () => {
-  test('maps Flat/OneC fields into the detail-page-only fields', () => {
+  test('maps the live /flat/{id}/ fields into the detail-page-only fields', () => {
     expect(adaptFlatDetail(flat)).toEqual({
-      id: 3026,
-      project: 'Orbi City',
-      code: 'OCT.A.30.3026',
+      id: 1,
+      project: 'Orbi Plaza',
+      code: 'OPZ.A.02.0205a',
       block: 'A',
-      building: 'Orbi City, Block A',
-      addr: 'Sherif Khimshiashvili St 5, Batumi',
-      cadastral: '05.32.03.129.22',
-      waterCode: 'WTR-3026',
-      apCode: 'AP-OCTA303026',
+      number: '5A',
+      floor: 2,
+      area: 30.65,
+      building: 'Orbi Plaza, Block A', // synthesized — no building-name field exists
+      cadastral: '05.24.03.036.01.543', // real field name: cadastre
+      waterCode: '271/4a-205a',
+      apCode: '—', // epcode is "" on the live sample
+      role: 'Owner', // apartmentCategory "OWN - Owner" -> the part after ' - '
     })
   })
 
@@ -109,31 +136,29 @@ describe('adaptFlatDetail', () => {
     expect(detail.code).toBe('—')
     expect(detail.block).toBe('—')
     expect(detail.building).toBe('—')
-    expect(detail.addr).toBe('—')
     expect(detail.cadastral).toBe('—')
     expect(detail.waterCode).toBe('—')
     expect(detail.apCode).toBe('—')
+    expect(detail.role).toBe('Owner')
   })
 })
 
 describe('adaptProperty + adaptFlatDetail cover every key the UI reads off an apartment', () => {
   // Every `apt.<key>` / `apartment.<key>` access across ApartmentCard,
-  // ApartmentDetailPage, the 5 service accordions, and PayPage (grep -rohE
-  // '\bapt\.[a-zA-Z_]+|\bapartment\.[a-zA-Z_]+' src/features).
+  // ApartmentDetailPage, the 5 service accordions, and PayPage.
   const KEYS_UI_READS = [
     'id', 'project', 'code', 'block', 'number', 'floor', 'area', 'balance',
     'role', 'building', 'cadastral', 'waterCode', 'apCode', 'services',
   ]
 
   test('merged adapter output has every key the real mock Apt has that the UI reads', () => {
-    const merged = { ...adaptProperty(properties[0]), ...adaptFlatDetail(flat) }
+    // Same spread order endpoints/apartments.js getApartment uses: flat
+    // detail first, property second — property values win on overlaps.
+    const merged = { ...adaptFlatDetail(flat), ...adaptProperty(flats[0]) }
     for (const key of KEYS_UI_READS) {
       expect(merged).toHaveProperty(key)
     }
     // sanity: every one of these keys is also present on the real mock Apt
-    // as returned by getApartment()/listApartments() (APTS entry + its
-    // SERVICES[id] merged in) — i.e. we're not asserting keys the mock
-    // itself doesn't have either.
     const realApt = { ...APTS[0], services: SERVICES[APTS[0].id] }
     for (const key of KEYS_UI_READS) {
       expect(realApt).toHaveProperty(key)
@@ -141,7 +166,7 @@ describe('adaptProperty + adaptFlatDetail cover every key the UI reads off an ap
   })
 
   test('merged services object has every key each service card reads', () => {
-    const merged = { ...adaptProperty(properties[0]), ...adaptFlatDetail(flat) }
+    const merged = { ...adaptFlatDetail(flat), ...adaptProperty(flats[0]) }
     expect(merged.services.maintenance).toEqual(
       expect.objectContaining({ balance: expect.any(Number), tariff: expect.any(Number), start: expect.any(String) })
     )
@@ -172,44 +197,48 @@ describe('adaptProperty + adaptFlatDetail cover every key the UI reads off an ap
 })
 
 describe('adaptNewsList', () => {
-  test('maps the DRF-paginated envelope to {items, count, next}', () => {
+  test('maps the paginated envelope to {items, count, next}', () => {
     const { items, count, next } = adaptNewsList(news)
-    expect(count).toBe(14)
-    expect(next).toBe('https://api.orbi.ge/mobileApi/news/?page=2')
-    expect(items).toHaveLength(3)
+    expect(count).toBe(10)
+    expect(next).toBeNull()
+    expect(items).toHaveLength(2)
   })
 
-  test('maps a fully-populated article', () => {
+  test('maps a fully-populated trilingual article (default lang en)', () => {
     const item = adaptNewsItem(news.results[0])
     expect(item).toEqual({
-      id: 101,
-      cat: 'Announcement',
-      ts: 20260606,
-      date: 'Jun 6, 2026',
-      title: 'New online payment methods now available for management fees',
-      excerpt:
-        'Owners can now settle monthly management and utility fees directly through the portal using Visa, Mastercard, and Georgian bank transfers — with instant receipts.',
-      read: '3 min',
-      seed: 101,
-      img: 'https://cdn.orbi.ge/news/101/cover.jpg',
+      id: 1235,
+      cat: 'Announcement', // no category field on the live payload — fixed fallback
+      ts: 20260126,
+      date: 'Jan 26, 2026',
+      title: 'Guga Test Name',
+      excerpt: 'Guga is testing description',
+      body: '<p>Guga is testing <b>Content</b></p>',
+      read: '2 min',
+      seed: 1235,
+      pinned: false,
+      img: 'https://apimobile.orbi.ge:12443/mobileApi/news/files/f799105172c848de9ef7e934b509bad1.jpg',
     })
   })
 
-  test('article without an image omits the optional img key', () => {
-    const item = adaptNewsItem(news.results[1])
-    expect(item).not.toHaveProperty('img')
-    expect(item.cat).toBe('Maintenance')
-    expect(item.read).toBe('2 min') // no read_time on this fixture -> fallback
+  test('picks the *_ge variant for UI lang ka and *_ru for ru', () => {
+    expect(adaptNewsItem(news.results[0], 'ka').title).toBe('გუგა ტესტ სახელი')
+    expect(adaptNewsItem(news.results[0], 'ka').body).toBe('<p>გუგა ტესტავს კონტენტს</p>')
+    expect(adaptNewsItem(news.results[0], 'ru').title).toBe('Гуга тестирует имя')
   })
 
-  test('article missing category/description/read_time gets sensible fallbacks', () => {
-    const item = adaptNewsItem(news.results[2])
-    expect(item.cat).toBe('Announcement')
-    expect(item.excerpt).toBe('')
+  test('an empty localized variant falls back to English (and vice versa stays empty)', () => {
+    // second fixture article: content_en is "", content_ge/_ru populated
+    expect(adaptNewsItem(news.results[1], 'ka').body).toBe('<p>ქართული კონტენტი</p>')
+    expect(adaptNewsItem(news.results[1], 'en').body).toBe('') // en empty, en fallback also empty
+    expect(adaptNewsItem(news.results[1]).excerpt).toBe('') // all desc_* empty
+  })
+
+  test('article without a featured_image omits the optional img key', () => {
+    const item = adaptNewsItem(news.results[1])
+    expect(item).not.toHaveProperty('img')
+    expect(item.pinned).toBe(true)
     expect(item.read).toBe('2 min')
-    expect(item.seed).toBe(103)
-    expect(item.ts).toBe(20260529)
-    expect(item.date).toBe('May 29, 2026')
   })
 
   test('missing/invalid created_at falls back to ts 0 and a placeholder date', () => {
@@ -224,21 +253,18 @@ describe('adaptNewsList', () => {
 })
 
 describe('adaptTariffs', () => {
-  test('maps `combined` tariffs to the v1 PLANS shape', () => {
+  test('maps `combined` tariffs to the v1 PLANS shape plus netId/tvId', () => {
     const { plans } = adaptTariffs(tariffs)
     expect(plans).toEqual([
-      { id: 'P1', name: 'Package 1', price: 50, mbps: 50, ch: 35 },
-      { id: 'P2', name: 'Package 2', price: 70, mbps: 75, ch: 35 },
-      { id: 'P3', name: 'Package 3', price: 110, mbps: 120, ch: 35 },
-      { id: 'P4', name: 'Package 4', price: 150, mbps: 150, ch: 35 },
+      { id: 100, name: 'Package 1', price: 50, mbps: 50, ch: 35, netId: 2, tvId: 8 },
+      { id: 101, name: 'Package 2', price: 70, mbps: 75, ch: 35, netId: 3, tvId: 9 },
     ])
   })
 
-  test('maps `boost` tariffs to the v1 BOOSTS shape, formatting speed/duration strings', () => {
+  test('maps `boost` tariffs to the v1 BOOSTS shape — no duration field exists on the live payload', () => {
     const { boosts } = adaptTariffs(tariffs)
     expect(boosts).toEqual([
-      { id: 'b65', name: 'Boost 65', price: 10, speed: '+65 Mbps', duration: '24 hours' },
-      { id: 'b150', name: 'Boost+ 150', price: 25, speed: '+150 Mbps', duration: '7 days' },
+      { id: 6, name: 'Boost', price: 10, speed: '+65 Mbps', duration: '—' },
     ])
   })
 
@@ -258,16 +284,24 @@ describe('adaptTariffs', () => {
 })
 
 describe('adaptAgreement', () => {
-  test('maps an active agreement into the services.internet subscriber-state fields', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  test('maps a live orbinet_agreement into the services.internet subscriber-state fields', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-07-17T00:00:00Z'))
     expect(adaptAgreement(agreement)).toEqual({
-      provider: 'Silknet',
-      planId: 'P2',
-      tariff: 70,
-      renewal: '19 Jul 2026',
-      daysLeft: 3,
-      cycleDays: 30,
-      boost: { id: 'b65', name: 'Boost 65', price: 0, speed: '+65 Mbps', duration: '24 hours' },
-      status: 'Active',
+      provider: '—', // no provider field on the live agreement
+      planId: 3, // net_tariff.id
+      planName: 'Package 2',
+      tariff: 70, // cost_gel
+      renewal: '26 Aug 2026', // end
+      daysLeft: 40, // 2026-07-17 -> 2026-08-26
+      cycleDays: 153, // start..end
+      boost: null, // no boost sub-object on the live agreement
+      status: 'Active', // status_name 'active'
+      penalty: 6, // penalty_gel
     })
   })
 
@@ -283,27 +317,26 @@ describe('adaptAgreement', () => {
     expect(s.renewal).toBe('—')
   })
 
-  test('a paused agreement maps status to Paused', () => {
-    expect(adaptAgreement({ status: 'paused' }).status).toBe('Paused')
+  test('daysLeft clamps to 0 for an already-ended agreement', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-12-01T00:00:00Z'))
+    expect(adaptAgreement(agreement).daysLeft).toBe(0)
   })
 
-  test('an unrecognized status string falls back to null rather than a fabricated value', () => {
-    expect(adaptAgreement({ status: 'something_else' }).status).toBeNull()
+  test('a paused status_name maps to Paused (assumed vocabulary — flagged in the adapter)', () => {
+    expect(adaptAgreement({ ...agreement, status_name: 'paused' }).status).toBe('Paused')
   })
 
-  test('merged with a property-derived internet object, every key InternetCard/ChangePackageModal/BoostModal read is present', () => {
-    // grep -rohE 's\.[a-zA-Z]+' src/features/apartments/services/InternetCard.jsx
-    // plus apartment.services.internet.{planId,renewal,boost} from
-    // ChangePackageModal/BoostModal. `balance`/`provider`/`status`/`planId`/
-    // `tariff`/`renewal`/`daysLeft`/`cycleDays`/`boost` cover every one of
-    // them; `plan`/`updated` on SERVICES.A1.internet are legacy fields no
-    // current consumer reads (superseded by planId -> planById() lookups),
-    // so they're intentionally not asserted here.
+  test('an unrecognized status_name falls back to null rather than a fabricated value', () => {
+    expect(adaptAgreement({ ...agreement, status_name: 'something_else' }).status).toBeNull()
+  })
+
+  test('every key InternetCard/ChangePackageModal/BoostModal read is present', () => {
     const KEYS_UI_READS = ['balance', 'status', 'planId', 'provider', 'tariff', 'renewal', 'daysLeft', 'cycleDays', 'boost']
-    const propertyInternet = adaptProperty(properties[0]).services.internet
-    const merged = { ...propertyInternet, ...adaptAgreement(agreement) }
+    // adaptProperty already merges the agreement into services.internet
+    const internet = adaptProperty(flats[0]).services.internet
     for (const key of KEYS_UI_READS) {
-      expect(merged).toHaveProperty(key)
+      expect(internet).toHaveProperty(key)
     }
     for (const key of KEYS_UI_READS) {
       expect(SERVICES.A1.internet).toHaveProperty(key)
@@ -312,25 +345,25 @@ describe('adaptAgreement', () => {
 })
 
 describe('adaptSubjects', () => {
-  test('maps {en,ru,ka} entries to the SUPPORT_TOPICS shape, matching known labels to their static topic id', () => {
+  test('maps the live {en,ru,ka} entries to SUPPORT_TOPICS-shaped topics', () => {
     const adapted = adaptSubjects(subjects)
-    expect(adapted.map((s) => s.id)).toEqual(['payment', 'technical', 'booking', 'access', 'internet', 'other'])
+    expect(adapted.map((s) => s.id)).toEqual(['payment', 'technical', 'booking'])
   })
 
   test('label defaults to English and switches with the `lang` param', () => {
-    const [payment] = adaptSubjects(subjects)
-    expect(payment.label).toBe('Payment & Billing Issues')
-    const [paymentKa] = adaptSubjects(subjects, 'ka')
-    expect(paymentKa.label).toBe('გადახდისა და ბილინგის პრობლემები')
+    const [financial] = adaptSubjects(subjects)
+    expect(financial.label).toBe('Financial Issues')
+    const [financialKa] = adaptSubjects(subjects, 'ka')
+    expect(financialKa.label).toBe('ფინანსური საკითხი')
   })
 
   test('desc/icon/tint chrome is borrowed from the matching static SUPPORT_TOPICS entry', () => {
-    const [payment] = adaptSubjects(subjects)
+    const [financial] = adaptSubjects(subjects)
     const staticTopic = topicById('payment')
-    expect(payment.desc).toBe(staticTopic.desc)
-    expect(payment.icon).toBe(staticTopic.icon)
-    expect(payment.tintBg).toBe(staticTopic.tintBg)
-    expect(payment.tintCol).toBe(staticTopic.tintCol)
+    expect(financial.desc).toBe(staticTopic.desc)
+    expect(financial.icon).toBe(staticTopic.icon)
+    expect(financial.tintBg).toBe(staticTopic.tintBg)
+    expect(financial.tintCol).toBe(staticTopic.tintCol)
   })
 
   test('an unmatched label falls back to the "other" topic id/chrome', () => {
@@ -344,31 +377,41 @@ describe('adaptSubjects', () => {
   })
 
   test('every adapted subject has every key SUPPORT_TOPICS entries have', () => {
-    const [payment] = adaptSubjects(subjects)
+    const [financial] = adaptSubjects(subjects)
     for (const key of Object.keys(SUPPORT_TOPICS[0])) {
-      expect(payment).toHaveProperty(key)
+      expect(financial).toHaveProperty(key)
     }
   })
 })
 
 describe('adaptTicket / adaptTicketList', () => {
-  test('maps an open Ticket to the v1 active-ticket shape, matching subject to a topic via the subjects list', () => {
+  test('maps a live open Ticket, displaying the backend\'s localized status text', () => {
     const adaptedSubjects = adaptSubjects(subjects)
-    const ticket = adaptTicket(tickets.results[0], adaptedSubjects)
+    const ticket = adaptTicket(tickets.data[0], adaptedSubjects)
     expect(ticket).toEqual({
-      id: 101244,
-      topic: 'internet',
+      id: 101245,
+      topic: 'technical', // subject "Technical problem" exact-matches the subjects entry
       apt: null,
-      status: 'active',
-      created: '2026-07-09 14:20',
-      preview: 'We have logged the issue with the ISP and will update you within 24 hours.',
+      status: 'active', // closed_at is null
+      statusLabel: 'New', // status.{en} — shown verbatim, not TSTATUS-mapped
+      statusTone: 'pos', // no closed_at
+      created: '2026-07-10 07:51',
+      preview: 'ტესტ 123',
       msgs: [],
     })
   })
 
-  test('a closed_at ticket maps to status closed even if `status` itself says something else', () => {
-    const ticket = adaptTicket({ ...tickets.results[1], status: 'open' })
+  test('statusLabel follows the UI language (and trims the backend\'s stray spaces)', () => {
+    const ticket = adaptTicket(tickets.data[0], [], 'ru')
+    expect(ticket.statusLabel).toBe('Новый') // fixture value is "Новый " with a trailing space
+    expect(adaptTicket(tickets.data[0], [], 'ka').statusLabel).toBe('ახალი')
+  })
+
+  test('a closed_at ticket buckets as closed with a muted tone, whatever the status object says', () => {
+    const ticket = adaptTicket(tickets.data[1], adaptSubjects(subjects))
     expect(ticket.status).toBe('closed')
+    expect(ticket.statusTone).toBe('muted')
+    expect(ticket.topic).toBe('booking')
   })
 
   test('a ticket whose subject does not exactly match any adapted subject falls back through the keyword classifier', () => {
@@ -381,24 +424,24 @@ describe('adaptTicket / adaptTicketList', () => {
     expect(ticket.topic).toBe('other')
   })
 
-  test('apt is always null — Ticket carries no flat/apartment reference field per the doc', () => {
-    expect(adaptTicket(tickets.results[0]).apt).toBeNull()
+  test('apt is always null — the live Ticket carries no flat/apartment reference field', () => {
+    expect(adaptTicket(tickets.data[0]).apt).toBeNull()
   })
 
-  test('adaptTicketList maps the {count,next,previous,results} envelope to a plain array', () => {
+  test('adaptTicketList reads the live {limit,offset,totalTickets,data} envelope', () => {
     const list = adaptTicketList(tickets, adaptSubjects(subjects))
     expect(list).toHaveLength(2)
-    expect(list[0].id).toBe(101244)
+    expect(list[0].id).toBe(101245)
     expect(list[1].id).toBe(101210)
     expect(list[1].status).toBe('closed')
   })
 
   test('adaptTicketList also accepts a bare array', () => {
-    expect(adaptTicketList(tickets.results)).toHaveLength(2)
+    expect(adaptTicketList(tickets.data)).toHaveLength(2)
   })
 
   test('every adapted ticket has every key a real TICKETS mock entry has', () => {
-    const ticket = adaptTicket(tickets.results[0], adaptSubjects(subjects))
+    const ticket = adaptTicket(tickets.data[0], adaptSubjects(subjects))
     for (const key of Object.keys(TICKETS[0])) {
       expect(ticket).toHaveProperty(key)
     }

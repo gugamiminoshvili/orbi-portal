@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from '../../hooks/useAsync'
 import { listTickets } from '../../api/endpoints/support'
+import { USE_MOCK } from '../../api/client'
 import { SUP_FILTERS, TSTATUS, topicById } from '../../api/mock/tickets'
 import { APTS } from '../../api/mock/apartments'
 import { SearchField } from '../../components/ui/Field'
@@ -53,7 +54,10 @@ export default function TicketList({ query, onQueryChange, filter, onFilterChang
           </Link>
         </div>
         <div className={styles['sup-tabs']} role="tablist" aria-label={t('support:filterAria')}>
-          {SUP_FILTERS.map((f) => (
+          {/* Real tickets only have two buckets — open (no closed_at) and
+              closed (closed_at set); there is no 'resolved' state on the
+              live API, so that tab is mock-only. */}
+          {(USE_MOCK ? SUP_FILTERS : SUP_FILTERS.filter((f) => f !== 'resolved')).map((f) => (
             <button
               key={f}
               type="button"
@@ -88,6 +92,9 @@ export default function TicketList({ query, onQueryChange, filter, onFilterChang
 
 function TicketRow({ ticket, active, t }) {
   const tp = topicById(ticket.topic)
+  // Real tickets carry the backend's own localized status text + tone
+  // (adaptTicket's statusLabel/statusTone — Task L1); mock tickets fall back
+  // to the static TSTATUS mapping and translated filter labels.
   const st = TSTATUS[ticket.status]
   const apt = ticket.apt ? APTS.find((a) => a.id === ticket.apt) : null
   return (
@@ -102,8 +109,8 @@ function TicketRow({ ticket, active, t }) {
       <div className={styles['si-main']}>
         <div className={styles['si-top']}>
           <span className={styles['si-title']}>{t(`support:topics.${tp.id}.label`)}</span>
-          <Badge tone={st.cls} dot>
-            {t(`support:filters.${ticket.status}`)}
+          <Badge tone={ticket.statusLabel ? ticket.statusTone : st.cls} dot>
+            {ticket.statusLabel || t(`support:filters.${ticket.status}`)}
           </Badge>
         </div>
         <div className={styles['si-prev']}>{ticket.preview}</div>

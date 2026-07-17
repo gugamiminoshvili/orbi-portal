@@ -1,42 +1,69 @@
-// DTO adapters for `/mobileApi/properties/` (and `/properties/v2/`, same
-// shape) and `/mobileApi/flat/{flat_id}/` — docs/api-reference.md "Properties,
-// content, and complexes". The doc's own example mixes field-name casing
-// (apartmentBalance/electricityBalance camelCase, WaterIndication PascalCase,
-// room_number/ownership_status snake_case) — these adapters normalize all of
-// that into the v1 Apt/services shape the UI already consumes (ApartmentCard,
-// ApartmentDetailPage, PayPage, and the 5 service accordions), lifted verbatim
-// from reference/orbi-portal-redesign.html via src/api/mock/apartments.js.
+// DTO adapters for `/mobileApi/properties/v2/` and `/mobileApi/flat/{flat_id}/`,
+// aligned to REAL captured payloads (Task L1 — scratchpad/sdd/live-payloads.json
+// and live-flats-sample.json), which supersede docs/api-reference.md's examples
+// where they differ:
+//  - `/properties/v2/` returns COMPLEXES `[{id, name, flats: [...]}]`, not a
+//    bare flat list. Flattening happens in endpoints/apartments.js; each
+//    element handed to adaptProperty here is one FLAT record.
+//  - A flat carries THREE variants of each money field (e.g. apartmentBalance
+//    in the contract currency, apartmentBalanceGEL, apartmentBalanceCurrency/
+//    apartmentCurrencyRate). The UI renders ₾ everywhere (utils/format.js's
+//    fmt), so the *GEL variants are the ones read below. The live sign
+//    convention matches the v1 mock exactly: negative = owed (live
+//    apartmentBalanceGEL -1677.73 / InternetTVBalanceGEL -95.13 are debts),
+//    so values pass through un-negated.
+//  - Each flat embeds its internet subscription as `orbinet_agreement`
+//    (empty {} when there is no plan) — services.internet is synthesized
+//    from it via adapters/internet.js's adaptAgreement.
+import { adaptAgreement } from './internet.js'
 
-// v1's `ownership_status` (and v2's equivalent `apartment_type`: owner/
-// co_owner/trustee — same three values, per the doc) → the role labels
-// ROLE_STYLE (src/api/mock/apartments.js) knows how to render. Unknown or
-// missing status falls back to 'Owner', mirroring the same fallback
-// ApartmentCard/ApartmentDetailPage already apply defensively via
-// `ROLE_STYLE[apt.role] || ROLE_STYLE.Owner`.
+// Live flats carry `ownership_status` ("owner" observed) plus
+// `apartmentCategory` ("OWN - OWNER"). Only the owner value has been seen on
+// a live payload — co_owner/trustee are still the doc's vocabulary, assumed
+// by parallel construction. FLAG: unmapped/missing values default to
+// 'Owner', mirroring the `ROLE_STYLE[apt.role] || ROLE_STYLE.Owner` fallback
+// ApartmentCard/ApartmentDetailPage already apply.
 const ROLE_BY_OWNERSHIP = {
   owner: 'Owner',
   co_owner: 'Co-Owner',
   trustee: 'Trusted',
 }
 
-// Balances arrive as strings in the doc's example (`"apartmentBalance":"..."`).
-// Parse defensively: a missing or non-numeric value becomes 0 rather than
-// NaN, since balances flow straight into fmt() (utils/format.js) and
-// arithmetic (`neg = balance < 0`, PayPage's `-apt.balance`) that must not see NaN.
+// `apartmentCategory` is "CODE - Label" (live: "OWN - OWNER" on the list,
+// "OWN - Owner" on /flat/) — the role is the part after ' - ', normalized
+// case-insensitively into the ROLE_STYLE vocabulary.
+const ROLE_BY_CATEGORY = {
+  owner: 'Owner',
+  'co-owner': 'Co-Owner',
+  co_owner: 'Co-Owner',
+  trustee: 'Trusted',
+  trusted: 'Trusted',
+}
+
+function roleFromCategory(category) {
+  if (typeof category !== 'string' || !category.includes(' - ')) return null
+  const label = category.split(' - ')[1].trim().toLowerCase()
+  return ROLE_BY_CATEGORY[label] || null
+}
+
+// Balances may arrive as numbers (live) or strings (doc examples). Parse
+// defensively: a missing or non-numeric value becomes 0 rather than NaN,
+// since balances flow straight into fmt() (utils/format.js) and arithmetic
+// (`neg = balance < 0`, PayPage's `-apt.balance`) that must not see NaN.
 function num(value) {
   const n = Number(value)
   return Number.isNaN(n) ? 0 : n
 }
 
-// Maps one property record (an element of the `/properties(/v2)/` `result`
-// array) into the v1 Apt shape + a `services` object synthesized from the
-// four balance/indication fields the list endpoint carries.
+// Maps one FLAT record (an element of a complex's `flats` array from
+// `/properties/v2/`) into the v1 Apt shape + a `services` object synthesized
+// from the flat's balance/indication/counter fields and its embedded
+// `orbinet_agreement`.
 export function adaptProperty(dto = {}) {
   return {
     id: dto.id ?? dto.objectId,
     // `objectId` is kept alongside `id` — it's the id `/flat/{flat_id}/`
-    // expects, and the property list's own `id` looks like a separate
-    // customer-property relation id per the doc example (both present).
+    // expects (live flat: id 748 vs objectId 9910; both present).
     objectId: dto.objectId ?? dto.id,
     project: dto.complex ?? '—',
     code: dto.apartmentName ?? '—',
@@ -45,78 +72,77 @@ export function adaptProperty(dto = {}) {
     floor: num(dto.floor),
     area: num(dto.square),
     epcode: dto.epcode ?? '—',
-    balance: num(dto.apartmentBalance),
-    role: ROLE_BY_OWNERSHIP[dto.ownership_status] || 'Owner',
+    balance: num(dto.apartmentBalanceGEL ?? dto.apartmentBalance),
+    role: ROLE_BY_OWNERSHIP[dto.ownership_status] || roleFromCategory(dto.apartmentCategory) || 'Owner',
     services: adaptServicesFromProperty(dto),
   }
 }
 
-// The properties list only ever carries 4 balance/indication fields per unit
-// (apartmentBalance, electricityBalance, WaterIndication, InternetTVBalanceGEL)
-// — see docs/api-reference.md's `/properties/` example. None of the other
-// fields the 4 service accordions render (tariff, counter ids, service-start/
-// last-updated dates, internet planId/renewal/cycle/boost) has a source field
-// here; those arrive from `/internettv/...` and friends (Task I5) and get
-// merged on top later. Fallback choice per how each consumer renders the field:
-//  - fields piped through fmt() (MaintenanceCard/ElectricityCard/InternetCard
-//    balances+tariffs) get numeric 0 — fmt(0) renders a clean "₾0.00" instead
-//    of fmt(undefined)'s "₾NaN".
-//  - fields rendered as plain text (counter ids, start/updated dates,
-//    provider) get the '—' placeholder already used elsewhere in the app
-//    (cadastral/waterCode/apCode) for "unknown".
-//  - internet.planId/status/boost default to null/falsy so InternetCard's
-//    `!s.planId` branch renders its "no active subscription" empty state
-//    instead of fabricating an Active/Paused status the source data doesn't
-//    actually confirm.
+// The flat record carries everything the 4 service accordions render except
+// a few date/tariff fields with no live source anywhere yet:
+//  - maintenance.tariff / maintenance.start, water.updated,
+//    electricity.updated — no source field on the live payload; numeric
+//    fields piped through fmt() get 0 (fmt(0) renders "₾0.00", never NaN),
+//    plain-text fields get the app's '—' placeholder.
+//  - electricity.status has no direct field either; `display_services`
+//    (live: ["electricity","water","orbinet","maintenance","doors"]) is the
+//    closest signal — a flat whose display_services lists electricity is
+//    treated as Active. FLAG: this is an inference, not a status field.
+//  - services.internet comes from the embedded orbinet_agreement
+//    (adaptAgreement) plus the flat's own InternetTVBalanceGEL for
+//    `balance` — negative-when-owed on the live payload, same convention
+//    InternetCard's `neg = s.balance < 0` / `fmt(-s.balance)` already
+//    expect, so no sign flip.
 function adaptServicesFromProperty(dto = {}) {
+  const displayServices = Array.isArray(dto.display_services) ? dto.display_services : []
   return {
     maintenance: {
-      balance: num(dto.apartmentBalance),
-      tariff: 0, // not carried by /properties/
-      start: '—', // not carried by /properties/
+      balance: num(dto.apartmentBalanceGEL ?? dto.apartmentBalance),
+      tariff: 0, // no source field on the live flat payload
+      start: '—', // no source field on the live flat payload
     },
     water: {
-      counter: '—', // not carried by /properties/
+      counter: dto.waterCode ?? '—',
       indication: dto.WaterIndication ?? '—',
-      updated: '—', // not carried by /properties/
+      updated: '—', // no source field on the live flat payload
     },
     electricity: {
-      counter: '—', // not carried by /properties/
-      status: 'Inactive', // conservative default — real status arrives later
-      balance: num(dto.electricityBalance),
-      updated: '—', // not carried by /properties/
+      counter: dto.electricityMeterNo ?? '—',
+      status: displayServices.includes('electricity') ? 'Active' : 'Inactive',
+      balance: num(dto.electricityBalanceGEL ?? dto.electricityBalance),
+      updated: '—', // no source field on the live flat payload
     },
     internet: {
-      provider: '—', // not carried by /properties/
-      planId: null, // no active-plan info from this endpoint
-      tariff: 0,
-      renewal: '—',
-      daysLeft: 0,
-      cycleDays: 0,
-      boost: null,
-      status: null,
+      ...adaptAgreement(dto.orbinet_agreement || {}),
       balance: num(dto.InternetTVBalanceGEL),
     },
   }
 }
 
-// Maps `/mobileApi/flat/{flat_id}/`'s "detailed Flat and OneC room
-// information" (docs/api-reference.md — the doc gives no field names, so
-// these are the plausible Flat/OneC field names in __fixtures__/flat.json)
-// into the detail-page-only fields ApartmentDetailPage/PayPage read that
-// adaptProperty can't supply: cadastral number, water meter code, the
-// door/QR "ap code", the building label, and the street address. Unknown
-// fields fall back to '—', same convention as adaptServicesFromProperty.
+// Maps `/mobileApi/flat/{flat_id}/`'s real payload (live-payloads.json
+// `flat_detail`) into the detail-page-only fields ApartmentDetailPage/
+// PayPage read that adaptProperty can't supply. Real field names: `cadastre`
+// (NOT the list's `cadastralCode`, and not the I4-guessed `cadastral_code`),
+// `waterCode`, `pCounter`/`wCounter`, `epcode`, `apartmentCategory`,
+// `number`, `apartmentName`, `complex`, `block`, `square`, `floor`,
+// `display_services`. There is no building-name or street-address field —
+// `building` is synthesized "Complex, Block X" (the exact string shape the
+// v1 mock used), and there is nothing to read for a street address at all.
 export function adaptFlatDetail(dto = {}) {
   return {
-    id: dto.id ?? dto.flat_id,
+    id: dto.id,
     project: dto.complex ?? '—',
     code: dto.apartmentName ?? '—',
     block: dto.block ?? '—',
-    building: dto.building_name ?? '—',
-    addr: dto.address ?? '—',
-    cadastral: dto.cadastral_code ?? '—',
-    waterCode: dto.water_code ?? '—',
-    apCode: dto.ap_code ?? '—',
+    number: dto.number != null ? String(dto.number) : '—',
+    floor: num(dto.floor),
+    area: num(dto.square),
+    building: dto.complex ? (dto.block ? `${dto.complex}, Block ${dto.block}` : dto.complex) : '—',
+    cadastral: dto.cadastre ?? '—',
+    waterCode: dto.waterCode ?? '—',
+    // The doors/QR "ap code": epcode is the only code-like candidate on the
+    // live payload (empty string on the captured sample -> placeholder).
+    apCode: dto.epcode || '—',
+    role: roleFromCategory(dto.apartmentCategory) || 'Owner',
   }
 }

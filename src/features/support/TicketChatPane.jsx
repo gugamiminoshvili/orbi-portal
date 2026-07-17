@@ -108,8 +108,11 @@ export default function TicketChatPane() {
             {t(`support:topics.${tp.id}.label`)} <span style={{ color: 'var(--muted)', fontWeight: 500 }}>#{ticket.id}</span>
           </h3>
           <div className={styles['dh-sub']}>
-            <Badge tone={st.cls} dot>
-              {t(`support:filters.${ticket.status}`)}
+            {/* Real tickets show the backend's own localized status text +
+                closed_at-derived tone (adaptTicket, Task L1); mock falls
+                back to the static TSTATUS/filter labels. */}
+            <Badge tone={ticket.statusLabel ? ticket.statusTone : st.cls} dot>
+              {ticket.statusLabel || t(`support:filters.${ticket.status}`)}
             </Badge>
             {apt ? (
               <span className={styles['si-apt']}>

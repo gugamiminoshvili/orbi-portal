@@ -11,8 +11,8 @@ test('getApartment includes services', async () => {
   const a = await getApartment('A1')
   expect(a.services.maintenance.tariff).toBe(120)
 })
-test('changePackage mutates plan', async () => {
-  const net = await changePackage('A1', 'P3')
+test('changePackage mutates plan (takes the whole plan object — real mode needs its netId/tvId)', async () => {
+  const net = await changePackage('A1', { id: 'P3' })
   expect(net.planId).toBe('P3')
   expect(net.tariff).toBe(110)
 })

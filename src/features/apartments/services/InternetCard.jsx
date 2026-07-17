@@ -31,10 +31,15 @@ export default function InternetCard({ apt, onReload }) {
   const active = s.status === 'Active'
   const paused = s.status === 'Paused'
   const pl = planById(s.planId)
+  // Real mode: planId is the backend's net-tariff id, which the static mock
+  // catalog can't resolve — but the adapted agreement carries the plan's own
+  // name (orbinet_agreement.net_tariff.name, Task L1), so prefer the mock
+  // catalog hit (mock mode) and fall back to the agreement's name.
+  const planName = pl ? pl.name : s.planName && s.planName !== '—' ? s.planName : ''
   const [resuming, setResuming] = useState(false)
 
   const sub = active
-    ? `${pl ? pl.name : ''} · ${s.provider}`
+    ? `${planName} · ${s.provider}`
     : paused
       ? t('apartments:pausedLabel')
       : t('apartments:noActivePlan')
@@ -94,7 +99,7 @@ export default function InternetCard({ apt, onReload }) {
             <p>
               <Trans
                 i18nKey="apartments:servicePausedBody"
-                values={{ plan: pl ? pl.name : '', fee: fmt(s.tariff) }}
+                values={{ plan: planName, fee: fmt(s.tariff) }}
                 components={{ b: <b /> }}
               />
             </p>
@@ -122,7 +127,7 @@ export default function InternetCard({ apt, onReload }) {
             <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>
               {t('apartments:providerPlanLine', {
                 provider: s.provider,
-                plan: pl ? pl.name : '',
+                plan: planName,
                 mbps: pl ? pl.mbps : '',
               })}
             </div>

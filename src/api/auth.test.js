@@ -134,14 +134,28 @@ describe('logout', () => {
   })
 })
 
-test('getUser fetches the current user', async () => {
-  fetch.mockResolvedValueOnce(jsonResponse({ code: 1, msg: 'success', result: { id: 1, name: 'Bob' } }))
+test('getUser fetches the current user and composes fullname from fName/lName', async () => {
+  // Live /mobileApi/user/ has fName/lName (+ Eng variants), NO fullname —
+  // getUser composes it so the sidebar footer works (Task L1).
+  fetch.mockResolvedValueOnce(
+    jsonResponse({ code: 1, msg: 'success', result: { id: 1, fName: 'Nadiia', lName: 'Pedchenko', username: 'nadiia' } })
+  )
 
   const user = await getUser()
 
-  expect(user).toEqual({ id: 1, name: 'Bob' })
+  expect(user).toEqual({ id: 1, fName: 'Nadiia', lName: 'Pedchenko', username: 'nadiia', fullname: 'Nadiia Pedchenko' })
   const [url] = fetch.mock.calls[0]
   expect(url).toBe('/mobileApi/user/')
+})
+
+test('getUser falls back to the Eng name variants, then username', async () => {
+  fetch.mockResolvedValueOnce(
+    jsonResponse({ code: 1, msg: 'success', result: { id: 2, fName: '', lName: '', fNameEng: 'NADIIA', lNameEng: 'PEDCHENKO' } })
+  )
+  expect((await getUser()).fullname).toBe('NADIIA PEDCHENKO')
+
+  fetch.mockResolvedValueOnce(jsonResponse({ code: 1, msg: 'success', result: { id: 3, username: 'guga' } }))
+  expect((await getUser()).fullname).toBe('guga')
 })
 
 describe('patchUserLang', () => {

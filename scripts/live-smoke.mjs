@@ -5,10 +5,11 @@
 // staging URL + test account exist (docs/specs/2026-07-16-backend-integration-design.md
 // §4 "Live smoke").
 //
-// Checks, in order: (1) POST /mobileApi/auth/ for tokens — stops early and
-// prints DEVICE_VERIFY_REQUIRED if the account has pending device
-// verification (code:-2), since there's no interactive way to complete that
-// flow from a script; (2) GET /mobileApi/properties/v2/; (3) GET
+// Checks, in order: (1) POST /mobileApi/auth/ for tokens — a code:-2
+// (device verification pending) response still issues tokens under `result`,
+// and the data endpoints work with them (confirmed live, Task L1), so it
+// prints a WARN and PROCEEDS instead of aborting; (2) GET
+// /mobileApi/properties/v2/ (complexes -> flattened flats); (3) GET
 // /mobileApi/news/ page 1; (4) GET /mobileApi/tickets/ (+ /tickets/subject/,
 // which the real adaptTicketList needs); (5) GET /mobileApi/internettv/tariff/.
 // Each prints OK/FAIL, the HTTP status, and the first item run through the
@@ -118,14 +119,21 @@ async function login() {
   }
 
   if (json.code === -2) {
-    failures += 1
-    console.log(`\nFAIL auth (status ${res.status}) DEVICE_VERIFY_REQUIRED`)
+    // Device verification pending — but tokens ARE issued under `result`
+    // and the data endpoints accept them (confirmed live), so warn and
+    // proceed rather than aborting the run.
+    const access = json.result?.access
+    if (!access) {
+      report('auth', false, res.status, 'code -2 (device verify pending) with no access token in result')
+      return null
+    }
+    console.log(`\nWARN auth (status ${res.status}) device-verify-pending — proceeding with issued tokens`)
     console.log(
-      '  This test account has a pending device-verification step, which this\n' +
-        '  script cannot complete interactively. Verify the device via the app\n' +
-        '  first, then re-run `npm run smoke`.'
+      '  This test account has a pending device-verification step; data\n' +
+        '  endpoints still work with the issued tokens, so the checks below run\n' +
+        '  anyway. Complete verification via the app to clear this warning.'
     )
-    return null
+    return access
   }
   if (typeof json.code === 'number' && json.code < 0) {
     report('auth', false, res.status, undefined)
@@ -143,8 +151,10 @@ async function login() {
 async function checkProperties(access) {
   try {
     const { status, result } = await apiGet('/mobileApi/properties/v2/', access)
-    const list = result || []
-    report('properties/v2', true, status, list.length ? adaptProperty(list[0]) : null)
+    // /properties/v2/ returns COMPLEXES [{id, name, flats: []}] — flatten to
+    // flats the same way endpoints/apartments.js does before adapting.
+    const flats = (result || []).flatMap((c) => (c.flats || []).map((flat) => ({ complex: c.name, ...flat })))
+    report('properties/v2', true, status, flats.length ? adaptProperty(flats[0]) : null)
   } catch (err) {
     report('properties/v2', false, err instanceof ApiError ? err.code : 'ERR', err.message)
   }

@@ -27,13 +27,16 @@ import BoostModal from './BoostModal'
 
 // Server-issued catalog — deliberately different names/ids from mock PLANS/
 // BOOSTS so a test can't pass by accidentally rendering the static import.
+// netId/tvId mirror the live combined-tariff shape (internet_id/tv_id) —
+// the agreement's planId below is a NET tariff id, so current-plan matching
+// must go through netId, not the plan's own id (Task L1).
 const TARIFFS = {
   plans: [
-    { id: 901, name: 'Server Plan A', price: 55, mbps: 60, ch: 40 },
-    { id: 902, name: 'Server Plan B', price: 85, mbps: 100, ch: 40 },
+    { id: 901, name: 'Server Plan A', price: 55, mbps: 60, ch: 40, netId: 11, tvId: 21 },
+    { id: 902, name: 'Server Plan B', price: 85, mbps: 100, ch: 40, netId: 12, tvId: 22 },
   ],
   boosts: [
-    { id: 801, name: 'Server Boost X', price: 12, speed: '+80 Mbps', duration: '24 hours' },
+    { id: 801, name: 'Server Boost X', price: 12, speed: '+80 Mbps', duration: '—' },
   ],
 }
 
@@ -54,7 +57,8 @@ function renderModal(node) {
 
 beforeEach(() => {
   getTariffs.mockReset().mockResolvedValue(TARIFFS)
-  getAgreement.mockReset().mockResolvedValue({ planId: 902, provider: 'Silknet', status: 'Active' })
+  // planId is the agreement's net_tariff.id — matches Server Plan B's netId
+  getAgreement.mockReset().mockResolvedValue({ planId: 12, planName: 'Server Plan B', status: 'Active' })
 })
 
 describe('ChangePackageModal (real mode)', () => {
@@ -65,7 +69,7 @@ describe('ChangePackageModal (real mode)', () => {
     expect(screen.getByText('Server Plan B')).toBeInTheDocument()
     expect(getTariffs).toHaveBeenCalledTimes(1)
     expect(getAgreement).toHaveBeenCalledWith(3026) // flat id (objectId), not the property relation id
-    // agreement's planId (902) marks Server Plan B as the current plan
+    // agreement's net-tariff planId (12) marks Server Plan B (netId 12) as current
     expect(screen.getByTestId('plan-card-902').textContent).toContain('Current plan')
     // and the static mock catalog is nowhere to be seen
     expect(screen.queryByText('Package 1')).not.toBeInTheDocument()
