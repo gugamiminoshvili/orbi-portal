@@ -12,9 +12,11 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import * as authApi from '../api/auth'
 import { tokenStore } from '../api/tokenStore'
-import { USE_MOCK } from '../api/client'
+import { USE_MOCK, onSessionExpired } from '../api/client'
+import { ToastContext } from './ToastContext'
 
 const MOCK_USER = { fullname: 'Guga M.' }
 
@@ -32,6 +34,27 @@ const AuthContext = createContext(MOCK_CONTEXT_VALUE)
 export function AuthProvider({ children, mock = USE_MOCK }) {
   const [user, setUser] = useState(mock ? MOCK_USER : null)
   const [status, setStatus] = useState(mock ? 'authed' : 'anon')
+  const { t } = useTranslation()
+  // Non-throwing: unlike useToast(), reading the context directly resolves to
+  // `null` outside a ToastProvider (e.g. auth.test.jsx's standalone
+  // <AuthProvider>) instead of throwing, so the toast below is just skipped.
+  const toast = useContext(ToastContext)
+
+  // Spec: a refresh failure (SESSION_EXPIRED) must log the user out and send
+  // them to /login, not just leave a rejected request dangling. client.js
+  // has no reference to this context, so it fires a subscription instead —
+  // flipping status to 'anon' here is enough: RequireAuth redirects to
+  // /login on the very next render. Toast is best-effort (skipped if this
+  // tree isn't under a ToastProvider) — the redirect alone satisfies the
+  // spec either way.
+  useEffect(() => {
+    if (mock) return undefined
+    return onSessionExpired(() => {
+      setUser(null)
+      setStatus('anon')
+      toast?.(t('auth:errors.SESSION_EXPIRED'))
+    })
+  }, [mock, toast, t])
 
   // Hydrate from a previously stored session on mount (real mode only).
   useEffect(() => {

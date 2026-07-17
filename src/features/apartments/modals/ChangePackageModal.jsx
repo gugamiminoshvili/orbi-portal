@@ -10,6 +10,7 @@ import Button from '../../../components/ui/Button'
 import Icon from '../../../components/ui/Icon'
 import { Chip } from '../../../components/ui/Badge'
 import Skeleton from '../../../components/ui/Skeleton'
+import EmptyState from '../../../components/ui/EmptyState'
 import modalStyles from '../../../context/Modal.module.css'
 import styles from './Plans.module.css'
 
@@ -22,25 +23,30 @@ import styles from './Plans.module.css'
 function usePlanCatalog(apartment) {
   const [state, setState] = useState(() =>
     USE_MOCK
-      ? { loading: false, plans: PLANS, currentPlanId: apartment.services.internet.planId }
-      : { loading: true, plans: [], currentPlanId: null }
+      ? { loading: false, plans: PLANS, currentPlanId: apartment.services.internet.planId, error: false }
+      : { loading: true, plans: [], currentPlanId: null, error: false }
   )
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     if (USE_MOCK) return undefined
     let cancelled = false
-    Promise.all([getTariffs(), getAgreement(apartment.objectId ?? apartment.id)]).then(
-      ([tariffs, agreement]) => {
+    setState((s) => ({ ...s, loading: true, error: false }))
+    Promise.all([getTariffs(), getAgreement(apartment.objectId ?? apartment.id)])
+      .then(([tariffs, agreement]) => {
         if (cancelled) return
-        setState({ loading: false, plans: tariffs.plans, currentPlanId: agreement.planId })
-      }
-    )
+        setState({ loading: false, plans: tariffs.plans, currentPlanId: agreement.planId, error: false })
+      })
+      .catch(() => {
+        if (cancelled) return
+        setState({ loading: false, plans: [], currentPlanId: null, error: true })
+      })
     return () => {
       cancelled = true
     }
-  }, [apartment])
+  }, [apartment, reloadKey])
 
-  return state
+  return { ...state, retry: () => setReloadKey((k) => k + 1) }
 }
 
 // Ported from openChangePkg()/pkgHtml()/applyPkg() at reference/orbi-portal-redesign.html
@@ -49,7 +55,7 @@ export default function ChangePackageModal({ apartment, onDone }) {
   const { t } = useTranslation()
   const { closeModal } = useModal()
   const toast = useToast()
-  const { loading, plans, currentPlanId } = usePlanCatalog(apartment)
+  const { loading, plans, currentPlanId, error, retry } = usePlanCatalog(apartment)
   const [step, setStep] = useState('grid') // 'grid' | 'confirm'
   const [selected, setSelected] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -60,11 +66,17 @@ export default function ChangePackageModal({ apartment, onDone }) {
 
   async function handleConfirm() {
     setSaving(true)
-    const result = await changePackage(apartment.id, selected)
-    const np = planById(selected)
-    closeModal()
-    toast(t('apartments:packageChangedToast', { plan: np.name, date: result.renewal }))
-    onDone?.()
+    try {
+      const result = await changePackage(apartment.id, selected)
+      const np = planById(selected)
+      closeModal()
+      toast(t('apartments:packageChangedToast', { plan: np.name, date: result.renewal }))
+      onDone?.()
+    } catch {
+      toast(t('common:requestFailed'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (step === 'confirm') {
@@ -160,6 +172,12 @@ export default function ChangePackageModal({ apartment, onDone }) {
               <Skeleton key={i} h={220} r={14} />
             ))}
           </div>
+        ) : error ? (
+          <EmptyState icon="warn" title={t('common:requestFailed')}>
+            <Button size="sm" variant="ghost" onClick={retry}>
+              {t('common:retry')}
+            </Button>
+          </EmptyState>
         ) : (
         <div className={styles.grid}>
           {plans.map((p) => {

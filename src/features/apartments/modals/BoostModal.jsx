@@ -18,22 +18,29 @@ import modalStyles from '../../../context/Modal.module.css'
 // import exactly as before.
 function useBoostCatalog() {
   const [state, setState] = useState(() =>
-    USE_MOCK ? { loading: false, boosts: BOOSTS } : { loading: true, boosts: [] }
+    USE_MOCK ? { loading: false, boosts: BOOSTS, error: false } : { loading: true, boosts: [], error: false }
   )
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     if (USE_MOCK) return undefined
     let cancelled = false
-    getTariffs().then((tariffs) => {
-      if (cancelled) return
-      setState({ loading: false, boosts: tariffs.boosts })
-    })
+    setState((s) => ({ ...s, loading: true, error: false }))
+    getTariffs()
+      .then((tariffs) => {
+        if (cancelled) return
+        setState({ loading: false, boosts: tariffs.boosts, error: false })
+      })
+      .catch(() => {
+        if (cancelled) return
+        setState({ loading: false, boosts: [], error: true })
+      })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [reloadKey])
 
-  return state
+  return { ...state, retry: () => setReloadKey((k) => k + 1) }
 }
 
 // Ported from openBoost()/boostHtml()/applyBoost() at
@@ -43,7 +50,7 @@ export default function BoostModal({ apartment, onDone }) {
   const { closeModal } = useModal()
   const toast = useToast()
   const active = apartment.services.internet.boost
-  const { loading, boosts } = useBoostCatalog()
+  const { loading, boosts, error, retry } = useBoostCatalog()
   const [selected, setSelected] = useState(null)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -52,10 +59,16 @@ export default function BoostModal({ apartment, onDone }) {
 
   async function handleActivate() {
     setSaving(true)
-    await activateBoost(apartment.id, selected)
-    closeModal()
-    toast(t('apartments:boostActivatedToast', { name: selectedBoost.name, amount: fmt(selectedBoost.price) }))
-    onDone?.()
+    try {
+      await activateBoost(apartment.id, selected)
+      closeModal()
+      toast(t('apartments:boostActivatedToast', { name: selectedBoost.name, amount: fmt(selectedBoost.price) }))
+      onDone?.()
+    } catch {
+      toast(t('common:requestFailed'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (confirming && selectedBoost) {
@@ -138,7 +151,14 @@ export default function BoostModal({ apartment, onDone }) {
             <Skeleton h={72} r={12} style={{ marginBottom: 10 }} />
           </>
         )}
-        {!loading && boosts.map((b) => {
+        {!loading && error && (
+          <EmptyState icon="warn" title={t('common:requestFailed')}>
+            <Button size="sm" variant="ghost" onClick={retry}>
+              {t('common:retry')}
+            </Button>
+          </EmptyState>
+        )}
+        {!loading && !error && boosts.map((b) => {
           const sel = selected === b.id
           return (
             <button

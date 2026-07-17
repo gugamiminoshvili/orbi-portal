@@ -19,10 +19,16 @@ export default function PauseModal({ apartment, onDone }) {
 
   async function handlePause() {
     setSaving(true)
-    const result = await pauseInternet(apartment.id)
-    closeModal()
-    toast(t('apartments:pausedToast', { fee: fmt(result.tariff) }))
-    onDone?.()
+    try {
+      const result = await pauseInternet(apartment.id)
+      closeModal()
+      toast(t('apartments:pausedToast', { fee: fmt(result.tariff) }))
+      onDone?.()
+    } catch {
+      toast(t('common:requestFailed'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (

@@ -4,7 +4,7 @@
 // endpoints — never from the static mock PLANS/BOOSTS — so the ids the
 // modals later POST are ids the real backend actually issued.
 import { vi, describe, test, expect, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import '../../../i18n'
 import { ToastProvider } from '../../../context/ToastContext'
 import { ModalProvider } from '../../../context/ModalContext'
@@ -21,7 +21,7 @@ vi.mock('../../../api/endpoints/apartments', () => ({
   getTariffs: vi.fn(),
 }))
 
-import { getAgreement, getTariffs } from '../../../api/endpoints/apartments'
+import { getAgreement, getTariffs, activateBoost, changePackage } from '../../../api/endpoints/apartments'
 import ChangePackageModal from './ChangePackageModal'
 import BoostModal from './BoostModal'
 
@@ -70,6 +70,36 @@ describe('ChangePackageModal (real mode)', () => {
     // and the static mock catalog is nowhere to be seen
     expect(screen.queryByText('Package 1')).not.toBeInTheDocument()
   })
+
+  test('a rejected changePackage shows a toast and re-enables Confirm', async () => {
+    changePackage.mockRejectedValueOnce(new Error('server down'))
+
+    renderModal(<ChangePackageModal apartment={APT} />)
+
+    const planACard = await screen.findByTestId('plan-card-901')
+    fireEvent.click(within(planACard).getByRole('button', { name: 'Change' }))
+    const confirmBtn = await screen.findByRole('button', { name: 'Confirm' })
+    fireEvent.click(confirmBtn)
+
+    expect(await screen.findByText(/Request failed/i)).toBeInTheDocument()
+    // still on the confirm step, button usable again for a retry — not stuck
+    expect(confirmBtn).not.toBeDisabled()
+    expect(changePackage).toHaveBeenCalledTimes(1)
+  })
+
+  test('a rejected getTariffs/getAgreement shows an error state with a working retry', async () => {
+    getTariffs.mockReset().mockRejectedValueOnce(new Error('down')).mockResolvedValueOnce(TARIFFS)
+
+    renderModal(<ChangePackageModal apartment={APT} />)
+
+    expect(await screen.findByText('Request failed. Please try again.')).toBeInTheDocument()
+    expect(screen.queryByText('Server Plan A')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByText('Server Plan A')).toBeInTheDocument()
+    expect(getTariffs).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('BoostModal (real mode)', () => {
@@ -79,5 +109,35 @@ describe('BoostModal (real mode)', () => {
     expect(await screen.findByText('Server Boost X')).toBeInTheDocument()
     expect(getTariffs).toHaveBeenCalledTimes(1)
     expect(screen.queryByText('Boost 65')).not.toBeInTheDocument()
+  })
+
+  test('a rejected activateBoost shows a toast and re-enables the Activate button', async () => {
+    activateBoost.mockRejectedValueOnce(new Error('server down'))
+
+    renderModal(<BoostModal apartment={APT} />)
+
+    fireEvent.click(await screen.findByText('Server Boost X'))
+    fireEvent.click(screen.getByRole('button', { name: /Activate/ }))
+    const chargeBtn = await screen.findByRole('button', { name: /Charge & activate/ })
+    fireEvent.click(chargeBtn)
+
+    expect(await screen.findByText(/Request failed/i)).toBeInTheDocument()
+    // still on the confirm step, button usable again for a retry — not stuck
+    expect(chargeBtn).not.toBeDisabled()
+    expect(activateBoost).toHaveBeenCalledTimes(1)
+  })
+
+  test('a rejected getTariffs shows an error state with a retry that reloads the catalog', async () => {
+    getTariffs.mockReset().mockRejectedValueOnce(new Error('down')).mockResolvedValueOnce(TARIFFS)
+
+    renderModal(<BoostModal apartment={APT} />)
+
+    expect(await screen.findByText('Request failed. Please try again.')).toBeInTheDocument()
+    expect(screen.queryByText('Server Boost X')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByText('Server Boost X')).toBeInTheDocument()
+    expect(getTariffs).toHaveBeenCalledTimes(2)
   })
 })

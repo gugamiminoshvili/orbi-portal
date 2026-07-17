@@ -57,6 +57,10 @@ export default function ElectricityReportModal({ apartment }) {
         setReportBlob(blob)
         setStep('ready')
       })
+      .catch(() => {
+        toast(t('common:requestFailed'))
+        setStep('form')
+      })
       .finally(() => setModalLocked(false))
   }
 

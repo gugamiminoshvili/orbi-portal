@@ -50,11 +50,16 @@ export default function TicketChatPane() {
     const value = text.trim()
     if (!value || sending) return
     setSending(true)
-    setText('')
-    const updated = await sendMessage(ticket.id, value)
-    setData(updated)
-    bumpTicketsRefresh()
-    setSending(false)
+    try {
+      const updated = await sendMessage(ticket.id, value)
+      setText('')
+      setData(updated)
+      bumpTicketsRefresh()
+    } catch {
+      toast(t('common:requestFailed'))
+    } finally {
+      setSending(false)
+    }
   }
 
   function handleKeyDown(e) {

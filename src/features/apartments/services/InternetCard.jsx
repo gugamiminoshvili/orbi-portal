@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { useToast } from '../../../context/ToastContext'
@@ -30,6 +31,7 @@ export default function InternetCard({ apt, onReload }) {
   const active = s.status === 'Active'
   const paused = s.status === 'Paused'
   const pl = planById(s.planId)
+  const [resuming, setResuming] = useState(false)
 
   const sub = active
     ? `${pl ? pl.name : ''} · ${s.provider}`
@@ -48,9 +50,16 @@ export default function InternetCard({ apt, onReload }) {
   )
 
   async function handleResume() {
-    await resumeInternet(apt.id)
-    onReload?.()
-    toast(t('apartments:resumedToast'))
+    setResuming(true)
+    try {
+      await resumeInternet(apt.id)
+      onReload?.()
+      toast(t('apartments:resumedToast'))
+    } catch {
+      toast(t('common:requestFailed'))
+    } finally {
+      setResuming(false)
+    }
   }
 
   function openChangePackage() {
@@ -92,7 +101,7 @@ export default function InternetCard({ apt, onReload }) {
           </div>
         </div>
         <div className={styles['sub-actions']}>
-          <Button size="sm" onClick={handleResume}>
+          <Button size="sm" disabled={resuming} onClick={handleResume}>
             {t('apartments:resumeService')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => toast(t('apartments:subscriptionDownloaded'))}>

@@ -10,6 +10,7 @@ import Icon from '../../../components/ui/Icon'
 import Field, { Input } from '../../../components/ui/Field'
 import { Seg } from '../../../components/ui/Badge'
 import Skeleton from '../../../components/ui/Skeleton'
+import EmptyState from '../../../components/ui/EmptyState'
 import modalStyles from '../../../context/Modal.module.css'
 import styles from './Doors.module.css'
 
@@ -39,12 +40,23 @@ function rangeTotal(from, to, countFn) {
 // requested), `'loading'`, or the adaptLockHistory() `{byDay,total}` result.
 function useRealDoorHistory(apartmentId, mode, year) {
   const [yearHistory, setYearHistory] = useState({})
+  // Tracks which years have already been requested, independent of the
+  // render-visible `yearHistory` state. Gating `toFetch` on `yearHistory`
+  // itself (as this used to) is a bug: the in-effect `setYearHistory('loading')`
+  // call changes `yearHistory`, which was also this effect's own dependency —
+  // that re-runs the effect and fires the previous run's cleanup (`cancelled
+  // = true`) before the fetch has a chance to resolve, so neither the
+  // success nor the error branch below could ever actually apply. A ref
+  // sidesteps that self-cancelling loop entirely.
+  const requestedRef = useRef(new Set())
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     if (USE_MOCK) return undefined
     const needed = mode === 'years' ? YEARS : [year]
-    const toFetch = needed.filter((y) => !yearHistory[y])
+    const toFetch = needed.filter((y) => !requestedRef.current.has(y))
     if (toFetch.length === 0) return undefined
+    for (const y of toFetch) requestedRef.current.add(y)
 
     setYearHistory((prev) => {
       const next = { ...prev }
@@ -57,26 +69,52 @@ function useRealDoorHistory(apartmentId, mode, year) {
       toFetch.map((y) =>
         getLockHistory(apartmentId, `${y}-01-01 00:00:00`, `${y}-12-31 23:59:59`).then((data) => ({ y, data }))
       )
-    ).then((results) => {
-      if (cancelled) return
-      setYearHistory((prev) => {
-        const next = { ...prev }
-        for (const { y, data } of results) next[y] = data
-        return next
+    )
+      .then((results) => {
+        if (cancelled) return
+        setYearHistory((prev) => {
+          const next = { ...prev }
+          for (const { y, data } of results) next[y] = data
+          return next
+        })
       })
-    })
+      .catch(() => {
+        // Promise.all fails fast on the first rejection, so which year(s)
+        // actually failed is unknown — mark every year requested in this
+        // batch as errored rather than leaving any of them stuck on
+        // 'loading' forever (an unhandled rejection + permanent skeleton).
+        if (cancelled) return
+        setYearHistory((prev) => {
+          const next = { ...prev }
+          for (const y of toFetch) next[y] = 'error'
+          return next
+        })
+      })
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, year, apartmentId, yearHistory])
+  }, [mode, year, apartmentId, reloadToken])
 
   function isLoading(y) {
     return !USE_MOCK && yearHistory[y] === 'loading'
   }
+  function isError(y) {
+    return !USE_MOCK && yearHistory[y] === 'error'
+  }
+  // Un-mark the year as requested and bump reloadToken to force the effect
+  // above to run again (it no longer reacts to `yearHistory` itself).
+  function retryYear(y) {
+    requestedRef.current.delete(y)
+    setYearHistory((prev) => {
+      const next = { ...prev }
+      delete next[y]
+      return next
+    })
+    setReloadToken((k) => k + 1)
+  }
   function dayCount(y, m, d) {
     const entry = yearHistory[y]
-    if (!entry || entry === 'loading') return 0
+    if (!entry || entry === 'loading' || entry === 'error') return 0
     return entry.byDay[`${y}-${pad2(m + 1)}-${pad2(d)}`] || 0
   }
   function monthCount(y, m) {
@@ -87,10 +125,10 @@ function useRealDoorHistory(apartmentId, mode, year) {
   }
   function yearCount(y) {
     const entry = yearHistory[y]
-    return entry && entry !== 'loading' ? entry.total : 0
+    return entry && entry !== 'loading' && entry !== 'error' ? entry.total : 0
   }
 
-  return { isLoading, dayCount, monthCount, yearCount }
+  return { isLoading, isError, retryYear, dayCount, monthCount, yearCount }
 }
 
 // Ported from openDoorsModal()/doorsHtml() at reference/orbi-portal-redesign.html
@@ -122,6 +160,8 @@ export default function DoorsCalendarModal({ apartment }) {
   const mTotal = (y, m) => (USE_MOCK ? monthTotal(apartment.id, y, m) : real.monthCount(y, m))
   const yTotal = (y) => (USE_MOCK ? yearTotal(apartment.id, y) : real.yearCount(y))
   const yearLoading = (y) => !USE_MOCK && real.isLoading(y)
+  const yearError = (y) => !USE_MOCK && real.isError(y)
+  const retryYear = (y) => real.retryYear(y)
 
   function prevMonth() {
     if (month === 0) {
@@ -154,6 +194,8 @@ export default function DoorsCalendarModal({ apartment }) {
   let body
   if (mode === 'month' && yearLoading(year)) {
     body = <MonthSkeleton dow={dow} />
+  } else if (mode === 'month' && yearError(year)) {
+    body = <YearErrorState onRetry={() => retryYear(year)} t={t} />
   } else if (mode === 'month') {
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const firstDow = (new Date(year, month, 1).getDay() + 6) % 7
@@ -196,6 +238,8 @@ export default function DoorsCalendarModal({ apartment }) {
     )
   } else if (mode === 'year' && yearLoading(year)) {
     body = <YearGridSkeleton />
+  } else if (mode === 'year' && yearError(year)) {
+    body = <YearErrorState onRetry={() => retryYear(year)} t={t} />
   } else if (mode === 'year') {
     body = (
       <>
@@ -246,6 +290,17 @@ export default function DoorsCalendarModal({ apartment }) {
             <span style={{ fontWeight: 600 }}>{y}</span>
             {yearLoading(y) ? (
               <Skeleton w={48} h={16} r={6} />
+            ) : yearError(y) ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  retryYear(y)
+                }}
+                style={{ color: 'var(--warn-ink)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+              >
+                {t('common:retry')}
+              </button>
             ) : (
               <b>{t('apartments:yearOpenings', { count: yTotal(y) })}</b>
             )}
@@ -330,5 +385,18 @@ function YearGridSkeleton() {
         <Skeleton key={i} h={60} r={8} />
       ))}
     </div>
+  )
+}
+
+// Real-mode-only: shown in place of the month/year grid when the year's
+// GET /mobileApi/lockHistory/ call rejects — stops the skeleton from hanging
+// forever and offers a retry instead of leaving an unhandled rejection.
+function YearErrorState({ onRetry, t }) {
+  return (
+    <EmptyState icon="warn" title={t('common:requestFailed')}>
+      <Button size="sm" variant="ghost" onClick={onRetry}>
+        {t('common:retry')}
+      </Button>
+    </EmptyState>
   )
 }

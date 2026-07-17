@@ -30,7 +30,9 @@
     "pay": "Pay",
     "continue": "Continue",
     "from": "From",
-    "to": "To"
+    "to": "To",
+    "requestFailed": "Request failed. Please try again.",
+    "retry": "Retry"
   },
   "news": {
     "title": "News & Announcements",

@@ -26,6 +26,22 @@ function apiBase() {
   return import.meta.env.VITE_API_BASE || ''
 }
 
+// Session-expired notification: fired whenever a 401-triggered refresh
+// itself fails (refresh token missing/expired/rejected). AuthContext
+// subscribes to this in real mode to flip status to 'anon' — RequireAuth
+// then redirects to /login on the next render — since nothing here has a
+// reference to the auth context/UI layer to call directly.
+const sessionExpiredListeners = new Set()
+
+export function onSessionExpired(cb) {
+  sessionExpiredListeners.add(cb)
+  return () => sessionExpiredListeners.delete(cb)
+}
+
+function notifySessionExpired() {
+  for (const cb of sessionExpiredListeners) cb()
+}
+
 // Single-flight refresh: concurrent 401s share one in-flight refresh call so
 // the backend only ever sees one POST /mobileApi/refresh/ per expiry.
 let refreshPromise = null
@@ -85,6 +101,7 @@ async function request(path, opts, { multipart = false } = {}) {
       await refreshOnce()
     } catch {
       tokenStore.clear()
+      notifySessionExpired()
       throw new ApiError(-1, 'session expired', 'SESSION_EXPIRED')
     }
     return request(path, { ...opts, _isRetry: true }, { multipart })
