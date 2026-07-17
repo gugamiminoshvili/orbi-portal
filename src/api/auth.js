@@ -17,7 +17,10 @@ import { tokenStore } from './tokenStore'
 import { ApiError } from './errors'
 import { langToApi } from '../utils/lang'
 
+// Kept in sync with client.js's apiBase() — see its comment for why
+// VITE_USE_PROXY forces a relative (proxy-hitting) path in dev.
 function apiBase() {
+  if (import.meta.env.VITE_USE_PROXY === 'true') return ''
   return import.meta.env.VITE_API_BASE || ''
 }
 

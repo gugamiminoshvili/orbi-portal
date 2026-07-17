@@ -14,7 +14,15 @@ export function delay(ms = defaultMs()) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// `VITE_USE_PROXY=true` (dev-only) means the Vite dev server is proxying
+// same-origin `/mobileApi/...` requests to VITE_API_BASE (see vite.config.js)
+// — in that mode the app must call the RELATIVE path so the request actually
+// hits the proxy, never VITE_API_BASE directly (that would be a cross-origin
+// call again, defeating the proxy). See README "Backend integration" for the
+// proxy-dev vs direct-CORS-dev setups. Unset/false (the default, and every
+// existing test's environment) preserves the pre-I8 behavior exactly.
 function apiBase() {
+  if (import.meta.env.VITE_USE_PROXY === 'true') return ''
   return import.meta.env.VITE_API_BASE || ''
 }
 

@@ -2,7 +2,10 @@
 // and `/mobileApi/tickets/subject/` (docs/api-reference.md "Tickets,
 // notifications, feedback, devices, and news") into the v1 ticket shape
 // src/api/mock/tickets.js already defines (`TICKETS`/`SUPPORT_TOPICS`).
-import { topicById } from '../mock/tickets'
+// Explicit .js extension: plain Node ESM (scripts/live-smoke.mjs imports
+// this module directly, with no bundler) requires it — Vite resolves either
+// form fine, so this is a no-op for the app build/tests.
+import { topicById } from '../mock/tickets.js'
 
 const OTHER_TOPIC = topicById('other')
 

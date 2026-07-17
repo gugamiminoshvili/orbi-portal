@@ -31,6 +31,7 @@ npm run test:watch  # run tests in watch mode
 npm run lint        # oxlint
 npm run build       # production build -> dist/
 npm run preview     # serve the production build locally
+npm run smoke       # manual live-backend check (needs VITE_API_BASE + test creds) — see "Backend integration"
 ```
 
 ## Environment / mock-to-real-API switch
@@ -38,17 +39,32 @@ npm run preview     # serve the production build locally
 Copy `.env.example` to `.env` and adjust as needed:
 
 ```bash
-VITE_API_BASE=
 VITE_USE_MOCK=true
+VITE_API_BASE=
+VITE_USE_PROXY=false
 ```
 
 - **`VITE_USE_MOCK`** — `true` (default) serves every screen from the
   in-memory mock data in `src/api/mock/`, with an artificial 400–800 ms
-  delay per call so skeleton loaders are visible. Set to `false` to route
-  all requests through `VITE_API_BASE` instead.
-- **`VITE_API_BASE`** — the origin (and optional path prefix) prepended to
-  every real request, e.g. `https://api.orbi.example.com`. Ignored while
-  `VITE_USE_MOCK=true`.
+  delay per call so skeleton loaders are visible, and skips the login gate
+  entirely. Set to `false` to require a real login and route all requests
+  through `VITE_API_BASE` instead.
+- **`VITE_API_BASE`** — the real API's origin (and optional path prefix),
+  e.g. `https://api.orbi.example.com`. Ignored while `VITE_USE_MOCK=true`.
+- **`VITE_USE_PROXY`** — dev-only. `true` routes requests through the Vite
+  dev server's `/mobileApi` proxy (to `VITE_API_BASE`) instead of calling
+  `VITE_API_BASE` directly, sidestepping CORS in local dev. See "Backend
+  integration" below for the full mode matrix.
+
+Test credentials for the live smoke script (`npm run smoke`) go in
+`.env.local` instead — it's gitignored and never read by the app itself,
+only by the script:
+
+```bash
+# .env.local — gitignored, never commit real credentials
+VITE_TEST_USER=
+VITE_TEST_PASS=
+```
 
 Nothing else needs to change to switch a given screen over — see
 "Backend integration" below.
@@ -75,8 +91,10 @@ src/
   i18n/
     index.js             # i18next setup
     locales/             # en.json / ka.json / ru.json, one namespaced tree each
-  utils/                 # format.js (fmt), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images)
+  utils/                 # format.js (fmt), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images), envFile.js (pure .env line parser, used by scripts/live-smoke.mjs)
   test/                  # vitest setup + smoke test
+scripts/
+  live-smoke.mjs         # manual, opt-in live-backend check — `npm run smoke` (see "Backend integration")
 reference/
   orbi-portal-redesign.html   # the design source of truth (do not delete)
 ```
@@ -93,21 +111,134 @@ export async function getApartment(id) {
     await delay()
     return /* mock lookup */
   }
-  return http(`/apartments/${id}`)
+  return http(`/mobileApi/properties/v2/`) /* real branch: http() + adaptProperty() */
 }
 ```
 
-To wire up a real backend:
+`src/api/client.js`'s `http()`/`httpMultipart()` attach the JWT `Authorization`
+header, run the single-flight 401→refresh→retry flow, and parse the
+`{code, msg, result, error}` envelope (throwing a typed `ApiError` on a
+negative `code`). `src/api/auth.js` handles login/refresh/verify/logout.
+`src/api/adapters/*.js` map each endpoint's DTO into the exact shape the UI
+already consumes, so `features/`/`components/` never had to change.
 
-1. Set `VITE_API_BASE` to the API origin and `VITE_USE_MOCK=false`.
-2. Implement the routes each `endpoints/*.js` file already calls through
-   `http()` (path, method, and body shape are visible right there in the
-   `else` branch) — `apartments.js`, `news.js`, `pay.js`, and `support.js`.
-3. `http()` in `src/api/client.js` is a minimal `fetch` wrapper (no auth
-   headers, no `Content-Type` on POST yet, throws on non-2xx) — extend it
-   there once the real API's auth/error-envelope conventions are known.
-   That's the one place to add things like bearer tokens or retry logic
-   without touching any endpoint file.
+### Mode matrix
+
+| Mode | Env | Login required | Requests go to | When to use |
+|---|---|---|---|---|
+| **Mock** | `VITE_USE_MOCK=true` (default) | No — `RequireAuth` short-circuits | Nowhere (in-memory `src/api/mock/`) | Default; runs the whole app/demo with no backend at all |
+| **Proxy-dev** | `VITE_USE_MOCK=false`, `VITE_API_BASE=<origin>`, `VITE_USE_PROXY=true` | Yes | Relative `/mobileApi/...`, proxied by the Vite dev server to `VITE_API_BASE` (`vite.config.js`'s `server.proxy`) | Local dev against a real backend whose CORS isn't (yet) configured for your dev origin |
+| **Direct** | `VITE_USE_MOCK=false`, `VITE_API_BASE=<origin>`, `VITE_USE_PROXY=false`/unset | Yes | `VITE_API_BASE` directly, from the browser | Production build (there's no dev server to proxy through), or local dev once the backend allows your origin via CORS |
+
+`VITE_USE_PROXY` only matters in `npm run dev` — a production build
+(`npm run build`/`preview`) always calls `VITE_API_BASE` directly, since
+there's no Vite dev server running to proxy through. The interaction lives in
+two places: `vite.config.js` reads `VITE_API_BASE` via `loadEnv()` (function
+config form) and, when set, proxies `/mobileApi` → that origin; `apiBase()`
+in `src/api/client.js`/`src/api/auth.js` returns `''` (a relative path) when
+`VITE_USE_PROXY=true`, so requests actually hit the same-origin dev proxy
+instead of calling `VITE_API_BASE` cross-origin. Get these two out of sync
+(proxy configured but the app still calling the absolute URL, or vice versa)
+and you're back to a CORS error or a 404 against the Vite dev server.
+
+### Env vars
+
+| Var | Read by | Purpose |
+|---|---|---|
+| `VITE_USE_MOCK` | `src/api/client.js` | `true` (default): mock mode, no login. `false`: real endpoints + auth. |
+| `VITE_API_BASE` | `src/api/client.js`/`auth.js`, `vite.config.js`, `scripts/live-smoke.mjs` | Real API origin. Ignored in mock mode. |
+| `VITE_USE_PROXY` | `src/api/client.js`/`auth.js` | Dev-only. `true`: call relative paths so they hit the Vite dev proxy. |
+| `VITE_TEST_USER` / `VITE_TEST_PASS` | `scripts/live-smoke.mjs` only | Test-account credentials, from `.env.local` (gitignored). Never read by the app; never logged. |
+
+### Live smoke script
+
+`scripts/live-smoke.mjs` is a plain Node script (no vitest, no bundler,
+never run in CI) that exercises a real backend end to end:
+
+```bash
+npm run smoke
+```
+
+It reads `VITE_API_BASE`/`VITE_TEST_USER`/`VITE_TEST_PASS` from
+`process.env`, falling back to `.env.local` then `.env` in the repo root
+(a small line parser, `src/utils/envFile.js` — no `dotenv` dependency), and
+refuses to run with a clear message if the base URL or credentials are
+missing. It then: (1) logs in — if the account has a pending device
+verification (`code:-2`), it prints `DEVICE_VERIFY_REQUIRED` and stops,
+since there's no interactive way to complete that from a script; (2) `GET
+properties/v2`; (3) `GET news` page 1; (4) `GET tickets` (+ `tickets/subject/`);
+(5) `GET internettv/tariff`. Each check prints OK/FAIL, the HTTP status, and
+the first item run through the same adapters the app uses
+(`src/api/adapters/*.js`), so a real payload's shape can be checked against
+the guessed DTO fields before it ever reaches the UI. Credentials and tokens
+are never printed — only whether they're present.
+
+### Open questions for the backend team
+
+Carried from `docs/specs/2026-07-16-backend-integration-design.md` §5, plus
+what's been flagged in the adapters while wiring I1–I8 (see the `FLAG`
+comments in `src/api/adapters/*.js` for the full detail on each):
+
+1. Base URL (dev/staging) and a test account — nothing here has been run
+   against a live server yet.
+2. CORS: is `VITE_API_BASE` planned to allow browser origins directly
+   (**Direct** mode), or should local dev always go through the proxy
+   (**Proxy-dev** mode) until a prod domain allowlist exists?
+3. `GET /mobileApi/news/`: does it support a category filter and/or sort
+   order? The UI hides those controls in real mode until confirmed.
+4. `serviceType` enum for `POST /mobileApi/payment/` — assumed
+   `apartment`/`electricity`/`internettv`/`water` (mirroring `finance`'s
+   `accountType`), only `apartment` is currently sent.
+5. **`flat_id`: `id` vs `objectId`.** `/properties(/v2)/` returns both `id`
+   and `objectId` per property, and only `objectId` is confirmed to be what
+   `/flat/{flat_id}/` expects (the list's own `id` reads as a separate
+   customer-property relation id, not a flat id) — needs confirmation, since
+   using the wrong one would 404 or return the wrong flat's detail.
+6. **`epcode` type.** The property list's example shows `epcode` as a
+   string (e.g. `"GE-BAT-OCT-A-3026"`), but `POST /mobileApi/payment/`'s own
+   doc types its `epcode` body param as an **integer** — these can't both be
+   the same value; needs a confirmed source for the integer `epcode`
+   `payment/` actually expects.
+7. **Ticket `reply` semantics.** `GET /tickets/{id}/messages/` returns a
+   `reply` field on each message with no documented meaning; the adapter
+   guesses `reply === 0` means "the customer's own message" (vs. any nonzero
+   value meaning "staff reply"). If it instead means a running reply index,
+   every message after the customer's first follow-up would be
+   misclassified as staff.
+8. **Ticket `status` vocabulary.** Only `closed_at` (present) or a literal
+   `status === 'closed'` currently map to the closed bucket; everything else
+   is "active". If the real vocabulary has more values (e.g.
+   `in_progress`/`pending`), those would currently read as active by
+   default — needs the full status list to confirm.
+9. **Ticket ↔ apartment association.** `Ticket` has no flat/apartment
+   reference field at all in the documented shape (`depId` reads as an
+   internal support-department id) — ticket creation's `apt` field is
+   omitted from the real request body entirely rather than guessed at a
+   wrong key.
+10. **Elided DTO shapes** (doc says only "..."/a bare description, no field
+    names) — all guessed from context and flagged in the corresponding
+    adapter, to be corrected once real payloads are seen via `npm run
+    smoke`:
+    - `GET /mobileApi/flat/{flat_id}/` (detail-only fields:
+      building/addr/cadastral/waterCode/apCode)
+    - `GET /mobileApi/news/{id}` `NewsArticleSerializer` fields (title/
+      description/category/created_at/image/read_time)
+    - `GET/PATCH /mobileApi/internettv/` agreement fields (provider/
+      tariff_net_id/price/status/next_billing_date/billing_cycle_days/
+      days_left/boost)
+    - `GET /mobileApi/internettv/tariff/`'s per-entry fields inside
+      `internet`/`tv`/`boost`/`combined`
+    - `GET /mobileApi/lockHistory/`'s per-record fields (no existing v1 mock
+      shape to check field names against at all)
+
+To wire up more of a real backend once these are answered:
+
+1. Set `VITE_API_BASE` (+ `VITE_USE_PROXY` in dev) and `VITE_USE_MOCK=false`.
+2. Extend the `else` branch of the relevant `endpoints/*.js` function and,
+   if the DTO needs mapping, add/adjust an `adapt*` in `adapters/*.js` —
+   fixtures for adapter unit tests live in `adapters/__fixtures__/`.
+3. Run `npm run smoke` against a real account to sanity-check the new
+   branch before it reaches the UI.
 4. Delete the corresponding mock module(s) under `api/mock/` only once
    every endpoint that reads them has been switched over — several mock
    modules are shared across more than one endpoint file.
