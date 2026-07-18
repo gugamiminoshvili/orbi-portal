@@ -61,6 +61,12 @@ export function adaptCommunals(dto = {}) {
       waterIndication: water.indication ?? '—',
       internet: {
         balance: num(net.balance),
+        // Live internettv detail carries `balance_with_penalty` alongside
+        // the base `balance` — the collectable amount once late penalties
+        // are included. This is what the multi-pay flow's owedFor() charges
+        // for internettv; fall back to the base balance if the field is
+        // ever absent.
+        balanceWithPenalty: num(net.balance_with_penalty ?? net.balance),
         cost: num(net.cost),
         penalty: num(net.penalty),
       },

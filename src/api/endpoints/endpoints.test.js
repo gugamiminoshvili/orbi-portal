@@ -1,6 +1,6 @@
 import { listNews, getNews } from './news'
 import { listApartments, getApartment, changePackage, pauseInternet, resumeInternet } from './apartments'
-import { payService, payMulti, downloadInvoice } from './pay'
+import { payMulti, downloadInvoice } from './pay'
 import { listTickets, createTicket, sendMessage } from './support'
 import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from './dashboard'
 
@@ -24,12 +24,6 @@ test('pause/resume roundtrip', async () => {
   const r = await resumeInternet('A1')
   expect(r.status).toBe('Active')
 })
-test('payService returns ref and clears balance', async () => {
-  const res = await payService('A1', { amount: 180, method: 'card' })
-  expect(res.ref).toMatch(/^PAY-/)
-  const a = await getApartment('A1')
-  expect(a.balance).toBe(0)
-})
 test('create ticket + message', async () => {
   const t = await createTicket({ topic: 'other', apt: null, text: 'hello' })
   expect(t.status).toBe('active')
@@ -39,7 +33,9 @@ test('create ticket + message', async () => {
 test('getCommunals resolves the mock dashboard shape', async () => {
   const { utilities, maintenance, byApartment } = await getCommunals()
   expect(utilities.currency).toBe('GEL')
-  expect(maintenance.currency).toBe('USD')
+  // mock maintenance is GEL-native (see mockCommunals' currency comment) —
+  // live mode reports 'USD' and the multi-pay flow converts conditionally.
+  expect(maintenance.currency).toBe('GEL')
   expect(byApartment.length).toBeGreaterThan(0)
 })
 test('getRates resolves the static mock NBG snapshot', async () => {

@@ -575,13 +575,35 @@ describe('adaptCommunals', () => {
       displayServices: ['water', 'maintenance', 'electricity', 'orbinet', 'doors'],
     })
     // no internettv entry for this apartment -> zeroed, not undefined/NaN
-    expect(oct1519.internet).toEqual({ balance: 0, cost: 0, penalty: 0 })
+    expect(oct1519.internet).toEqual({ balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 })
   })
 
   test('an apartment WITH an internettv entry surfaces its balance/cost/penalty', () => {
     const { byApartment } = adaptCommunals(communals)
     const oct3026 = byApartment.find((a) => a.code === 'OCT.A.30.3026')
-    expect(oct3026.internet).toEqual({ balance: 0, cost: 50, penalty: 0 })
+    expect(oct3026.internet).toEqual({ balance: 0, balanceWithPenalty: 0, cost: 50, penalty: 0 })
+  })
+
+  test('internettv balance_with_penalty is captured distinctly (falls back to balance when absent)', () => {
+    const dto = {
+      communal: {
+        detailed: {
+          internettv: {
+            'X.1': { balance: -95.13, balance_with_penalty: -101.5, cost: 50, penalty: 6.37 },
+            'X.2': { balance: -40, cost: 50, penalty: 0 }, // no *_with_penalty field
+          },
+        },
+      },
+    }
+    const { byApartment } = adaptCommunals(dto)
+    expect(byApartment.find((a) => a.code === 'X.1').internet).toMatchObject({
+      balance: -95.13,
+      balanceWithPenalty: -101.5,
+    })
+    expect(byApartment.find((a) => a.code === 'X.2').internet).toMatchObject({
+      balance: -40,
+      balanceWithPenalty: -40,
+    })
   })
 
   test('empty/missing dto yields empty sums and an empty apartment list', () => {

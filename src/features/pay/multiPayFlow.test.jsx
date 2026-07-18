@@ -30,6 +30,9 @@ const APARTMENTS = [
 
 const COMMUNALS = {
   utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+  // currency 'USD' (the LIVE shape) — owedFor's conditional conversion path
+  // is exercised here; the GEL-native mock path is covered by detail.test.jsx
+  // (real mock module end-to-end) and payFlowData.test.js.
   maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
   byApartment: [
     {
@@ -37,7 +40,7 @@ const COMMUNALS = {
       epcode: 'EP1',
       electricity: -50, // owed 50
       waterIndication: '—',
-      internet: { balance: -10, cost: 5, penalty: 0 }, // owed 10
+      internet: { balance: -10, balanceWithPenalty: -10, cost: 5, penalty: 0 }, // owed 10
       maintenance: -40, // USD, owed 40 -> 80 GEL at rate 2
       displayServices: [],
     },
@@ -46,7 +49,7 @@ const COMMUNALS = {
       epcode: 'EP2',
       electricity: 20, // credit
       waterIndication: '—',
-      internet: { balance: 0, cost: 5, penalty: 0 }, // zero
+      internet: { balance: 0, balanceWithPenalty: 0, cost: 5, penalty: 0 }, // zero
       maintenance: 0, // zero
       displayServices: [],
     },
@@ -55,7 +58,7 @@ const COMMUNALS = {
       epcode: 'EP3',
       electricity: -5, // owed 5
       waterIndication: '—',
-      internet: { balance: 0, cost: 0, penalty: 0 },
+      internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 },
       maintenance: 0,
       displayServices: [],
     },
@@ -158,6 +161,34 @@ describe('MultiPayFlow — step 3 table', () => {
     fireEvent.change(amountInput, { target: { value: '30' } })
 
     expect(screen.getByText('₾30.00')).toBeInTheDocument()
+  })
+
+  test('amount edits above the owed amount are capped at the owed amount', async () => {
+    await openOrbiCityElectricity()
+
+    const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
+    fireEvent.click(within(debtRow).getByRole('checkbox'))
+
+    const amountInput = within(debtRow).getByRole('spinbutton')
+    // owed is 50 — an attempted 999 clamps back to 50 (prepayment/overpay
+    // support is an open backend question, see ApartmentsStep's FLAG).
+    fireEvent.change(amountInput, { target: { value: '999' } })
+
+    expect(amountInput).toHaveValue(50)
+    expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
+  })
+
+  test("maintenance step 3 converts USD owed via the rate and shows the $1 = X₾ line (currency 'USD')", async () => {
+    renderApp(['/pay'])
+    await screen.findByText('Orbi City')
+    fireEvent.click(screen.getAllByText('Select')[0])
+    fireEvent.click(await screen.findByText('Maintenance').then((el) => el.closest('button')))
+    await screen.findByText('OCT.A.30.3026')
+
+    // owed 40 USD * rate 2 = ₾80.00, and the conversion-rate line renders
+    const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
+    expect(within(debtRow).getByText('₾80.00')).toBeInTheDocument()
+    expect(screen.getByText('$1 = 2.0000₾')).toBeInTheDocument()
   })
 })
 

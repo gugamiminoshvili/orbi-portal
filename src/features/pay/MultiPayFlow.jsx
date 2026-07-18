@@ -44,7 +44,14 @@ export default function MultiPayFlow() {
 
   const rows = useMemo(() => (data ? buildRows(data.communals.byApartment, data.apartments) : []), [data])
   const usdRate = data ? usdGelRate(data.rates) : null
-  const complexes = useMemo(() => buildComplexes(rows, usdRate), [rows, usdRate])
+  // Which currency the maintenance balances arrive in — 'USD' live, 'GEL' in
+  // mock mode (mockCommunals). owedFor only converts by the USD/GEL rate
+  // when this is 'USD'; see payFlowData.js's owedFor comment.
+  const maintenanceCurrency = data?.communals.maintenance.currency ?? 'USD'
+  const complexes = useMemo(
+    () => buildComplexes(rows, usdRate, maintenanceCurrency),
+    [rows, usdRate, maintenanceCurrency]
+  )
 
   // Deep-link preselect: service Pay buttons (MaintenanceCard/
   // ElectricityCard/InternetCard) and the /pay/:id redirect (PayRedirect)
@@ -62,7 +69,7 @@ export default function MultiPayFlow() {
       setComplexProject(row.project)
       if (preUtility) {
         setUtility(preUtility)
-        const owed = owedFor(row, preUtility, usdRate)
+        const owed = owedFor(row, preUtility, usdRate, maintenanceCurrency)
         if (owed > 0) setSelections({ [row.epcode]: round2(owed) })
         setStep(3)
       } else {
@@ -114,13 +121,20 @@ export default function MultiPayFlow() {
       {head}
       {step === 1 && <ComplexStep complexes={complexes} onSelect={goToUtilityStep} />}
       {step === 2 && activeComplex && (
-        <UtilityStep complex={activeComplex} usdRate={usdRate} onBack={() => setStep(1)} onSelect={goToApartmentsStep} />
+        <UtilityStep
+          complex={activeComplex}
+          usdRate={usdRate}
+          maintenanceCurrency={maintenanceCurrency}
+          onBack={() => setStep(1)}
+          onSelect={goToApartmentsStep}
+        />
       )}
       {step === 3 && activeComplex && utility && (
         <ApartmentsStep
           complex={activeComplex}
           utility={utility}
           usdRate={usdRate}
+          maintenanceCurrency={maintenanceCurrency}
           selections={selections}
           onSelectionsChange={setSelections}
           onBack={() => setStep(2)}

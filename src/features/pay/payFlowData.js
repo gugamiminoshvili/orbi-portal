@@ -16,28 +16,35 @@
 // (fmt(n) prepends '-' only when n<0) without any extra per-row branching.
 export const UTILITIES = ['maintenance', 'electricity', 'internettv']
 
-// Maintenance arrives in USD (flatBalance.apartmentBalance, per
-// adaptCommunals) while electricity/internettv are already GEL. The design
-// screenshots show maintenance figures converted to GEL alongside a
-// "$1 = X₾" rate line in the summary panel — FLAG: converting here (rather
-// than leaving maintenance in USD) is an assumption; there's no live sample
-// of the multi-pay screens to confirm the backend expects GEL amounts in the
-// eventual POST /payment/multi/ body. When the rate is unavailable (getRates
-// failed) maintenance falls back to its raw USD magnitude rather than
-// blocking the whole flow — FLAG, untested against a real "rate missing"
-// scenario.
-export function owedFor(row, utility, usdRate) {
+// LIVE maintenance arrives in USD (flatBalance.apartmentBalance, per
+// adaptCommunals — flatBalance.currency 'USD'), while electricity/internettv
+// are already GEL. The design screenshots show maintenance converted to GEL
+// with a "$1 = X₾" rate line in the summary panel — FLAG: converting here
+// (rather than leaving maintenance in USD) is an assumption; no live sample
+// of the multi-pay screens confirms the backend expects GEL amounts in the
+// eventual POST /payment/multi/ body.
+//
+// The conversion is CONDITIONAL on `maintenanceCurrency` (callers thread
+// communals.maintenance.currency through): mock-mode maintenance balances
+// are authored in GEL — the same SERVICES numbers the apartment detail page
+// renders with ₾, and mockCommunals reports currency 'GEL' — so multiplying
+// them by the rate would double-convert (detail page "Pay ₾120.00" vs a
+// flow default of ₾316). Only a genuinely-USD figure (live currency 'USD')
+// is multiplied by the USD/GEL rate. When the rate is unavailable (getRates
+// failed) a USD figure falls back to its raw magnitude rather than blocking
+// the whole flow — FLAG, untested against a real "rate missing" scenario.
+export function owedFor(row, utility, usdRate, maintenanceCurrency = 'USD') {
   if (utility === 'maintenance') {
-    const owedUsd = -row.maintenance
-    return usdRate != null ? owedUsd * usdRate : owedUsd
+    const owed = -row.maintenance
+    if (maintenanceCurrency === 'USD' && usdRate != null) return owed * usdRate
+    return owed
   }
   if (utility === 'electricity') return -row.electricity
-  // internettv: `internet.balance` already reflects the net amount owed
-  // (same negative-when-owed convention) — `.penalty` is a separate
-  // informational field and is NOT added again here, to avoid double
-  // counting. FLAG: no live sample has a nonzero penalty alongside a
-  // nonzero balance to confirm balance already includes it.
-  return -row.internet.balance
+  // internettv: `balanceWithPenalty` (live `balance_with_penalty`, captured
+  // by adaptCommunals) is the collectable amount — base balance plus any
+  // late penalty; falls back to the plain balance for rows shaped before
+  // the field existed.
+  return -(row.internet.balanceWithPenalty ?? row.internet.balance)
 }
 
 // Joins communals' per-apartment detail (keyed by apartment `code`) to
@@ -61,7 +68,7 @@ export function buildRows(byApartment, apartments) {
 // owedFor). Only positive owed amounts count toward either number — credits
 // don't offset other apartments' debts here (each apartment/utility pair is
 // its own bill).
-export function buildComplexes(rows, usdRate) {
+export function buildComplexes(rows, usdRate, maintenanceCurrency = 'USD') {
   const byProject = new Map()
   for (const row of rows) {
     if (!byProject.has(row.project)) byProject.set(row.project, [])
@@ -72,7 +79,7 @@ export function buildComplexes(rows, usdRate) {
     let outstandingGEL = 0
     for (const row of projectRows) {
       for (const utility of UTILITIES) {
-        const owed = owedFor(row, utility, usdRate)
+        const owed = owedFor(row, utility, usdRate, maintenanceCurrency)
         if (owed > 0) {
           unpaidBillsCount += 1
           outstandingGEL += owed
@@ -85,10 +92,10 @@ export function buildComplexes(rows, usdRate) {
 
 // Step 2's three utility cards: how many apartments (within the already-
 // selected complex) currently owe something for each utility type.
-export function utilityCardData(complexApartments, usdRate) {
+export function utilityCardData(complexApartments, usdRate, maintenanceCurrency = 'USD') {
   return UTILITIES.map((utility) => ({
     utility,
-    unpaidCount: complexApartments.filter((row) => owedFor(row, utility, usdRate) > 0).length,
+    unpaidCount: complexApartments.filter((row) => owedFor(row, utility, usdRate, maintenanceCurrency) > 0).length,
   }))
 }
 

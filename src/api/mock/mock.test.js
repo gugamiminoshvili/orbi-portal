@@ -45,7 +45,10 @@ test('mockCommunals derives byApartment from the real mock APTS/SERVICES', () =>
     maintenance: SERVICES.A1.maintenance.balance,
   })
   expect(utilities.currency).toBe('GEL')
-  expect(maintenance.currency).toBe('USD')
+  // 'GEL', not the live payload's 'USD' — mock maintenance balances are the
+  // GEL-denominated SERVICES numbers (see mockCommunals' comment); reporting
+  // USD would make the multi-pay flow double-convert them.
+  expect(maintenance.currency).toBe('GEL')
   // sums are the positive/negative split of the per-apartment balances
   expect(maintenance.debtSum).toBeLessThanOrEqual(0)
   expect(maintenance.sum).toBeGreaterThanOrEqual(0)

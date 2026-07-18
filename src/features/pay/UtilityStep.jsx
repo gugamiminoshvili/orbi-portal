@@ -18,9 +18,9 @@ const UTILITY_ICON = {
 // Step 2: pick which utility type to pay across multiple apartments of the
 // already-selected complex. Each card shows how many apartments in this
 // complex currently owe something for that utility.
-export default function UtilityStep({ complex, usdRate, onBack, onSelect }) {
+export default function UtilityStep({ complex, usdRate, maintenanceCurrency, onBack, onSelect }) {
   const { t } = useTranslation()
-  const cards = utilityCardData(complex.apartments, usdRate)
+  const cards = utilityCardData(complex.apartments, usdRate, maintenanceCurrency)
 
   return (
     <>

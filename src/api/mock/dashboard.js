@@ -30,7 +30,8 @@ function sumNegative(nums) {
 // apartments.js's `adaptFlatDetail` already documents (`apCode: dto.epcode
 // || '—'`), so this is consistent with the existing mock/live correspondence
 // rather than a new guess. `internet.penalty` has no mock concept and is
-// always 0.
+// always 0 — so `balanceWithPenalty` (the collectable amount adaptCommunals
+// reads off live `balance_with_penalty`) equals the plain balance here.
 function buildByApartment() {
   return APTS.map((a) => {
     const s = SERVICES[a.id]
@@ -39,7 +40,12 @@ function buildByApartment() {
       epcode: a.apCode,
       electricity: s.electricity.balance,
       waterIndication: s.water.indication,
-      internet: { balance: s.internet.balance, cost: s.internet.tariff, penalty: 0 },
+      internet: {
+        balance: s.internet.balance,
+        balanceWithPenalty: s.internet.balance,
+        cost: s.internet.tariff,
+        penalty: 0,
+      },
       maintenance: s.maintenance.balance,
       displayServices: ['water', 'maintenance', 'electricity', 'orbinet', 'doors'],
     }
@@ -65,7 +71,15 @@ export function mockCommunals() {
     maintenance: {
       sum: sumPositive(byApartment.map((a) => a.maintenance)),
       debtSum: sumNegative(byApartment.map((a) => a.maintenance)),
-      currency: 'USD',
+      // 'GEL', NOT the live payload's 'USD': the mock balances above are the
+      // SERVICES numbers every other mock screen renders with ₾ (the detail
+      // page's "Pay ₾120.00" is -maintenance.balance verbatim). Reporting
+      // them as USD made owedFor() multiply by the USD/GEL rate — a double
+      // conversion (flow default ₾316 vs detail ₾120 for the same debt).
+      // The currency field is exactly what tells consumers whether a
+      // conversion is needed, so the mock must describe its own data
+      // truthfully. Live adaptCommunals keeps flatBalance.currency ('USD').
+      currency: 'GEL',
     },
     byApartment,
   }

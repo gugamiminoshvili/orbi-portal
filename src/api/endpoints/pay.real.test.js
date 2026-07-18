@@ -1,7 +1,7 @@
 // Real-branch tests for payMulti/downloadInvoice in src/api/endpoints/pay.js
-// (payService's real branch has no existing real-mode test file to extend —
-// out of scope for this task) — see news.real.test.js for the
-// vi.mock('../client', ...) pattern used to force USE_MOCK false.
+// — see news.real.test.js for the vi.mock('../client', ...) pattern used to
+// force USE_MOCK false. (v1's payService was removed in Task P3-3 along
+// with PayPage, its only caller.)
 import { vi, describe, test, expect, beforeEach } from 'vitest'
 
 vi.mock('../client', async (importOriginal) => {

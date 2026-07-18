@@ -16,7 +16,15 @@ const ROLE_OPTIONS = ['All', 'Owner']
 // amount}` state MultiPayFlow owns (so it survives a Back-and-forward round
 // trip and is what the eventual POST /payment/multi/ body — P3-4 — will be
 // built from).
-export default function ApartmentsStep({ complex, utility, usdRate, selections, onSelectionsChange, onBack }) {
+export default function ApartmentsStep({
+  complex,
+  utility,
+  usdRate,
+  maintenanceCurrency,
+  selections,
+  onSelectionsChange,
+  onBack,
+}) {
   const { t } = useTranslation()
   const toast = useToast()
   const [roleFilter, setRoleFilter] = useState('All')
@@ -29,10 +37,10 @@ export default function ApartmentsStep({ complex, utility, usdRate, selections, 
       complex.apartments
         .filter((row) => roleFilter === 'All' || row.role === roleFilter)
         .map((row) => {
-          const owed = owedFor(row, utility, usdRate)
+          const owed = owedFor(row, utility, usdRate, maintenanceCurrency)
           return { ...row, owed, selectable: owed > 0 }
         }),
-    [complex.apartments, utility, usdRate, roleFilter]
+    [complex.apartments, utility, usdRate, maintenanceCurrency, roleFilter]
   )
 
   const selectableCount = rows.filter((r) => r.selectable).length
@@ -48,9 +56,15 @@ export default function ApartmentsStep({ complex, utility, usdRate, selections, 
     })
   }
 
-  function updateAmount(epcode, raw) {
+  // Clamped to [0, owed]: partial payments are allowed (the screenshots show
+  // editable amounts), but paying MORE than the outstanding amount is capped
+  // — FLAG: whether the backend accepts prepayment/overpayment on
+  // /payment/multi/ is an open backend question; until answered, capping at
+  // the owed amount is the safe interpretation.
+  function updateAmount(row, raw) {
     const n = parseFloat(raw)
-    onSelectionsChange((prev) => ({ ...prev, [epcode]: Number.isNaN(n) ? 0 : Math.max(0, n) }))
+    const clamped = Number.isNaN(n) ? 0 : Math.min(round2(row.owed), Math.max(0, n))
+    onSelectionsChange((prev) => ({ ...prev, [row.epcode]: clamped }))
   }
 
   return (
@@ -111,10 +125,11 @@ export default function ApartmentsStep({ complex, utility, usdRate, selections, 
                         type="number"
                         className={styles['amount-input']}
                         min="0"
+                        max={row.selectable ? round2(row.owed) : undefined}
                         step="0.01"
                         disabled={!checked}
                         value={checked ? selections[row.epcode] : ''}
-                        onChange={(e) => updateAmount(row.epcode, e.target.value)}
+                        onChange={(e) => updateAmount(row, e.target.value)}
                         aria-label={`${t('pay:tableAmountHeader')} ${row.code}`}
                       />
                     </td>
@@ -146,11 +161,12 @@ export default function ApartmentsStep({ complex, utility, usdRate, selections, 
             <span className={styles.k}>{t('pay:summarySelected')}</span>
             <span className={styles.v}>{t('pay:summarySelectedValue', { count: selectedCount })}</span>
           </div>
-          {/* Maintenance is USD at the source — surface the conversion rate
-              used to build both the Outstanding column and this total, per
-              the design screenshots' "$1 = X₾" line (FLAG, see
-              payFlowData.js's owedFor comment). */}
-          {utility === 'maintenance' && usdRate != null && (
+          {/* Only when a USD->GEL conversion actually happened (live
+              maintenance, currency 'USD') — surface the rate used to build
+              both the Outstanding column and this total, per the design
+              screenshots' "$1 = X₾" line (FLAG, see payFlowData.js's owedFor
+              comment). Mock-mode maintenance is GEL-native, so no rate line. */}
+          {utility === 'maintenance' && maintenanceCurrency === 'USD' && usdRate != null && (
             <div className={styles['summary-row']}>
               <span className={styles.k}>{t('dashboard:ratesTitle')}</span>
               <span className={styles.v}>{t('pay:rateLine', { rate: usdRate.toFixed(4) })}</span>

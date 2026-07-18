@@ -9,21 +9,22 @@ const ROW1 = {
   code: 'C1',
   epcode: 'EP1',
   electricity: -50, // owed 50
-  internet: { balance: -20, cost: 10, penalty: 0 }, // owed 20
+  // internettv owes balanceWithPenalty (base -18 plus penalty 2 -> -20)
+  internet: { balance: -18, balanceWithPenalty: -20, cost: 10, penalty: 2 }, // owed 20
   maintenance: -100, // USD, owed 100 USD -> 250 GEL at 2.5
 }
 const ROW2 = {
   code: 'C2',
   epcode: 'EP2',
   electricity: 30, // credit
-  internet: { balance: 5, cost: 10, penalty: 0 }, // credit
+  internet: { balance: 5, balanceWithPenalty: 5, cost: 10, penalty: 0 }, // credit
   maintenance: 0, // zero
 }
 const ROW3 = {
   code: 'C3',
   epcode: 'EP3',
   electricity: -10, // owed 10
-  internet: { balance: 0, cost: 5, penalty: 0 }, // zero
+  internet: { balance: 0, balanceWithPenalty: 0, cost: 5, penalty: 0 }, // zero
   maintenance: -5, // USD, owed 5 USD -> 12.5 GEL
 }
 
@@ -41,12 +42,29 @@ describe('owedFor', () => {
     expect(owedFor(ROW2, 'internettv', USD_RATE)).toBe(-5)
   })
 
-  test('maintenance converts USD->GEL via the rate', () => {
-    expect(owedFor(ROW1, 'maintenance', USD_RATE)).toBe(250)
-    expect(owedFor(ROW3, 'maintenance', USD_RATE)).toBe(12.5)
+  test('internettv charges balanceWithPenalty (penalty-inclusive), not the base balance', () => {
+    // ROW1: base balance -18, with penalty -20 — the collectable amount wins
+    expect(owedFor(ROW1, 'internettv', USD_RATE)).toBe(20)
+    // rows shaped before the field existed fall back to the plain balance
+    const legacyRow = { ...ROW1, internet: { balance: -18, cost: 10, penalty: 0 } }
+    expect(owedFor(legacyRow, 'internettv', USD_RATE)).toBe(18)
   })
 
-  test('maintenance falls back to raw USD magnitude when no rate is available', () => {
+  test("maintenance converts USD->GEL via the rate when the currency is 'USD' (default)", () => {
+    expect(owedFor(ROW1, 'maintenance', USD_RATE)).toBe(250)
+    expect(owedFor(ROW3, 'maintenance', USD_RATE)).toBe(12.5)
+    expect(owedFor(ROW1, 'maintenance', USD_RATE, 'USD')).toBe(250)
+  })
+
+  test("maintenance is NOT converted when the currency is already 'GEL' (mock mode)", () => {
+    // The double-conversion regression: mock maintenance balances are
+    // GEL-native, so the flow's owed amount must equal the detail page's
+    // -balance verbatim — no rate multiply.
+    expect(owedFor(ROW1, 'maintenance', USD_RATE, 'GEL')).toBe(100)
+    expect(owedFor(ROW3, 'maintenance', USD_RATE, 'GEL')).toBe(5)
+  })
+
+  test('USD maintenance falls back to raw magnitude when no rate is available', () => {
     expect(owedFor(ROW1, 'maintenance', null)).toBe(100)
   })
 
@@ -89,6 +107,13 @@ describe('buildComplexes', () => {
     // row3: elec 10 (owed) + internet 0 (not owed) + maintenance 12.5 (owed) = 2
     expect(beta.unpaidBillsCount).toBe(2)
     expect(beta.outstandingGEL).toBeCloseTo(22.5)
+  })
+
+  test("passes maintenanceCurrency through — GEL-native maintenance isn't rate-multiplied", () => {
+    const rows = buildRows([ROW1], APARTMENTS)
+    const alpha = buildComplexes(rows, USD_RATE, 'GEL').find((c) => c.project === 'Alpha')
+    // elec 50 + internet 20 + maintenance 100 (NOT 250) = 170
+    expect(alpha.outstandingGEL).toBeCloseTo(170)
   })
 })
 
