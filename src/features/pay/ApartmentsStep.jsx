@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useToast } from '../../context/ToastContext'
+import { useModal } from '../../context/ModalContext'
 import { fmt } from '../../utils/format'
-import { owedFor, round2 } from './payFlowData'
+import { owedFor, round2, serviceTypeFor } from './payFlowData'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 import { Seg } from '../../components/ui/Badge'
+import MethodModal from './MethodModal'
 import styles from './PayFlow.module.css'
 
 const ROLE_OPTIONS = ['All', 'Owner']
@@ -26,7 +27,7 @@ export default function ApartmentsStep({
   onBack,
 }) {
   const { t } = useTranslation()
-  const toast = useToast()
+  const { openModal } = useModal()
   const [roleFilter, setRoleFilter] = useState('All')
 
   // Per-row owed amount (see payFlowData's owedFor doc comment for the sign
@@ -176,14 +177,30 @@ export default function ApartmentsStep({
             <span className={styles.k}>{t('pay:payableAmount')}</span>
             <span className={styles.v}>{fmt(total, '₾')}</span>
           </div>
-          {/* P3-4 wires this up to open the payment-method modal (bank card /
-              Apple Pay / open banking / crypto / invoice) and POST
-              /payment/multi/ via payMulti(). Until then it's a stub so the
-              button has a visible, non-broken action. */}
+          {/* P3-4: opens the payment-method modal (bank card / Apple Pay /
+              open banking / crypto / invoice) with the selections turned
+              into payMulti's services[] shape — one entry per checked
+              apartment, amount = its editable payable amount, serviceType
+              from payFlowData's serviceTypeFor (utility -> finance
+              accountType mapping, FLAG see that function's comment). */}
           <Button
             style={{ width: '100%', justifyContent: 'center', marginTop: 14 }}
             disabled={total <= 0}
-            onClick={() => toast(t('pay:payNowComingSoonToast'))}
+            onClick={() =>
+              openModal(
+                <MethodModal
+                  complexName={complex.project}
+                  utilityLabel={t(`pay:utilityLabels.${utility}`)}
+                  amount={total}
+                  services={Object.entries(selections).map(([epcode, amt]) => ({
+                    epcode,
+                    amount: amt,
+                    serviceType: serviceTypeFor(utility),
+                  }))}
+                />,
+                { size: 'md' }
+              )
+            }
           >
             <Icon name="wallet" /> {t('pay:payNow')}
           </Button>

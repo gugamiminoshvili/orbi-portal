@@ -105,3 +105,14 @@ export function utilityCardData(complexApartments, usdRate, maintenanceCurrency 
 export function round2(n) {
   return Math.round(n * 100) / 100
 }
+
+// Maps a flow `utility` to the `serviceType` string POST /payment/multi/'s
+// services[] entries carry (P3-4, pay.js's payMulti). FLAG: payment/multi's
+// services[] schema itself is unconfirmed (design doc backend-Q #1) — this
+// assumes serviceType reuses the same enum GET /finance/'s `accountType`
+// param documents (docs/api-reference.md: water/electricity/internettv/
+// apartment), so 'maintenance' (the flow's utility id) maps to 'apartment'
+// and the other two utilities pass straight through unchanged.
+export function serviceTypeFor(utility) {
+  return utility === 'maintenance' ? 'apartment' : utility
+}

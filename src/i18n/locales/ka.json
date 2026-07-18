@@ -289,7 +289,26 @@
     "rateLine": "$1 = {{rate}}₾",
     "payableAmount": "გადასახდელი თანხა",
     "payNow": "გადახდა ახლავე",
-    "payNowComingSoonToast": "გადახდის მეთოდები მალე დაემატება."
+    "methodModalTitle": "აირჩიეთ გადახდის მეთოდი",
+    "methodModalSubtitle": "{{complex}} • {{utility}}",
+    "amountToPayLabel": "გადასახდელი თანხა",
+    "methods": {
+      "card": "საბანკო ბარათი",
+      "applepay": "Apple Pay",
+      "bank": "ონლაინ ბანკი",
+      "crypto": "კრიპტოვალუტა",
+      "invoice": "ინვოისი"
+    },
+    "methodMaxSub": "მაქს. {{max}}",
+    "methodPdfSub": "PDF",
+    "methodDownload": "ჩამოტვირთვა",
+    "methodOverMaxNote": "თანხა აღემატება ამ მეთოდის ლიმიტს",
+    "chooseBankLabel": "აირჩიეთ ბანკი",
+    "paymentOpenedTitle": "გადახდა გაიხსნა ახალ ჩანართში",
+    "paymentOpenedBody": "დაასრულეთ გადახდა ახლახან გახსნილ ჩანართში. ამ ფანჯარის დახურვა შეგიძლიათ დასრულების შემდეგ.",
+    "paymentBlockedBody": "ბრაუზერმა დაბლოკა ამომხტარი ფანჯარა. გადახდის გვერდის გასახსნელად დააჭირეთ „თავიდან გახსნას“.",
+    "reopen": "თავიდან გახსნა",
+    "invoiceDownloadedToast": "ინვოისი ჩამოტვირთულია"
   },
   "support": {
     "title": "მხარდაჭერა",

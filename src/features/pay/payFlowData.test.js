@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { owedFor, buildRows, buildComplexes, utilityCardData, round2 } from './payFlowData'
+import { owedFor, buildRows, buildComplexes, utilityCardData, round2, serviceTypeFor } from './payFlowData'
 
 const USD_RATE = 2.5
 
@@ -135,5 +135,15 @@ describe('round2', () => {
   test('rounds to cents', () => {
     expect(round2(12.3456)).toBe(12.35)
     expect(round2(250)).toBe(250)
+  })
+})
+
+describe('serviceTypeFor', () => {
+  test('maintenance maps to the finance accountType enum\'s "apartment"', () => {
+    expect(serviceTypeFor('maintenance')).toBe('apartment')
+  })
+  test('electricity/internettv pass through unchanged (already match the enum)', () => {
+    expect(serviceTypeFor('electricity')).toBe('electricity')
+    expect(serviceTypeFor('internettv')).toBe('internettv')
   })
 })

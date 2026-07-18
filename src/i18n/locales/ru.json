@@ -299,7 +299,26 @@
     "rateLine": "$1 = {{rate}}₾",
     "payableAmount": "Сумма к оплате",
     "payNow": "Оплатить",
-    "payNowComingSoonToast": "Способы оплаты скоро появятся."
+    "methodModalTitle": "Выберите способ оплаты",
+    "methodModalSubtitle": "{{complex}} • {{utility}}",
+    "amountToPayLabel": "Сумма к оплате",
+    "methods": {
+      "card": "Банковская карта",
+      "applepay": "Apple Pay",
+      "bank": "Онлайн-банк",
+      "crypto": "Криптовалюта",
+      "invoice": "Счёт (инвойс)"
+    },
+    "methodMaxSub": "Макс. {{max}}",
+    "methodPdfSub": "PDF",
+    "methodDownload": "Скачать",
+    "methodOverMaxNote": "Сумма превышает лимит этого способа оплаты",
+    "chooseBankLabel": "Выберите банк",
+    "paymentOpenedTitle": "Оплата открыта в новой вкладке",
+    "paymentOpenedBody": "Завершите оплату во вкладке, которая только что открылась. Это окно можно закрыть после завершения.",
+    "paymentBlockedBody": "Браузер заблокировал всплывающее окно. Нажмите «Открыть снова», чтобы перейти к оплате.",
+    "reopen": "Открыть снова",
+    "invoiceDownloadedToast": "Счёт скачан"
   },
   "support": {
     "title": "Поддержка",

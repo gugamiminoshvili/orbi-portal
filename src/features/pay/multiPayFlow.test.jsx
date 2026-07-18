@@ -3,6 +3,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import '../../i18n'
 import { ToastProvider } from '../../context/ToastContext'
+import { ModalProvider } from '../../context/ModalContext'
 import { AppRoutes } from '../../routes'
 
 // Stub the data layer (same vi.mock-the-endpoints-module pattern as
@@ -70,7 +71,12 @@ function renderApp(initialEntries) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <ToastProvider>
-        <AppRoutes />
+        {/* ApartmentsStep's Pay Now (P3-4) calls useModal() unconditionally,
+            so every render of the flow needs a ModalProvider now, not just
+            the tests that click Pay Now. */}
+        <ModalProvider>
+          <AppRoutes />
+        </ModalProvider>
       </ToastProvider>
     </MemoryRouter>
   )
@@ -218,5 +224,53 @@ describe('/pay/:id redirect', () => {
     expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
     const row = screen.getByText('OCT.A.30.3026').closest('tr')
     expect(within(row).getByRole('checkbox')).toBeChecked()
+  })
+})
+
+// P3-4: Pay Now opens MethodModal with the selections turned into
+// payMulti's services[] shape. This exercises the real (mock-mode) payMulti
+// from api/endpoints/pay.js — its mock branch always resolves {url:
+// 'https://example.test/pay'} regardless of method — so window.open is
+// stubbed to observe the redirect-open call without actually navigating
+// jsdom anywhere.
+describe('Pay Now -> method modal wiring (P3-4)', () => {
+  test('selecting an apartment and choosing Bank Card opens the mock payment url', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue({ opener: {} })
+    renderApp([{ pathname: '/pay', state: { apartmentCode: 'OST.A.08.0803', utility: 'electricity' } }])
+
+    await screen.findByText('OST.A.08.0803')
+    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+
+    const modal = await screen.findByTestId('modal-box')
+    expect(within(modal).getByText('Orbi Sea Towers • Electricity')).toBeInTheDocument()
+    expect(within(modal).getAllByText('₾5.00').length).toBeGreaterThanOrEqual(1)
+
+    fireEvent.click(within(modal).getByRole('button', { name: /Bank Card/ }))
+    fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))
+
+    expect(await within(modal).findByText(/Payment opened/)).toBeInTheDocument()
+    expect(openSpy).toHaveBeenCalledWith('https://example.test/pay', '_blank')
+
+    openSpy.mockRestore()
+  })
+
+  test('a popup-blocked open shows the blocked copy with a working Reopen', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValueOnce(null).mockReturnValue({ opener: {} })
+    renderApp([{ pathname: '/pay', state: { apartmentCode: 'OST.A.08.0803', utility: 'electricity' } }])
+
+    await screen.findByText('OST.A.08.0803')
+    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    const modal = await screen.findByTestId('modal-box')
+
+    fireEvent.click(within(modal).getByRole('button', { name: /Bank Card/ }))
+    fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))
+
+    expect(await within(modal).findByText(/browser blocked the popup/)).toBeInTheDocument()
+
+    fireEvent.click(within(modal).getByRole('button', { name: /Reopen/ }))
+    expect(await within(modal).findByText(/Complete your payment/)).toBeInTheDocument()
+    expect(openSpy).toHaveBeenCalledTimes(2)
+
+    openSpy.mockRestore()
   })
 })
