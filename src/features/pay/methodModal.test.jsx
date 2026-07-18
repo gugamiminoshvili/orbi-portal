@@ -214,3 +214,28 @@ describe('MethodModal — failure handling', () => {
     expect(screen.getByTestId('modal-box')).toBeInTheDocument()
   })
 })
+
+describe('MethodModal — in-flight modal lock', () => {
+  test('ESC cannot dismiss the modal while payMulti is in flight, and works again after it settles', async () => {
+    // Controllable promise: the modal stays in its in-flight (locked) state
+    // until resolvePay is called.
+    let resolvePay
+    payMulti.mockImplementationOnce(() => new Promise((resolve) => { resolvePay = resolve }))
+    renderModal()
+
+    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+    // Mid-request: ESC must be a no-op (setModalLocked(true), same pattern
+    // as ElectricityReportModal's "generating" step).
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByTestId('modal-box')).toBeInTheDocument()
+
+    resolvePay({ url: 'https://example.test/pay' })
+    expect(await screen.findByText('Payment opened in a new tab')).toBeInTheDocument()
+
+    // Settled: the lock is released (finally), so ESC closes normally again.
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByTestId('modal-box')).not.toBeInTheDocument()
+  })
+})

@@ -19,9 +19,18 @@ vi.mock('../../api/endpoints/dashboard', () => ({
 vi.mock('../../api/endpoints/apartments', () => ({
   listApartments: vi.fn(),
 }))
+// payMulti is mocked (rather than letting the real module's mock-mode branch
+// run) so the P3-4 wiring tests can assert the exact request body
+// ApartmentsStep builds from its selections; the default resolved {url}
+// mirrors the real mock branch, so the redirect-open tests behave the same.
+vi.mock('../../api/endpoints/pay', () => ({
+  payMulti: vi.fn(),
+  downloadInvoice: vi.fn(),
+}))
 
 import { getCommunals, getRates } from '../../api/endpoints/dashboard'
 import { listApartments } from '../../api/endpoints/apartments'
+import { payMulti } from '../../api/endpoints/pay'
 
 const APARTMENTS = [
   { id: 'A1', code: 'OCT.A.30.3026', project: 'Orbi City', role: 'Owner' },
@@ -86,6 +95,7 @@ beforeEach(() => {
   getCommunals.mockReset().mockResolvedValue(COMMUNALS)
   getRates.mockReset().mockResolvedValue(RATES)
   listApartments.mockReset().mockResolvedValue(APARTMENTS)
+  payMulti.mockReset().mockResolvedValue({ url: 'https://example.test/pay' })
 })
 
 describe('MultiPayFlow — step 1 (complexes)', () => {
@@ -228,11 +238,10 @@ describe('/pay/:id redirect', () => {
 })
 
 // P3-4: Pay Now opens MethodModal with the selections turned into
-// payMulti's services[] shape. This exercises the real (mock-mode) payMulti
-// from api/endpoints/pay.js — its mock branch always resolves {url:
-// 'https://example.test/pay'} regardless of method — so window.open is
-// stubbed to observe the redirect-open call without actually navigating
-// jsdom anywhere.
+// payMulti's services[] shape. payMulti is the mocked module above (default
+// resolved {url: 'https://example.test/pay'}, same as the real mock branch);
+// window.open is stubbed to observe the redirect-open call without actually
+// navigating jsdom anywhere.
 describe('Pay Now -> method modal wiring (P3-4)', () => {
   test('selecting an apartment and choosing Bank Card opens the mock payment url', async () => {
     const openSpy = vi.spyOn(window, 'open').mockReturnValue({ opener: {} })
@@ -265,11 +274,75 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     fireEvent.click(within(modal).getByRole('button', { name: /Bank Card/ }))
     fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))
 
-    expect(await within(modal).findByText(/browser blocked the popup/)).toBeInTheDocument()
+    // Heading AND body both switch to the blocked copy (no contradictory
+    // "Payment opened" title above a "browser blocked" body).
+    expect(await within(modal).findByText('Payment window blocked')).toBeInTheDocument()
+    expect(within(modal).getByText(/browser blocked the popup/)).toBeInTheDocument()
 
     fireEvent.click(within(modal).getByRole('button', { name: /Reopen/ }))
-    expect(await within(modal).findByText(/Complete your payment/)).toBeInTheDocument()
+    expect(await within(modal).findByText('Payment opened in a new tab')).toBeInTheDocument()
+    expect(within(modal).getByText(/Complete your payment/)).toBeInTheDocument()
     expect(openSpy).toHaveBeenCalledTimes(2)
+
+    openSpy.mockRestore()
+  })
+
+  test('payMulti receives exactly the CURRENT selections: checked rows only, with edited amounts', async () => {
+    // Dedicated fixture with THREE selectable electricity rows in one
+    // complex, so check/edit/uncheck can all happen in a single table.
+    listApartments.mockResolvedValue([
+      { id: 'B1', code: 'OCB.A.01.0101', project: 'Orbi City', role: 'Owner' },
+      { id: 'B2', code: 'OCB.A.02.0202', project: 'Orbi City', role: 'Owner' },
+      { id: 'B3', code: 'OCB.A.03.0303', project: 'Orbi City', role: 'Owner' },
+    ])
+    getCommunals.mockResolvedValue({
+      utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+      maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+      byApartment: [
+        { code: 'OCB.A.01.0101', epcode: 'XEP1', electricity: -50, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.02.0202', epcode: 'XEP2', electricity: -30, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.03.0303', epcode: 'XEP3', electricity: -20, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+      ],
+    })
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue({ opener: {} })
+
+    renderApp(['/pay'])
+    await screen.findByText('Orbi City')
+    fireEvent.click(screen.getByText('Select'))
+    fireEvent.click(await screen.findByText('Electricity').then((el) => el.closest('button')))
+    await screen.findByText('OCB.A.01.0101')
+
+    // Check all three rows...
+    for (const code of ['OCB.A.01.0101', 'OCB.A.02.0202', 'OCB.A.03.0303']) {
+      const row = screen.getByText(code).closest('tr')
+      fireEvent.click(within(row).getByRole('checkbox'))
+    }
+    // ...edit row 2's amount down from its owed 30 to a partial 10...
+    const row2 = screen.getByText('OCB.A.02.0202').closest('tr')
+    fireEvent.change(within(row2).getByRole('spinbutton'), { target: { value: '10' } })
+    // ...and uncheck row 3 again, so it must NOT appear in the POST body.
+    const row3 = screen.getByText('OCB.A.03.0303').closest('tr')
+    fireEvent.click(within(row3).getByRole('checkbox'))
+
+    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    const modal = await screen.findByTestId('modal-box')
+    // Banner total reflects the same current selections (50 + 10)
+    expect(within(modal).getByText('₾60.00')).toBeInTheDocument()
+
+    fireEvent.click(within(modal).getByRole('button', { name: /Crypto/ }))
+    fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))
+    await within(modal).findByText('Payment opened in a new tab')
+
+    expect(payMulti).toHaveBeenCalledTimes(1)
+    expect(payMulti).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'crypto',
+        services: [
+          { epcode: 'XEP1', amount: 50, serviceType: 'electricity' },
+          { epcode: 'XEP2', amount: 10, serviceType: 'electricity' },
+        ],
+      })
+    )
 
     openSpy.mockRestore()
   })

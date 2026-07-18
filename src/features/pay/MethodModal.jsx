@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../context/ModalContext'
 import { useToast } from '../../context/ToastContext'
@@ -58,8 +58,13 @@ function saveBlob(blob, filename) {
 // total, used only for the green banner and the over-max check.
 export default function MethodModal({ complexName, utilityLabel, amount, services }) {
   const { t, i18n } = useTranslation()
-  const { closeModal } = useModal()
+  const { closeModal, setModalLocked } = useModal()
   const toast = useToast()
+
+  // Same unmount cleanup as ElectricityReportModal: if this modal unmounts
+  // while a request is in flight, the shared lock must not stay stuck on
+  // for whatever modal opens next.
+  useEffect(() => () => setModalLocked(false), [setModalLocked])
 
   const [method, setMethod] = useState(null)
   const [bank, setBank] = useState(null)
@@ -88,6 +93,10 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
   async function handleContinue() {
     if (!canContinue || busy) return
     setBusy(true)
+    // Lock the modal for the duration of the request (ElectricityReportModal's
+    // "generating" pattern): without this, ESC/overlay-click could dismiss the
+    // modal mid-POST and the response would fire against a closed modal.
+    setModalLocked(true)
     try {
       if (method === 'invoice') {
         const res = await payMulti({ services, method, lang: langToApi(i18n.language) })
@@ -99,6 +108,10 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
         const blob = await downloadInvoice(invoiceId)
         saveBlob(blob, 'invoice.pdf')
         toast(t('pay:invoiceDownloadedToast'))
+        // Unlock BEFORE closing — closeModal() is a deliberate no-op while
+        // the lock is on (see ModalContext's lockedRef), so closing from
+        // inside the locked section requires releasing the lock first.
+        setModalLocked(false)
         closeModal()
         return
       }
@@ -115,6 +128,7 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
       toast(t('common:requestFailed'))
     } finally {
       setBusy(false)
+      setModalLocked(false)
     }
   }
 
@@ -140,7 +154,9 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
           >
             <Icon name="card" size={30} />
           </div>
-          <h3 style={{ margin: '0 0 6px' }}>{t('pay:paymentOpenedTitle')}</h3>
+          <h3 style={{ margin: '0 0 6px' }}>
+            {t(blocked ? 'pay:paymentBlockedTitle' : 'pay:paymentOpenedTitle')}
+          </h3>
           <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0 }}>
             {t(blocked ? 'pay:paymentBlockedBody' : 'pay:paymentOpenedBody')}
           </p>

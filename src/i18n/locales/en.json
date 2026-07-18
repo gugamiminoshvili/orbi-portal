@@ -306,6 +306,7 @@
     "chooseBankLabel": "Choose your bank",
     "paymentOpenedTitle": "Payment opened in a new tab",
     "paymentOpenedBody": "Complete your payment in the tab that just opened. You can close this window once you're done.",
+    "paymentBlockedTitle": "Payment window blocked",
     "paymentBlockedBody": "Your browser blocked the popup. Use Reopen below to open the payment page.",
     "reopen": "Reopen",
     "invoiceDownloadedToast": "Invoice downloaded"
