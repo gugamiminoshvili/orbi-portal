@@ -11,7 +11,14 @@
 // prints a WARN and PROCEEDS instead of aborting; (2) GET
 // /mobileApi/properties/v2/ (complexes -> flattened flats); (3) GET
 // /mobileApi/news/ page 1; (4) GET /mobileApi/tickets/ (+ /tickets/subject/,
-// which the real adaptTicketList needs); (5) GET /mobileApi/internettv/tariff/.
+// which the real adaptTicketList needs); (5) GET /mobileApi/internettv/tariff/;
+// (6) GET /mobileApi/dashboard/communals/ (Task P3-5, READ-ONLY — prints the
+// utility/maintenance sums the dashboard tiles render); (7) GET
+// /mobileApi/currency/rate/ for today's date (READ-ONLY, prints the first
+// rate); (8) GET /mobileApi/payment/ (READ-ONLY, prints the unpaid-invoice
+// count). Checks 6-8 are deliberately GET-only — this script must NEVER call
+// POST /mobileApi/payment/multi/ (a real charge) or any other mutation
+// without explicit owner consent obtained outside this script.
 // Each prints OK/FAIL, the HTTP status, and the first item run through the
 // SAME adapters src/api/adapters/*.js uses in the app, so a shape mismatch
 // between a real payload and our guessed DTO fields (see the FLAG comments
@@ -28,6 +35,7 @@ import { adaptProperty } from '../src/api/adapters/apartments.js'
 import { adaptNewsList } from '../src/api/adapters/news.js'
 import { adaptTicketList, adaptSubjects } from '../src/api/adapters/support.js'
 import { adaptTariffs } from '../src/api/adapters/internet.js'
+import { adaptCommunals, adaptRate, adaptUnpaidInvoices } from '../src/api/adapters/dashboard.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -194,12 +202,74 @@ async function checkInternetTariff(access) {
   }
 }
 
+// Task P3-5: dashboard/communals — READ-ONLY, prints the same top-level sums
+// the dashboard's cards/tiles render (utilities electricity+internet, and
+// maintenance sum/debtSum, plus each side's `currency` field — the thing
+// DashboardPage now branches on, see Task P3-5's currency-aware fix).
+async function checkCommunals(access) {
+  try {
+    const { status, result } = await apiGet('/mobileApi/dashboard/communals/', access)
+    const adapted = adaptCommunals(result || {})
+    report('dashboard/communals', true, status, {
+      utilities: adapted.utilities,
+      maintenance: { sum: adapted.maintenance.sum, debtSum: adapted.maintenance.debtSum, currency: adapted.maintenance.currency },
+      byApartmentCount: adapted.byApartment.length,
+    })
+  } catch (err) {
+    report('dashboard/communals', false, err instanceof ApiError ? err.code : 'ERR', err.message)
+  }
+}
+
+// `YYYY-MM-DD` in the caller's local time zone — mirrors
+// src/api/endpoints/dashboard.js's todayYMD (duplicated rather than imported
+// since that module pulls in import.meta.env-touching sibling code this
+// plain-Node script can't load).
+function todayYMD() {
+  const d = new Date()
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+// Task P3-5: currency/rate — READ-ONLY, one GET for USD/GEL with today's
+// date (the only param combination Task P3-1 confirmed live, see
+// adapters/dashboard.js's adaptRate comment), printing the first (only)
+// adapted rate.
+async function checkCurrencyRate(access) {
+  try {
+    const date = todayYMD()
+    const { status, result } = await apiGet(`/mobileApi/currency/rate/?currency=USD&date=${date}`, access)
+    const adapted = adaptRate(result || {}, 'USD/GEL')
+    report('currency/rate (USD/GEL)', true, status, adapted)
+  } catch (err) {
+    report('currency/rate (USD/GEL)', false, err instanceof ApiError ? err.code : 'ERR', err.message)
+  }
+}
+
+// Task P3-5: payment — READ-ONLY GET (unpaid invoices), prints only the
+// count. Deliberately does NOT call POST /mobileApi/payment/multi/ — that's
+// a real charge and stays off-limits for this script without explicit owner
+// consent obtained outside of it.
+async function checkPayment(access) {
+  try {
+    const { status, result } = await apiGet('/mobileApi/payment/', access)
+    const adapted = adaptUnpaidInvoices(result || [])
+    report('payment (GET, unpaid invoices)', true, status, { count: adapted.count })
+  } catch (err) {
+    report('payment (GET, unpaid invoices)', false, err instanceof ApiError ? err.code : 'ERR', err.message)
+  }
+}
+
 const access = await login()
 if (access) {
   await checkProperties(access)
   await checkNews(access)
   await checkTickets(access)
   await checkInternetTariff(access)
+  await checkCommunals(access)
+  await checkCurrencyRate(access)
+  await checkPayment(access)
 }
 
 console.log(`\n${failures === 0 ? 'All checks passed.' : `${failures} check(s) failed.`}\n`)
