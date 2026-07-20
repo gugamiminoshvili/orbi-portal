@@ -1,8 +1,11 @@
-/* Ported from reference/orbi-portal-redesign.html lines 77-109 (sidebar/brand/nav/side-foot) */
+/* Ported from reference/orbi-portal-redesign.html lines 77-109 (sidebar/brand/nav/side-foot).
+   P3-6: colors moved onto the --sidebar-* tokens declared in index.css (same
+   values, see that file's comment) so this file never needs to change again
+   when a dark theme lands — only the token declarations do. */
 .sidebar {
   width: var(--shell-w);
   background: linear-gradient(180deg, var(--sidebar), var(--sidebar-2));
-  color: #cdd0e6;
+  color: var(--sidebar-ink);
   position: fixed;
   inset: 0 auto 0 0;
   display: flex;
@@ -31,14 +34,14 @@
   box-shadow: 0 6px 16px rgba(26, 138, 78, .4);
 }
 .brand b {
-  color: #fff;
+  color: var(--sidebar-ink-strong);
   font-size: 17px;
   font-weight: 600;
   letter-spacing: .2px;
 }
 .brand span {
   display: block;
-  color: #7c80a8;
+  color: var(--sidebar-muted);
   font-size: 11px;
   font-weight: 500;
   margin-top: 1px;
@@ -49,39 +52,54 @@
   overflow-y: auto;
   flex: 1;
 }
+/* Contrast fix: was #5d6191 directly on the dark green gradient, which
+   measures ~1.5:1 (WCAG wants 3:1+ even at this weight/size) — effectively
+   unreadable. --sidebar-group keeps the same muted-label intent at ~5:1. */
 .group {
-  color: #5d6191;
+  color: var(--sidebar-group);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  padding: 18px 12px 8px;
+  /* Trimmed from 18px/8px (P3-6): two more nav items (the Bookings/Devices
+     placeholders) pushed the nav's content past a common 1280x720 viewport's
+     available height, forcing an internal scrollbar to reach Support. This
+     tighter rhythm buys back enough room to avoid that at the common sizes
+     without visibly cramming the list. */
+  padding: 14px 12px 6px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
   gap: 13px;
-  padding: 11px 14px;
+  padding: 9px 14px;
   border-radius: 11px;
-  color: #b6b9d8;
+  color: var(--sidebar-ink);
   font-weight: 500;
   font-size: 13.5px;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   transition: var(--t);
   cursor: pointer;
 }
 .navItem:hover {
   background: var(--sidebar-hover);
-  color: #fff;
+  color: var(--sidebar-ink-strong);
+}
+.navItem:hover .ic {
+  opacity: 1;
 }
 .navItem.active {
   background: var(--sidebar-active);
-  color: #fff;
-  box-shadow: inset 3px 0 0 var(--teal);
+  color: var(--sidebar-ink-strong);
+  font-weight: 600;
+  /* Left accent stripe plus a soft lift so the active row reads as raised,
+     not just recolored (measured tweak — same teal accent as before). */
+  box-shadow: inset 3px 0 0 var(--teal), 0 2px 8px rgba(8, 20, 14, .18);
 }
 .navItem.active .ic {
   color: var(--teal);
+  opacity: 1;
 }
 .navItem[aria-disabled='true'] {
   opacity: .45;
@@ -89,18 +107,19 @@
 }
 .navItem[aria-disabled='true']:hover {
   background: transparent;
-  color: #b6b9d8;
+  color: var(--sidebar-ink);
 }
 .ic {
   width: 20px;
   height: 20px;
   flex: none;
   opacity: .9;
+  transition: var(--t);
 }
 
 .side-foot {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, .06);
+  border-top: 1px solid var(--sidebar-line);
   display: flex;
   align-items: center;
   gap: 11px;
@@ -109,7 +128,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #2a2a52;
+  background: var(--sidebar-avatar-bg);
   display: grid;
   place-items: center;
   color: #fff;
@@ -121,13 +140,13 @@
   flex: 1;
   min-width: 0;
   font-size: 12.5px;
-  color: #e6e7f4;
+  color: var(--sidebar-name);
   font-weight: 500;
   line-height: 1.3;
 }
 .nm small {
   display: block;
-  color: #7c80a8;
+  color: var(--sidebar-muted);
   font-size: 11px;
   font-weight: 400;
 }
@@ -139,7 +158,7 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #7c80a8;
+  color: var(--sidebar-muted);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -147,7 +166,7 @@
 }
 .logoutBtn:hover {
   background: rgba(255, 255, 255, .08);
-  color: #fff;
+  color: var(--sidebar-ink-strong);
 }
 
 /* Ported from reference lines 684-687 (mobile sidebar slide-in) */

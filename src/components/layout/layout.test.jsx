@@ -26,6 +26,14 @@ test('sidebar shows nav and disabled items do not navigate', () => {
   expect(invoices.closest('[aria-disabled="true"]')).toBeTruthy()
 })
 
+test('sidebar shows the P3-6 Bookings/Devices placeholders as disabled coming-soon items', () => {
+  renderApp(['/news'])
+  const bookings = screen.getByText('Bookings and Visits')
+  expect(bookings.closest('[aria-disabled="true"]')).toBeTruthy()
+  const devices = screen.getByText('Your Devices')
+  expect(devices.closest('[aria-disabled="true"]')).toBeTruthy()
+})
+
 test('lang switch changes sidebar language', async () => {
   renderApp(['/news'])
   screen.getByText('ქარ').click()

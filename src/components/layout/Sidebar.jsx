@@ -19,6 +19,10 @@ const NAV = [
     { key: 'dashboard', icon: 'home', label: 'common:dashboard', to: '/dashboard' },
     { key: 'apartments', icon: 'building', label: 'common:myApartments', to: '/apartments' },
     { key: 'news', icon: 'doc', label: 'common:news', to: '/news' },
+    // Placeholders (P3-6): not built yet, same disabled/"coming soon"
+    // treatment as Finance's Invoices/Payments/Reports below.
+    { key: 'bookingsVisits', icon: 'cal', label: 'common:bookingsVisits', disabled: true },
+    { key: 'yourDevices', icon: 'door', label: 'common:yourDevices', disabled: true },
   ] },
   { group: 'common:finance', items: [
     { key: 'invoices', icon: 'doc', label: 'common:invoices', disabled: true },

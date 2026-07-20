@@ -1,4 +1,24 @@
-:root{
+/* ============================================================
+   COLOR THEME LAYER (Task P3-6)
+   Every color (and shadow, since shadows here are colored rgba
+   values whose tint changes with the surface they sit on) lives in
+   this block, keyed by `[data-theme]`. Components never read
+   `[data-theme]` themselves — they only ever reference the var name
+   (--bg, --ink, --sidebar, ...), so swapping the theme is a matter of
+   which block below is active, with zero component changes.
+
+   - `:root, [data-theme="light"]` — the LIGHT theme (today's only
+     theme, and the default when no theme has been set yet, e.g.
+     before theme.js's setTheme() has run once).
+   - `[data-theme="dark"]` — scaffolding only. Deliberately EMPTY: the
+     owner will supply the real dark palette later. The contract is
+     that when dark values land, every custom property declared in
+     the light block below gets a matching re-declaration here with
+     the same name — no renames, no additions/removals of names that
+     components depend on.
+   ============================================================ */
+:root,
+[data-theme='light'] {
   /* Brand + accent */
   --teal:#1A8A4E;          /* ORBI brand green (primary accent) */
   --teal-600:#146F3E;
@@ -26,13 +46,52 @@
   --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
   --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
 
-  /* Shape + depth */
-  --r:16px;
-  --r-sm:10px;
-  --r-pill:999px;
+  /* Depth (colored — shadow/ring tints follow the theme) */
   --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
   --shadow-lg:0 18px 50px rgba(20,24,60,.18);
   --ring:0 0 0 3px rgba(26,138,78,.28);
+
+  /* Header surface polish (P3-6): the sticky header's tinted glass
+     backdrop and hairline border, split out as vars (not raw rgba()
+     in the module CSS) so a dark theme can swap them alongside
+     everything else above. Same rgba values the header already used
+     — just named now. */
+  --header-bg:rgba(238, 240, 248, .82);
+  --header-line:rgba(20, 24, 60, .08);
+
+  /* Sidebar text/surface roles (P3-6). Same values Sidebar.module.css
+     already hardcoded, now named so a dark theme can override them —
+     except --sidebar-group, which is a deliberate contrast fix: the
+     old #5d6191 label color measured ~1.5:1 against the sidebar's
+     dark green (WCAG requires 3:1+ even for this size), effectively
+     invisible; this mint-tinted gray keeps the "muted label" feel
+     while landing at ~5:1. */
+  --sidebar-ink:#b6b9d8;        /* idle nav item text/icon */
+  --sidebar-ink-strong:#ffffff; /* hover/active nav text, brand wordmark */
+  --sidebar-muted:#7c80a8;      /* tagline, footer subtext, idle logout icon */
+  --sidebar-group:#9fd4b6;      /* group label (was #5d6191 — contrast fix) */
+  --sidebar-name:#e6e7f4;       /* footer user name */
+  --sidebar-avatar-bg:#2a2a52;
+  --sidebar-line:rgba(255, 255, 255, .06);
+}
+
+/* Dark theme (scaffolding only — NOT implemented in this task).
+   Intentionally empty: see the contract note above. theme.js already
+   toggles document.documentElement.dataset.theme = 'dark', so once
+   values land here the app switches with no other code changes. */
+[data-theme='dark'] {
+}
+
+/* ============================================================
+   STRUCTURAL TOKENS
+   Theme-independent: shape, spacing, and layout dimensions. These
+   don't vary between light/dark, so they stay in a plain :root
+   block outside the theme layer above.
+   ============================================================ */
+:root {
+  --r:16px;
+  --r-sm:10px;
+  --r-pill:999px;
 
   /* Spacing scale */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px; --s8:40px;
