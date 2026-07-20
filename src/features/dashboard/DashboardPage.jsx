@@ -76,14 +76,38 @@ export default function DashboardPage() {
   // it with.
   const utilitiesTotal = communals.utilities.electricitySum + communals.utilities.internetSum
 
-  const usdTotal = rate != null ? maintenanceDebt + utilitiesTotal / rate : null
+  // Currency-conditional, same pattern as payFlowData.owedFor: LIVE
+  // maintenance arrives in USD (flatBalance.currency 'USD') and needs the
+  // USD/GEL rate to combine with the GEL-denominated utilities figure; MOCK
+  // maintenance is authored directly in GEL (mockCommunals sets currency
+  // 'GEL' deliberately — see its comment) and must NOT be run through the
+  // rate a second time, or the mock total double-converts. Whichever
+  // currency maintenance is in, that's also the currency the combined total
+  // is expressed in — there's no reason to force everything through USD when
+  // the maintenance figure is already GEL.
+  const maintenanceCurrency = communals.maintenance.currency || 'USD'
+  const maintenanceSymbol = maintenanceCurrency === 'GEL' ? '₾' : '$'
+  const isGelMaintenance = maintenanceCurrency === 'GEL'
 
-  // Donut needs both slices in one currency. When the rate is unavailable
-  // the conversion can't be done accurately, so the donut is hidden rather
-  // than falling back to an equal-weight guess that would misrepresent the
-  // real split (the two sum lines still render either way).
-  const donutSegments =
-    rate != null
+  const total = isGelMaintenance
+    ? maintenanceDebt + utilitiesTotal
+    : rate != null
+      ? maintenanceDebt + utilitiesTotal / rate
+      : null
+  const totalSymbol = isGelMaintenance ? '₾' : '$'
+
+  // Donut needs both slices in one currency. GEL maintenance already shares
+  // utilities' currency, so no conversion/rate is needed at all; USD
+  // maintenance still needs the rate to convert into GEL alongside
+  // utilities, and hides when the rate is unavailable rather than falling
+  // back to an equal-weight guess that would misrepresent the real split
+  // (the two sum lines still render either way).
+  const donutSegments = isGelMaintenance
+    ? [
+        { key: 'maintenance', value: maintenanceDebt, color: 'var(--teal)' },
+        { key: 'utilities', value: utilitiesTotal, color: 'var(--info)' },
+      ]
+    : rate != null
       ? [
           { key: 'maintenance', value: maintenanceDebt * rate, color: 'var(--teal)' },
           { key: 'utilities', value: utilitiesTotal, color: 'var(--info)' },
@@ -106,17 +130,19 @@ export default function DashboardPage() {
                 <div className={styles['debt-row']}>
                   <span className={styles.dot} style={{ background: 'var(--teal)' }} />
                   <span className={styles.k}>{t('dashboard:maintenanceLabel')}</span>
-                  <span className={styles.v}>{fmt(maintenanceDebt, '$')}</span>
+                  <span className={styles.v}>{fmt(maintenanceDebt, maintenanceSymbol)}</span>
                 </div>
                 <div className={styles['debt-row']}>
                   <span className={styles.dot} style={{ background: 'var(--info)' }} />
                   <span className={styles.k}>{t('dashboard:utilitiesLabel')}</span>
                   <span className={styles.v}>{fmt(utilitiesTotal, '₾')}</span>
                 </div>
-                {usdTotal != null && (
+                {total != null && (
                   <div className={`${styles['debt-row']} ${styles.total}`}>
-                    <span className={styles.k}>{t('dashboard:totalUsdLabel')}</span>
-                    <span className={styles.v}>{fmt(usdTotal, '$')}</span>
+                    <span className={styles.k}>
+                      {t(isGelMaintenance ? 'dashboard:totalLabel' : 'dashboard:totalUsdLabel')}
+                    </span>
+                    <span className={styles.v}>{fmt(total, totalSymbol)}</span>
                   </div>
                 )}
               </div>
@@ -124,7 +150,7 @@ export default function DashboardPage() {
                 <DonutChart
                   segments={donutSegments}
                   ariaLabel={t('dashboard:donutAria', {
-                    maintenance: fmt(maintenanceDebt, '$'),
+                    maintenance: fmt(maintenanceDebt, maintenanceSymbol),
                     utilities: fmt(utilitiesTotal, '₾'),
                   })}
                 />
@@ -177,7 +203,7 @@ export default function DashboardPage() {
           <div className={styles['tile-value']}>{fmt(utilitiesTotal, '₾')}</div>
         </StatTile>
         <StatTile icon="wrench" title={t('dashboard:maintenanceTileTitle')}>
-          <div className={styles['tile-value']}>{fmt(maintenanceDebt, '$')}</div>
+          <div className={styles['tile-value']}>{fmt(maintenanceDebt, maintenanceSymbol)}</div>
         </StatTile>
         <StatTile icon="warn" title={t('dashboard:unpaidInvoicesTitle')}>
           <Badge tone={unpaid.count > 0 ? 'neg' : 'pos'}>

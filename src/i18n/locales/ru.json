@@ -420,6 +420,7 @@
     "maintenanceLabel": "Обслуживание",
     "utilitiesLabel": "Коммунальные услуги",
     "totalUsdLabel": "Итого (USD)",
+    "totalLabel": "Итого",
     "payNow": "Оплатить сейчас",
     "donutAria": "{{maintenance}} обслуживание, {{utilities}} коммунальные услуги",
     "ratesTitle": "Курсы валют",

@@ -66,6 +66,31 @@ describe('DashboardPage', () => {
     expect(screen.getByText('3 invoices')).toBeInTheDocument()
   })
 
+  test('renders a plain GEL sum (no USD conversion) when maintenance.currency is GEL', async () => {
+    // Mock mode's real getCommunals() reports maintenance.currency 'GEL'
+    // (mockCommunals' comment explains why) — this pins that branch with a
+    // stubbed payload so the assertion doesn't depend on the live mock
+    // fixture's exact numbers.
+    getCommunals.mockResolvedValue({
+      utilities: { electricitySum: 71.38, internetSum: 50, currency: 'GEL' },
+      maintenance: { sum: 100, debtSum: -300, currency: 'GEL' },
+      byApartment: [],
+    })
+    renderApp(['/dashboard'])
+
+    await screen.findByRole('heading', { name: 'Dashboard' })
+
+    // maintenance debt = abs(-300) = 300, shown in ₾ (not $) — two spots.
+    expect(screen.getAllByText('₾300.00').length).toBeGreaterThan(0)
+    // utilities = 71.38 + 50 = 121.38 — same as the USD-branch fixture.
+    expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
+    // Plain sum, no rate involved: 300 + 121.38 = 421.38, in ₾, generic
+    // "Total" label (not "Total (USD)").
+    expect(screen.getByText('₾421.38')).toBeInTheDocument()
+    expect(screen.getByText('Total')).toBeInTheDocument()
+    expect(screen.queryByText(/Total \(USD\)/)).not.toBeInTheDocument()
+  })
+
   test('hides the exchange-rates card and USD total when rates are unavailable', async () => {
     getRates.mockResolvedValue(null)
     renderApp(['/dashboard'])
