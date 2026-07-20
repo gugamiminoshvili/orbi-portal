@@ -194,6 +194,53 @@ describe('MultiPayFlow — step 3 table', () => {
     expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
   })
 
+  // Carried fix from the P3-5 review: switching roleFilter re-derives the
+  // visible `rows`, but `selections`/`total` were keyed across the WHOLE
+  // complex — so a checked row that the new filter hides used to stay in
+  // `selections` (and `total`), while `selectedCount` (derived from the
+  // now-filtered `rows`) silently stopped counting it. The footer's "n of m
+  // selected · Total X" line went self-contradictory. Needs a complex with
+  // mixed roles (the shared APARTMENTS fixture keeps all-Owner and
+  // all-Trusted rows in separate complexes), hence the dedicated mocks.
+  test('switching the role filter drops now-hidden selections, keeping the footer count/total in sync', async () => {
+    listApartments.mockResolvedValue([
+      { id: 'C1', code: 'OCM.A.01.0101', project: 'Orbi City', role: 'Owner' },
+      { id: 'C2', code: 'OCM.A.02.0202', project: 'Orbi City', role: 'Trusted' },
+    ])
+    getCommunals.mockResolvedValue({
+      utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+      maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+      byApartment: [
+        { code: 'OCM.A.01.0101', epcode: 'MEP1', electricity: -50, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCM.A.02.0202', epcode: 'MEP2', electricity: -30, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+      ],
+    })
+
+    renderApp(['/pay'])
+    await screen.findByText('Orbi City')
+    fireEvent.click(screen.getByText('Select'))
+    fireEvent.click(await screen.findByText('Electricity').then((el) => el.closest('button')))
+    await screen.findByText('OCM.A.01.0101')
+
+    // Check both rows under the default "All" filter.
+    for (const code of ['OCM.A.01.0101', 'OCM.A.02.0202']) {
+      const row = screen.getByText(code).closest('tr')
+      fireEvent.click(within(row).getByRole('checkbox'))
+    }
+    expect(screen.getByText('2 of 2 selected · Total ₾80.00')).toBeInTheDocument()
+
+    // Switch the filter to Owner-only — the Trusted row (and its ₾30
+    // selection) drops out of the table...
+    fireEvent.click(screen.getByRole('button', { name: 'Owner' }))
+    expect(screen.queryByText('OCM.A.02.0202')).not.toBeInTheDocument()
+
+    // ...and the footer must agree: 1 of 1 selected, total only the still
+    // visible Owner row's ₾50 — not the stale ₾80 that double-counted the
+    // now-hidden Trusted row.
+    expect(screen.getByText('1 of 1 selected · Total ₾50.00')).toBeInTheDocument()
+    expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
+  })
+
   test("maintenance step 3 converts USD owed via the rate and shows the $1 = X₾ line (currency 'USD')", async () => {
     renderApp(['/pay'])
     await screen.findByText('Orbi City')

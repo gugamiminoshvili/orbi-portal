@@ -1,7 +1,7 @@
-import { listNews, getNews } from './news'
-import { listApartments, getApartment, changePackage, pauseInternet, resumeInternet } from './apartments'
+import { listNews } from './news'
+import { getApartment, changePackage, pauseInternet, resumeInternet } from './apartments'
 import { payMulti, downloadInvoice } from './pay'
-import { listTickets, createTicket, sendMessage } from './support'
+import { createTicket, sendMessage } from './support'
 import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from './dashboard'
 
 test('listNews resolves items', async () => {

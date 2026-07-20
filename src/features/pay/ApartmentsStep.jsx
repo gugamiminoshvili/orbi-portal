@@ -48,6 +48,31 @@ export default function ApartmentsStep({
   const selectedCount = rows.filter((r) => r.selectable && selections[r.epcode] != null).length
   const total = Object.values(selections).reduce((sum, v) => sum + (Number(v) || 0), 0)
 
+  // Carried fix (P3-5 review, filter-vs-selections desync): switching
+  // roleFilter re-derives `rows` above, but `selections`/`total` are keyed
+  // by epcode across the WHOLE complex, not just the currently-visible
+  // rows — so a row checked under "All" stayed in `selections` (and kept
+  // contributing to `total`) even after the filter hid it, while
+  // `selectedCount` (computed FROM the filtered `rows`) silently dropped
+  // it. That made the footer's "n of m selected · Total X" line
+  // self-contradictory. Fix: when the filter itself changes, drop any
+  // selection whose row is no longer visible under the new filter, so
+  // selections/selectedCount/total always describe what's on screen.
+  function handleRoleFilterChange(nextFilter) {
+    setRoleFilter(nextFilter)
+    if (nextFilter === 'All') return
+    const visibleCodes = new Set(
+      complex.apartments.filter((row) => row.role === nextFilter).map((row) => row.epcode)
+    )
+    onSelectionsChange((prev) => {
+      const next = {}
+      for (const [epcode, amount] of Object.entries(prev)) {
+        if (visibleCodes.has(epcode)) next[epcode] = amount
+      }
+      return next
+    })
+  }
+
   function toggleRow(row) {
     onSelectionsChange((prev) => {
       const next = { ...prev }
@@ -85,7 +110,7 @@ export default function ApartmentsStep({
           <Seg
             options={ROLE_OPTIONS.map((r) => ({ value: r, label: t(`apartments:roles.${r}`) }))}
             value={roleFilter}
-            onChange={setRoleFilter}
+            onChange={handleRoleFilterChange}
             role="tablist"
             aria-label={t('apartments:filterAria')}
           />

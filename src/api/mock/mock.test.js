@@ -1,7 +1,7 @@
 import { NEWS, CATS } from './news'
 import { APTS, blockGrad } from './apartments'
 import { SERVICES } from './services'
-import { PLANS, planById } from './plans'
+import { planById } from './plans'
 import { TICKETS, topicById } from './tickets'
 import { RATES, mockCommunals, mockContractsSummary, mockUnpaidInvoices } from './dashboard'
 
