@@ -19,16 +19,20 @@ const NAV = [
     { key: 'dashboard', icon: 'home', label: 'common:dashboard', to: '/dashboard' },
     { key: 'apartments', icon: 'building', label: 'common:myApartments', to: '/apartments' },
     { key: 'news', icon: 'doc', label: 'common:news', to: '/news' },
-    // Placeholders (P3-6): not built yet, same disabled/"coming soon"
-    // treatment as Finance's Invoices/Payments/Reports below.
-    { key: 'bookingsVisits', icon: 'cal', label: 'common:bookingsVisits', disabled: true },
+    // Placeholder (P3-6): not built yet, same disabled/"coming soon" treatment.
     { key: 'yourDevices', icon: 'door', label: 'common:yourDevices', disabled: true },
+    // TEMPORARILY HIDDEN (owner request, 2026-07-21): "Bookings and Visits"
+    // and the whole Finance group (Invoices/Payments/Reports) are removed
+    // until their forms are ready — service info, handover, additional
+    // services, and internal regulations go here later. Restore by
+    // uncommenting when the backing pages exist.
+    // { key: 'bookingsVisits', icon: 'cal', label: 'common:bookingsVisits', disabled: true },
   ] },
-  { group: 'common:finance', items: [
-    { key: 'invoices', icon: 'doc', label: 'common:invoices', disabled: true },
-    { key: 'payments', icon: 'swap', label: 'common:payments', disabled: true },
-    { key: 'reports', icon: 'doc', label: 'common:reports', disabled: true },
-  ] },
+  // { group: 'common:finance', items: [
+  //   { key: 'invoices', icon: 'doc', label: 'common:invoices', disabled: true },
+  //   { key: 'payments', icon: 'swap', label: 'common:payments', disabled: true },
+  //   { key: 'reports', icon: 'doc', label: 'common:reports', disabled: true },
+  // ] },
   { group: 'common:account', items: [
     { key: 'settings', icon: 'dots', label: 'common:settings', disabled: true },
     { key: 'support', icon: 'chat', label: 'common:support', to: '/support' },

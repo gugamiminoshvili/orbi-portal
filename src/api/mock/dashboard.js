@@ -8,13 +8,11 @@ import { SERVICES } from './services'
 // Static NBG rate snapshot — pinned to the exact values Task P3-1's live
 // `/currency/rate/?currency=<CODE>&date=<today>` probe returned (see
 // adapters/dashboard.js's adaptRate comment), so mock and real mode show the
-// same numbers rather than an arbitrary placeholder. RUB's rate is
-// "per 100 RUB" (its live `quantity` was 100), hence the '100RUB/GEL' pair
-// label.
+// same numbers rather than an arbitrary placeholder. RUB removed at owner
+// request (2026-07-21).
 export const RATES = [
   { pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 },
   { pair: 'EUR/GEL', rate: 3.0191, delta: 0.0119 },
-  { pair: '100RUB/GEL', rate: 3.3776, delta: -0.004 },
 ]
 
 function sumPositive(nums) {

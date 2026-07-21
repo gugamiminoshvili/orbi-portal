@@ -32,7 +32,6 @@ test('dashboard rates snapshot matches the live-probed NBG values', () => {
   expect(RATES).toEqual([
     { pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 },
     { pair: 'EUR/GEL', rate: 3.0191, delta: 0.0119 },
-    { pair: '100RUB/GEL', rate: 3.3776, delta: -0.004 },
   ])
 })
 test('mockCommunals derives byApartment from the real mock APTS/SERVICES', () => {

@@ -411,8 +411,6 @@
     "totalDebtTitle": "Total debt",
     "maintenanceLabel": "Maintenance",
     "utilitiesLabel": "Utilities",
-    "totalUsdLabel": "Total (USD)",
-    "totalLabel": "Total",
     "payNow": "Pay Now",
     "donutAria": "{{maintenance}} maintenance, {{utilities}} utilities",
     "ratesTitle": "Exchange rates",

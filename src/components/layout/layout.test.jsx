@@ -20,18 +20,20 @@ afterEach(() => {
 test('sidebar shows nav and disabled items do not navigate', () => {
   renderApp(['/news'])
   expect(screen.getByText('My Apartments')).toBeInTheDocument()
-  // Dashboard became a real nav item in Phase 3 (P3-2) — Invoices is still
-  // one of the genuinely disabled/coming-soon items.
-  const invoices = screen.getByText('Invoices')
-  expect(invoices.closest('[aria-disabled="true"]')).toBeTruthy()
-})
-
-test('sidebar shows the P3-6 Bookings/Devices placeholders as disabled coming-soon items', () => {
-  renderApp(['/news'])
-  const bookings = screen.getByText('Bookings and Visits')
-  expect(bookings.closest('[aria-disabled="true"]')).toBeTruthy()
+  // Your Devices is a genuinely disabled/coming-soon item. (Invoices and
+  // Bookings and Visits were removed at owner request 2026-07-21 until their
+  // forms are ready — see Sidebar.jsx.)
   const devices = screen.getByText('Your Devices')
   expect(devices.closest('[aria-disabled="true"]')).toBeTruthy()
+})
+
+test('the temporarily-removed nav items are not rendered', () => {
+  renderApp(['/news'])
+  // Removed at owner request (2026-07-21) — restore when their pages exist.
+  expect(screen.queryByText('Bookings and Visits')).not.toBeInTheDocument()
+  expect(screen.queryByText('Invoices')).not.toBeInTheDocument()
+  expect(screen.queryByText('Payments')).not.toBeInTheDocument()
+  expect(screen.queryByText('Reports')).not.toBeInTheDocument()
 })
 
 test('lang switch changes sidebar language', async () => {

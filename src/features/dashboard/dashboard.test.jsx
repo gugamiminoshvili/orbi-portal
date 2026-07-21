@@ -46,7 +46,7 @@ beforeEach(() => {
 })
 
 describe('DashboardPage', () => {
-  test('renders maintenance/utilities/USD-total sums, rates, contracts count, and unpaid badge', async () => {
+  test('renders maintenance/utilities sums (each native currency, no merged total), rates, contracts count, and unpaid badge', async () => {
     renderApp(['/dashboard'])
 
     expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
@@ -56,8 +56,10 @@ describe('DashboardPage', () => {
     expect(screen.getAllByText('$637.12').length).toBeGreaterThan(0)
     // utilities = electricitySum + internetSum = 121.38 — same, two spots.
     expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
-    // USD total = 637.12 + 121.38/2.6333 ≈ 683.21
-    expect(screen.getByText('$683.21')).toBeInTheDocument()
+    // No merged cross-currency total (owner request 2026-07-21): the two
+    // currencies stay on their own lines, nothing shows the old $683.21.
+    expect(screen.queryByText('$683.21')).not.toBeInTheDocument()
+    expect(screen.queryByText('Total')).not.toBeInTheDocument()
 
     expect(screen.getByText('USD/GEL')).toBeInTheDocument()
     expect(screen.getByText(/Source: NBG/)).toBeInTheDocument()
@@ -66,7 +68,7 @@ describe('DashboardPage', () => {
     expect(screen.getByText('3 invoices')).toBeInTheDocument()
   })
 
-  test('renders a plain GEL sum (no USD conversion) when maintenance.currency is GEL', async () => {
+  test('shows each balance in its native currency when maintenance.currency is GEL', async () => {
     // Mock mode's real getCommunals() reports maintenance.currency 'GEL'
     // (mockCommunals' comment explains why) — this pins that branch with a
     // stubbed payload so the assertion doesn't depend on the live mock
@@ -84,14 +86,13 @@ describe('DashboardPage', () => {
     expect(screen.getAllByText('₾300.00').length).toBeGreaterThan(0)
     // utilities = 71.38 + 50 = 121.38 — same as the USD-branch fixture.
     expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
-    // Plain sum, no rate involved: 300 + 121.38 = 421.38, in ₾, generic
-    // "Total" label (not "Total (USD)").
-    expect(screen.getByText('₾421.38')).toBeInTheDocument()
-    expect(screen.getByText('Total')).toBeInTheDocument()
-    expect(screen.queryByText(/Total \(USD\)/)).not.toBeInTheDocument()
+    // No merged total row (owner request 2026-07-21) — neither the summed
+    // figure nor a "Total" label is rendered.
+    expect(screen.queryByText('₾421.38')).not.toBeInTheDocument()
+    expect(screen.queryByText('Total')).not.toBeInTheDocument()
   })
 
-  test('hides the exchange-rates card and USD total when rates are unavailable', async () => {
+  test('hides the exchange-rates card when rates are unavailable', async () => {
     getRates.mockResolvedValue(null)
     renderApp(['/dashboard'])
 
@@ -99,7 +100,6 @@ describe('DashboardPage', () => {
     expect(screen.getAllByText('$637.12').length).toBeGreaterThan(0)
     expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
     expect(screen.queryByText('Exchange rates')).not.toBeInTheDocument()
-    expect(screen.queryByText(/Total \(USD\)/)).not.toBeInTheDocument()
   })
 
   test('shows the Contracts tile zero-state when the account has no CRM id', async () => {

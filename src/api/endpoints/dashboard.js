@@ -34,7 +34,7 @@ function todayYMD() {
 const RATE_CURRENCIES = [
   { pair: 'USD/GEL', currency: 'USD' },
   { pair: 'EUR/GEL', currency: 'EUR' },
-  { pair: '100RUB/GEL', currency: 'RUB' },
+  // RUB removed at owner request (2026-07-21).
 ]
 
 // Three GETs (one per currency) rather than a single batched call — the doc

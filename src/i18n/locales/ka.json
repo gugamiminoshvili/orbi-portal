@@ -411,8 +411,6 @@
     "totalDebtTitle": "სრული დავალიანება",
     "maintenanceLabel": "საექსპლუატაციო",
     "utilitiesLabel": "კომუნალური",
-    "totalUsdLabel": "სულ (USD)",
-    "totalLabel": "სულ",
     "payNow": "გადახდა ახლავე",
     "donutAria": "{{maintenance}} საექსპლუატაციო, {{utilities}} კომუნალური",
     "ratesTitle": "გაცვლითი კურსები",

@@ -94,10 +94,9 @@ export function adaptCommunals(dto = {}) {
 // printed credentials; see the report). `?currency=<CODE>&date=YYYY-MM-DD`
 // (today's date) is the only combination that returned `code:1`: bare, a
 // bare `date=`, and `currency=` alone all answered `-1 "date is not valid"`;
-// `date=DD-MM-YYYY` also failed. RUB's live quantity is 100 (its rate is
-// "per 100 RUB", matching the spec's '100RUB/GEL' pair label) — passing
-// `currency=100RUB` itself 400s ("currency is not valid"); the pair label is
-// assembled by the endpoint layer, not read from the DTO.
+// `date=DD-MM-YYYY` also failed. The pair label is assembled by the endpoint
+// layer, not read from the DTO. (RUB was dropped at owner request 2026-07-21;
+// only USD and EUR remain.)
 export function adaptRate(dto = {}, pair) {
   return { pair, rate: num(dto.rate), delta: num(dto.changes) }
 }

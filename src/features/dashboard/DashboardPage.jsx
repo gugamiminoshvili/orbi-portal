@@ -89,12 +89,11 @@ export default function DashboardPage() {
   const maintenanceSymbol = maintenanceCurrency === 'GEL' ? '₾' : '$'
   const isGelMaintenance = maintenanceCurrency === 'GEL'
 
-  const total = isGelMaintenance
-    ? maintenanceDebt + utilitiesTotal
-    : rate != null
-      ? maintenanceDebt + utilitiesTotal / rate
-      : null
-  const totalSymbol = isGelMaintenance ? '₾' : '$'
+  // Owner request (2026-07-21): do NOT merge the two currencies into one
+  // converted total — maintenance ($ / native) stays on its own line above
+  // utilities (₾), each in its native currency. The donut below still shows
+  // the proportional split (which needs a common currency), but no single
+  // merged debt figure is displayed.
 
   // Donut needs both slices in one currency. GEL maintenance already shares
   // utilities' currency, so no conversion/rate is needed at all; USD
@@ -137,14 +136,6 @@ export default function DashboardPage() {
                   <span className={styles.k}>{t('dashboard:utilitiesLabel')}</span>
                   <span className={styles.v}>{fmt(utilitiesTotal, '₾')}</span>
                 </div>
-                {total != null && (
-                  <div className={`${styles['debt-row']} ${styles.total}`}>
-                    <span className={styles.k}>
-                      {t(isGelMaintenance ? 'dashboard:totalLabel' : 'dashboard:totalUsdLabel')}
-                    </span>
-                    <span className={styles.v}>{fmt(total, totalSymbol)}</span>
-                  </div>
-                )}
               </div>
               {donutSegments && hasDebt && (
                 <DonutChart
