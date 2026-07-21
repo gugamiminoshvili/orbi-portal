@@ -45,6 +45,7 @@
   --warn:#FFA800; --warn-bg:#FFF4DE; --warn-ink:#b57400;  /* pause / pending / warning */
   --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
   --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
+  --violet:#7C5CFC; --violet-bg:#ECE8FE; --violet-ink:#5B3FD1; /* maintenance accent (dashboard donut/legend) */
 
   /* Depth (colored — shadow/ring tints follow the theme) */
   --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);

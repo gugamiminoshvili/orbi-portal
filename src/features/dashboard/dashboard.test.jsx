@@ -61,7 +61,7 @@ describe('DashboardPage', () => {
     expect(screen.queryByText('$683.21')).not.toBeInTheDocument()
     expect(screen.queryByText('Total')).not.toBeInTheDocument()
 
-    expect(screen.getByText('USD/GEL')).toBeInTheDocument()
+    expect(screen.getByText('USD / GEL')).toBeInTheDocument()
     expect(screen.getByText(/Source: NBG/)).toBeInTheDocument()
 
     expect(screen.getByText('2 contracts')).toBeInTheDocument()

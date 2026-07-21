@@ -9,7 +9,7 @@ import styles from './DonutChart.module.css'
 // `segments`: [{ key, value, color }] — negative values are clamped to 0
 // (the multi-pay/debt figures this renders should never be negative, but a
 // stray one shouldn't invert a slice).
-export default function DonutChart({ segments = [], size = 120, strokeWidth = 16, ariaLabel }) {
+export default function DonutChart({ segments = [], size = 120, strokeWidth = 16, ariaLabel, center }) {
   const r = (size - strokeWidth) / 2
   const c = 2 * Math.PI * r
   const total = segments.reduce((sum, s) => sum + Math.max(s.value, 0), 0)
@@ -25,7 +25,7 @@ export default function DonutChart({ segments = [], size = 120, strokeWidth = 16
   })
 
   return (
-    <div className={styles.donut} role="img" aria-label={ariaLabel}>
+    <div className={styles.donut} role="img" aria-label={ariaLabel} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line-2)" strokeWidth={strokeWidth} />
         {arcs.map((arc) =>
@@ -38,12 +38,14 @@ export default function DonutChart({ segments = [], size = 120, strokeWidth = 16
               fill="none"
               stroke={arc.color}
               strokeWidth={strokeWidth}
+              strokeLinecap="round"
               strokeDasharray={`${arc.dash.toFixed(1)} ${(c - arc.dash).toFixed(1)}`}
               strokeDashoffset={arc.offset.toFixed(1)}
             />
           ) : null
         )}
       </svg>
+      {center != null && <div className={styles.center}>{center}</div>}
     </div>
   )
 }
