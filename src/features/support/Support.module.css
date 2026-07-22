@@ -417,12 +417,43 @@
   flex: none;
   display: inline-flex;
 }
-.combo.open .combo-btn {
+.combo.open .combo-btn,
+.combo.open .combo-control {
   border-color: var(--teal);
   box-shadow: var(--ring);
 }
 .combo.open .cb-chev {
   transform: rotate(180deg);
+}
+
+/* Multi-select control: chips live inside the input; grows with wrapping */
+.combo-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: var(--t);
+}
+.combo-control:hover {
+  border-color: var(--teal);
+}
+.combo-ph {
+  flex: 1;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.combo-chips {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .combo-panel {
   position: absolute;
@@ -443,6 +474,9 @@
 .combo-opts {
   max-height: 240px;
   overflow-y: auto;
+  /* Keep wheel/touch scrolling inside the list — don't chain to the form
+     or page once the list hits its top/bottom. */
+  overscroll-behavior: contain;
   padding: 6px;
 }
 .combo-opt {
@@ -570,12 +604,6 @@
 }
 
 /* Selected-apartment chips under the multi-select combo */
-.apt-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
 .apt-chip {
   display: inline-flex;
   align-items: center;

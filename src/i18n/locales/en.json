@@ -340,6 +340,7 @@
     "generalHint": "Not apartment-specific",
     "apartment": "Apartment",
     "apartments": "Apartments",
+    "selectApartmentPlaceholder": "Please select apartment",
     "apartmentsSelected_one": "{{count}} apartment selected",
     "apartmentsSelected_other": "{{count}} apartments selected",
     "selectTopic": "Select topic",

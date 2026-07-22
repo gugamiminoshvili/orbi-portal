@@ -350,6 +350,7 @@
     "generalHint": "Не привязан к апартаменту",
     "apartment": "Апартамент",
     "apartments": "Апартаменты",
+    "selectApartmentPlaceholder": "Выберите апартамент",
     "apartmentsSelected_one": "Выбран {{count}} апартамент",
     "apartmentsSelected_few": "Выбрано {{count}} апартамента",
     "apartmentsSelected_many": "Выбрано {{count}} апартаментов",

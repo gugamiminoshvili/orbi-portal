@@ -37,12 +37,14 @@ test('create ticket flow', async () => {
 
 test('apartment multi-select adds removable chips', async () => {
   renderApp(['/support/new'])
-  fireEvent.click(await screen.findByText(/General — not apartment-specific/))
+  // Empty state shows the placeholder; clicking it opens the dropdown.
+  fireEvent.click(await screen.findByText('Please select apartment'))
   // Pick two apartments from the dropdown (option buttons, distinct from the
   // ticket-list previews that also mention apartment codes).
   fireEvent.click(await screen.findByRole('button', { name: 'OCT.A.30.3026' }))
   fireEvent.click(screen.getByRole('button', { name: 'OCT.B.21.2105' }))
-  expect(screen.getByText('2 apartments selected')).toBeInTheDocument()
+  // Two removable chips now render inside the control.
+  expect(screen.getAllByRole('button', { name: 'Remove' })).toHaveLength(2)
 })
 
 test('send message appends bubble', async () => {

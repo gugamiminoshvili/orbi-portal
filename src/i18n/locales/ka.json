@@ -340,6 +340,7 @@
     "generalHint": "არ უკავშირდება აპარტამენტს",
     "apartment": "აპარტამენტი",
     "apartments": "აპარტამენტები",
+    "selectApartmentPlaceholder": "აირჩიეთ აპარტამენტი",
     "apartmentsSelected_one": "არჩეულია {{count}} აპარტამენტი",
     "apartmentsSelected_other": "არჩეულია {{count}} აპარტამენტი",
     "selectTopic": "აირჩიეთ თემა",

@@ -151,23 +151,50 @@ export default function NewTicketPane() {
               {t('support:apartments')} <span className={styles.optional}>{t('support:optional')}</span>
             </label>
             <div ref={comboRef} className={`${styles.combo} ${aptOpen ? styles.open : ''}`}>
-              <button
-                type="button"
-                className={styles['combo-btn']}
+              <div
+                className={styles['combo-control']}
+                role="button"
+                tabIndex={0}
+                aria-expanded={aptOpen}
+                aria-haspopup="listbox"
                 onClick={() => {
                   setAptOpen((o) => !o)
                   setAptQuery('')
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setAptOpen((o) => !o)
+                    setAptQuery('')
+                  }
+                }}
               >
                 {selectedApts.length === 0 ? (
-                  <span>{t('support:generalOption')}</span>
+                  <span className={styles['combo-ph']}>{t('support:selectApartmentPlaceholder')}</span>
                 ) : (
-                  <b>{t('support:apartmentsSelected', { count: selectedApts.length })}</b>
+                  <div className={styles['combo-chips']}>
+                    {selectedApts.map((a) => (
+                      <span key={a.id} className={styles['apt-chip']}>
+                        <Icon name="building" />
+                        {a.code}
+                        <button
+                          type="button"
+                          aria-label={t('common:remove', 'Remove')}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleApt(a.id)
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 )}
                 <span className={styles['cb-chev']}>
                   <Icon name="chevron" />
                 </span>
-              </button>
+              </div>
               {aptOpen && (
                 <div className={styles['combo-panel']}>
                   <div className={styles['combo-search']}>
@@ -206,23 +233,6 @@ export default function NewTicketPane() {
                 </div>
               )}
             </div>
-            {selectedApts.length > 0 && (
-              <div className={styles['apt-chips']}>
-                {selectedApts.map((a) => (
-                  <span key={a.id} className={styles['apt-chip']}>
-                    <Icon name="building" />
-                    {a.code}
-                    <button
-                      type="button"
-                      aria-label={t('common:remove', 'Remove')}
-                      onClick={() => toggleApt(a.id)}
-                    >
-                      ✕
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className={`${styles.field} ${styles.grow}`}>
