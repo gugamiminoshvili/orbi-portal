@@ -112,6 +112,43 @@ describe('createTicket (real branch)', () => {
     const createCall = http.mock.calls.find(([path]) => path === '/mobileApi/tickets/')
     expect(JSON.parse(createCall[1].body).subject).toBe('Other Request')
   })
+
+  test('sends roomsId (flatId of each selected apartment) and carries apts back', async () => {
+    http.mockImplementation((path, opts) => {
+      if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
+      if (path === '/mobileApi/tickets/' && opts?.method === 'POST') {
+        return Promise.resolve({ ...tickets.data[0], id: 1001, subject: JSON.parse(opts.body).subject })
+      }
+      throw new Error(`unexpected call ${path}`)
+    })
+
+    const apts = [
+      { objectId: 123, code: 'OCT.A.15.1519' },
+      { id: 1222, code: 'OCT.A.30.3026' },
+    ]
+    const ticket = await createTicket({ topic: 'technical', apts, text: 'broken' })
+
+    const createCall = http.mock.calls.find(([path]) => path === '/mobileApi/tickets/')
+    // flatId prefers objectId, falls back to id
+    expect(JSON.parse(createCall[1].body).roomsId).toEqual([123, 1222])
+    // the just-created ticket carries the selected apartments for display
+    expect(ticket.apts).toEqual(apts)
+  })
+
+  test('omits roomsId entirely when no apartment is selected', async () => {
+    http.mockImplementation((path, opts) => {
+      if (path === '/mobileApi/tickets/subject/') return Promise.resolve(subjects)
+      if (path === '/mobileApi/tickets/' && opts?.method === 'POST') {
+        return Promise.resolve({ ...tickets.data[0], id: 1002, subject: JSON.parse(opts.body).subject })
+      }
+      throw new Error(`unexpected call ${path}`)
+    })
+
+    await createTicket({ topic: 'other', apts: [], text: 'misc' })
+
+    const createCall = http.mock.calls.find(([path]) => path === '/mobileApi/tickets/')
+    expect(JSON.parse(createCall[1].body)).not.toHaveProperty('roomsId')
+  })
 })
 
 describe('sendMessage (real branch)', () => {

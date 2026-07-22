@@ -480,6 +480,8 @@
   height: 18px;
 }
 .co-t {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
   font-size: 13px;
   color: var(--ink);
@@ -497,6 +499,113 @@
   text-align: center;
   color: var(--muted);
   font-size: 12.5px;
+}
+
+/* Multi-select check indicator on each apartment option */
+.opt-check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.opt-check.on {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.opt-check svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Collapsed topic-select row (opens the picker modal) */
+.topic-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: var(--t);
+}
+.topic-select:hover {
+  border-color: var(--teal);
+}
+.ts-ic {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ts-ic.empty {
+  background: var(--info-bg);
+  color: var(--info-ink);
+}
+.ts-ic svg {
+  width: 22px;
+  height: 22px;
+}
+.ts-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.ts-action {
+  flex: none;
+  color: var(--teal);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* Selected-apartment chips under the multi-select combo */
+.apt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.apt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 10px;
+  border-radius: var(--r-pill);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.apt-chip svg {
+  width: 14px;
+  height: 14px;
+}
+.apt-chip button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(14, 107, 59, 0.12);
+  color: var(--teal-ink);
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+.apt-chip button:hover {
+  background: rgba(14, 107, 59, 0.24);
 }
 
 .sup-attach-row {

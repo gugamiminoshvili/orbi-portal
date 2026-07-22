@@ -6,7 +6,6 @@ import { useToast } from '../../context/ToastContext'
 import { USE_MOCK } from '../../api/client'
 import { getTicket, sendMessage, uploadTicketFile } from '../../api/endpoints/support'
 import { TSTATUS, topicById } from '../../api/mock/tickets'
-import { APTS } from '../../api/mock/apartments'
 import Icon from '../../components/ui/Icon'
 import Button from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
@@ -44,7 +43,7 @@ export default function TicketChatPane() {
 
   const tp = topicById(ticket.topic)
   const st = TSTATUS[ticket.status]
-  const apt = ticket.apt ? APTS.find((a) => a.id === ticket.apt) : null
+  const ticketApts = ticket.apts || []
 
   async function handleSend() {
     const value = text.trim()
@@ -114,11 +113,13 @@ export default function TicketChatPane() {
             <Badge tone={ticket.statusLabel ? ticket.statusTone : st.cls} dot>
               {ticket.statusLabel || t(`support:filters.${ticket.status}`)}
             </Badge>
-            {apt ? (
-              <span className={styles['si-apt']}>
-                <Icon name="pin" />
-                {apt.code}
-              </span>
+            {ticketApts.length > 0 ? (
+              ticketApts.map((a) => (
+                <span key={a.id ?? a.code} className={styles['si-apt']}>
+                  <Icon name="pin" />
+                  {a.code}
+                </span>
+              ))
             ) : (
               <span>{t('support:general')}</span>
             )}

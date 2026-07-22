@@ -2,6 +2,7 @@ import { USE_MOCK, delay, http, httpMultipart } from '../client'
 import { TICKETS, nextTicketId, topicById } from '../mock/tickets'
 import i18n from '../../i18n'
 import { adaptSubjects, adaptTicket, adaptTicketList, adaptTicketMessages } from '../adapters/support'
+import { flatId } from '../adapters/apartments'
 
 function pad(n) {
   return String(n).padStart(2, '0')
@@ -66,21 +67,22 @@ export async function getTicket(id) {
   return ticket
 }
 
-// The doc only says ticket creation needs "ticket subject/category/message
-// data" without naming fields — FLAG: `subject` is submitted as the matching
-// subject's own English copy (round-tripping what /tickets/subject/ handed
-// back — confirmed live that stored ticket subjects exactly equal a
-// subject-catalog string), `message` as the free-text body. `apt`/flat
-// association has no field on the live Ticket shape at all, so it's
-// deliberately left off the request body.
-export async function createTicket({ topic, apt, text }) {
+// `subject` is submitted as the matching subject's own English copy
+// (round-tripping what /tickets/subject/ handed back — confirmed live that
+// stored ticket subjects exactly equal a subject-catalog string), `message`
+// as the free-text body. `apts` is the (possibly empty) list of selected
+// apartment objects; per the backend spec these map to a `roomsId: number[]`
+// array — sent only when non-empty, omitted entirely for a general ticket.
+// The GET ticket shape doesn't (yet) echo rooms back, so the created ticket
+// carries the selected `apts` client-side for immediate display.
+export async function createTicket({ topic, apts = [], text }) {
   if (USE_MOCK) {
     await delay()
     const { created, msgDate, time } = timestamps()
     const ticket = {
       id: nextTicketId(),
       topic,
-      apt,
+      apts,
       status: 'active',
       created,
       preview: text,
@@ -91,11 +93,15 @@ export async function createTicket({ topic, apt, text }) {
   }
   const subjects = await getSubjects()
   const subject = subjects.find((s) => s.id === topic)
+  const roomsId = apts.map((a) => flatId(a)).filter((v) => v != null)
+  const body = { subject: subject?.en || topicById(topic)?.label || topic, message: text }
+  if (roomsId.length) body.roomsId = roomsId
   const dto = await http('/mobileApi/tickets/', {
     method: 'POST',
-    body: JSON.stringify({ subject: subject?.en || topicById(topic)?.label || topic, message: text }),
+    body: JSON.stringify(body),
   })
   const ticket = adaptTicket(firstOrSelf(dto), subjects, i18n.language)
+  ticket.apts = apts
   const { msgDate, time } = timestamps()
   ticket.msgs = [{ me: true, date: msgDate, time, text }]
   return ticket

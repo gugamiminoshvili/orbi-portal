@@ -397,7 +397,7 @@ describe('adaptTicket / adaptTicketList', () => {
     expect(ticket).toEqual({
       id: 101245,
       topic: 'technical', // subject "Technical problem" exact-matches the subjects entry
-      apt: null,
+      apts: [],
       status: 'active', // closed_at is null
       statusLabel: 'New', // status.{en} — shown verbatim, not TSTATUS-mapped
       statusTone: 'pos', // no closed_at
@@ -430,8 +430,8 @@ describe('adaptTicket / adaptTicketList', () => {
     expect(ticket.topic).toBe('other')
   })
 
-  test('apt is always null — the live Ticket carries no flat/apartment reference field', () => {
-    expect(adaptTicket(tickets.data[0]).apt).toBeNull()
+  test('apts is empty — the live GET Ticket carries no flat/apartment reference field', () => {
+    expect(adaptTicket(tickets.data[0]).apts).toEqual([])
   })
 
   test('adaptTicketList reads the live {limit,offset,totalTickets,data} envelope', () => {
