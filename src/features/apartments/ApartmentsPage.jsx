@@ -47,7 +47,6 @@ export default function ApartmentsPage() {
       <div className={styles['page-head']}>
         <div>
           <h1>{t('apartments:title')}</h1>
-          <p>{t('apartments:subtitle')}</p>
         </div>
       </div>
 

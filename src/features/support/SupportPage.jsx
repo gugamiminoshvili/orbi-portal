@@ -38,7 +38,6 @@ export default function SupportPage() {
       <div className={styles['page-head']}>
         <div>
           <h1>{t('support:title')}</h1>
-          <p>{t('support:subtitle')}</p>
         </div>
       </div>
       <div className={styles['sup-wrap']} data-mode={mode}>

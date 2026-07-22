@@ -84,7 +84,6 @@ export default function MultiPayFlow() {
     <div className={styles['page-head']}>
       <div>
         <h1>{t('pay:flowTitle')}</h1>
-        <p>{t('pay:flowSubtitle')}</p>
       </div>
     </div>
   )

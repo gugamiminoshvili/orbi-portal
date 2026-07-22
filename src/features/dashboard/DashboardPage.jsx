@@ -41,7 +41,6 @@ export default function DashboardPage() {
     <div className={styles['page-head']}>
       <div>
         <h1>{t('dashboard:title')}</h1>
-        <p>{t('dashboard:subtitle')}</p>
       </div>
     </div>
   )

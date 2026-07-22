@@ -30,7 +30,6 @@ export default function NewsListPage() {
       <div className={styles['page-head']}>
         <div>
           <h1>{t('news:title')}</h1>
-          <p>{t('news:subtitle')}</p>
         </div>
       </div>
       {USE_MOCK ? <MockNewsList /> : <RealNewsList />}
