@@ -45,7 +45,8 @@ describe('header user menu', () => {
 
     fireEvent.click(trigger)
     expect(screen.getByRole('menuitem', { name: /My profile/ })).toHaveAttribute('href', '/profile')
-    expect(screen.getByRole('menuitem', { name: /Security settings/ })).toHaveAttribute(
+    // The entry is labelled for what it actually does — change the password.
+    expect(screen.getByRole('menuitem', { name: /Change password/ })).toHaveAttribute(
       'href',
       '/profile?tab=security'
     )

@@ -64,7 +64,7 @@ export default function LangMenu() {
             >
               <span className={styles.flag}>{lang.flag}</span>
               <span className={styles.label}>{lang.label}</span>
-              {lang.code === current.code && <Icon name="check" className={styles.tick} />}
+              <span className={styles.short}>{lang.short}</span>
             </button>
           ))}
         </div>
