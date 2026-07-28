@@ -457,6 +457,8 @@
     "myProfile": "ჩემი პროფილი",
     "security": "პაროლის შეცვლა",
     "accountStatus": "ანგარიშის სტატუსი:",
+    "accountStatusShort": "ანგარიშის სტატუსი",
+    "accountDetails": "ანგარიშის დეტალები",
     "customerId": "მომხმარებლის ID",
     "tabProfile": "პროფილი",
     "tabSecurity": "პაროლის შეცვლა",

@@ -8,7 +8,6 @@ import { changePassword } from '../../api/auth'
 import { USE_MOCK } from '../../api/client'
 import { accountStatus, STATUS_TONE } from '../../utils/accountStatus'
 import Card from '../../components/ui/Card'
-import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 import { Seg } from '../../components/ui/Badge'
@@ -37,13 +36,15 @@ export default function ProfilePage() {
   const name = user?.fullname || user?.username || '—'
   const status = accountStatus(user)
 
+  // Each detail row carries its own icon (Variant 2 layout) — the icon is
+  // decorative, the label is the accessible name.
   const rows = [
-    { key: 'firstName', value: user?.fName || user?.fNameEng },
-    { key: 'lastName', value: user?.lName || user?.lNameEng },
-    { key: 'email', value: user?.mail },
-    { key: 'phone', value: user?.phone },
-    { key: 'personalId', value: user?.personalId },
-    { key: 'regDate', value: user?.regDate },
+    { key: 'firstName', icon: 'user', value: user?.fName || user?.fNameEng },
+    { key: 'lastName', icon: 'user', value: user?.lName || user?.lNameEng },
+    { key: 'email', icon: 'mail', value: user?.mail },
+    { key: 'phone', icon: 'phone', value: user?.phone },
+    { key: 'personalId', icon: 'idcard', value: user?.personalId },
+    { key: 'regDate', icon: 'cal', value: user?.regDate },
   ]
 
   return (
@@ -52,38 +53,60 @@ export default function ProfilePage() {
         <h1>{t('profile:title')}</h1>
       </div>
 
-      <div className={styles.grid}>
-        <Card className={styles['id-card']}>
-          <div className={styles.avatar}>{initials(name)}</div>
-          <div className={styles.name}>{name}</div>
-          {user?.mail && <a className={styles.mail} href={`mailto:${user.mail}`}>{user.mail}</a>}
-          <Badge tone={STATUS_TONE[status]} className={styles['status-badge']}>
-            {t(`profile:status.${status}`)}
-          </Badge>
-          {user?.id != null && (
-            <div className={styles['cust-id']}>
-              <span>{t('profile:customerId')}</span>
-              <b>{user.id}</b>
-            </div>
-          )}
+      {/* Identity + key facts as a stat strip, mirroring the dashboard's
+          stat cards; the details/password pane sits underneath. */}
+      <div className={styles.strip}>
+        <Card className={styles['who-card']}>
+          <span className={styles.avatar}>{initials(name)}</span>
+          <div className={styles['who-body']}>
+            <div className={styles.name}>{name}</div>
+            {user?.mail && (
+              <a className={styles.mail} href={`mailto:${user.mail}`}>
+                {user.mail}
+              </a>
+            )}
+          </div>
         </Card>
 
-        <Card className={styles['pane-card']}>
-          <Card.Head>
-            <Seg
-              options={[
-                { value: 'profile', label: t('profile:tabProfile') },
-                { value: 'security', label: t('profile:tabSecurity') },
-              ]}
-              value={tab}
-              onChange={(v) => setParams(v === 'security' ? { tab: 'security' } : {}, { replace: true })}
-            />
-          </Card.Head>
-          <Card.Pad>
-            {tab === 'profile' ? <ProfileDetails rows={rows} /> : <SecurityPane />}
-          </Card.Pad>
+        <Card className={styles.stat}>
+          <span className={`${styles['stat-ic']} ${styles[STATUS_TONE[status]]}`}>
+            <Icon name={status === 'valid' ? 'check' : 'warn'} />
+          </span>
+          <div className={styles['stat-body']}>
+            <div className={styles['stat-k']}>{t('profile:accountStatusShort')}</div>
+            <div className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
+              {t(`profile:status.${status}`)}
+            </div>
+          </div>
+        </Card>
+
+        <Card className={styles.stat}>
+          <span className={`${styles['stat-ic']} ${styles.violet}`}>
+            <Icon name="user" />
+          </span>
+          <div className={styles['stat-body']}>
+            <div className={styles['stat-k']}>{t('profile:customerId')}</div>
+            <div className={styles['stat-v']}>{user?.id ?? '—'}</div>
+          </div>
         </Card>
       </div>
+
+      <Card className={styles['pane-card']}>
+        <Card.Head className={styles['pane-head']}>
+          <h3>{t('profile:accountDetails')}</h3>
+          <Seg
+            options={[
+              { value: 'profile', label: t('profile:tabProfile') },
+              { value: 'security', label: t('profile:tabSecurity') },
+            ]}
+            value={tab}
+            onChange={(v) => setParams(v === 'security' ? { tab: 'security' } : {}, { replace: true })}
+          />
+        </Card.Head>
+        <Card.Pad className={styles['pane-pad']}>
+          {tab === 'profile' ? <ProfileDetails rows={rows} /> : <SecurityPane />}
+        </Card.Pad>
+      </Card>
     </div>
   )
 }
@@ -92,8 +115,11 @@ function ProfileDetails({ rows }) {
   const { t } = useTranslation()
   return (
     <dl className={styles.rows}>
-      {rows.map(({ key, value }) => (
+      {rows.map(({ key, icon, value }) => (
         <div key={key} className={styles.row}>
+          <span className={styles['row-ic']} aria-hidden="true">
+            <Icon name={icon} />
+          </span>
           <dt>{t(`profile:fields.${key}`)}</dt>
           <dd>{value || '—'}</dd>
         </div>

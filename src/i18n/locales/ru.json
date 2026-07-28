@@ -473,6 +473,8 @@
     "myProfile": "Мой профиль",
     "security": "Смена пароля",
     "accountStatus": "Статус аккаунта:",
+    "accountStatusShort": "Статус аккаунта",
+    "accountDetails": "Данные аккаунта",
     "customerId": "ID клиента",
     "tabProfile": "Профиль",
     "tabSecurity": "Смена пароля",

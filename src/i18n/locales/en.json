@@ -457,6 +457,8 @@
     "myProfile": "My profile",
     "security": "Change password",
     "accountStatus": "Account status:",
+    "accountStatusShort": "Account status",
+    "accountDetails": "Account details",
     "customerId": "Customer ID",
     "tabProfile": "Profile",
     "tabSecurity": "Change password",
