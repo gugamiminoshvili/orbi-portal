@@ -1,4 +1,4 @@
-/* Ported from reference/orbi-portal-redesign.html lines 77-109 (sidebar/brand/nav/side-foot).
+/* Ported from reference/orbi-portal-redesign.html lines 77-109 (sidebar/brand/nav); the identity footer was removed — the header account menu owns that now.
    P3-6: colors moved onto the --sidebar-* tokens declared in index.css (same
    values, see that file's comment) so this file never needs to change again
    when a dark theme lands — only the token declarations do. */
@@ -115,58 +115,6 @@
   flex: none;
   opacity: .9;
   transition: var(--t);
-}
-
-.side-foot {
-  padding: 16px 20px;
-  border-top: 1px solid var(--sidebar-line);
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.av {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--sidebar-avatar-bg);
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-weight: 600;
-  font-size: 13px;
-  flex: none;
-}
-.nm {
-  flex: 1;
-  min-width: 0;
-  font-size: 12.5px;
-  color: var(--sidebar-name);
-  font-weight: 500;
-  line-height: 1.3;
-}
-.nm small {
-  display: block;
-  color: var(--sidebar-muted);
-  font-size: 11px;
-  font-weight: 400;
-}
-
-.logoutBtn {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: var(--sidebar-muted);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: var(--t);
-}
-.logoutBtn:hover {
-  background: rgba(255, 255, 255, .08);
-  color: var(--sidebar-ink-strong);
 }
 
 /* Ported from reference lines 684-687 (mobile sidebar slide-in) */

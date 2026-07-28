@@ -1,18 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Icon from '../ui/Icon'
-import { useAuth } from '../../context/AuthContext'
 import styles from './Sidebar.module.css'
-
-function initials(fullname) {
-  return (fullname || '')
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
 
 const NAV = [
   { group: 'common:main', items: [
@@ -41,7 +30,6 @@ const NAV = [
 
 export default function Sidebar({ open, onNavigate }) {
   const { t } = useTranslation()
-  const { user, mock } = useAuth()
 
   return (
     <aside
@@ -85,26 +73,8 @@ export default function Sidebar({ open, onNavigate }) {
           </div>
         ))}
       </nav>
-      <div className={styles['side-foot']}>
-        {mock ? (
-          <>
-            <div className={styles.av}>GM</div>
-            <div className={styles.nm}>
-              Guga M.
-              <small>Owner · 5 units</small>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Sign-out moved to the header account menu (UserMenu). */}
-            <div className={styles.av}>{initials(user?.fullname)}</div>
-            <div className={styles.nm}>
-              {user?.fullname}
-              <small>{t('common:owner')}</small>
-            </div>
-          </>
-        )}
-      </div>
+      {/* The identity/sign-out footer was removed: the header account menu
+          (UserMenu) is the single place the signed-in user is shown. */}
     </aside>
   )
 }

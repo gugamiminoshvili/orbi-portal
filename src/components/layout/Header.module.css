@@ -1,4 +1,4 @@
-/* Ported from reference/orbi-portal-redesign.html lines 115-142 (header/crumbs/search/lang-switch/icon-btn) */
+/* Ported from reference/orbi-portal-redesign.html lines 115-142 (header/crumbs/icon-btn); search + inline lang switch removed (owner request) — language now lives in LangMenu */
 .header {
   height: var(--header-h);
   position: sticky;
@@ -54,40 +54,6 @@
   flex: 1;
 }
 
-.h-search {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.h-search input {
-  background: var(--card);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-pill);
-  height: 42px;
-  padding: 0 16px 0 42px;
-  width: 230px;
-  font-size: 13px;
-  color: var(--ink);
-  transition: var(--t);
-}
-.h-search input:focus {
-  outline: none;
-  box-shadow: var(--ring);
-  border-color: var(--teal);
-  width: 280px;
-}
-/* Only the Icon wrapper span is absolutely positioned — the svg inside it
-   stays in normal flow. (Positioning both would make the svg's containing
-   block the already-absolute span, doubling the left offset to 28px and
-   collapsing the span to 0×0 since its only child no longer contributes to
-   its size — the bug this comment replaces.) */
-.h-search span {
-  position: absolute;
-  left: 14px;
-  color: var(--muted);
-  pointer-events: none;
-}
-
 .icon-btn {
   width: 42px;
   height: 42px;
@@ -116,46 +82,10 @@
   border: 2px solid #fff;
 }
 
-.lang-switch {
-  display: inline-flex;
-  align-items: center;
-  background: var(--card);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-pill);
-  /* height/padding tuned so the pill's total height (36 + 3*2) matches the
-     search input and icon buttons (42px) — was 40px, a stray 2px mismatch
-     across the header's right-hand control cluster. */
-  padding: 3px;
-  gap: 2px;
-}
-.lang-switch button {
-  border: none;
-  background: transparent;
-  height: 36px;
-  min-width: 42px;
-  padding: 0 10px;
-  border-radius: var(--r-pill);
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--muted);
-  cursor: pointer;
-  transition: var(--t);
-}
-.lang-switch button:hover {
-  color: var(--ink);
-}
-.lang-switch button.on {
-  background: var(--teal-soft);
-  color: var(--teal-ink);
-}
-
 /* Ported from reference lines 689, 691 (mobile: show burger, hide search) */
 @media (max-width: 880px) {
   .burger {
     display: flex;
-  }
-  .h-search {
-    display: none;
   }
 }
 
@@ -167,11 +97,6 @@
   }
   .icon-btn.hide-sm {
     display: none;
-  }
-  .lang-switch button {
-    min-width: 36px;
-    padding: 0 7px;
-    font-size: 11px;
   }
   .crumbs {
     font-size: 12px;

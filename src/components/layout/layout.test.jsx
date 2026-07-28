@@ -36,16 +36,19 @@ test('the temporarily-removed nav items are not rendered', () => {
   expect(screen.queryByText('Reports')).not.toBeInTheDocument()
 })
 
-test('lang switch changes sidebar language', async () => {
+test('language menu shows the current flag and switches the UI language', async () => {
   renderApp(['/news'])
-  screen.getByText('ქარ').click()
+  // The inline EN/ქარ/РУС pill was replaced by a flag dropdown (owner request).
+  fireEvent.click(screen.getByLabelText('Language'))
+  fireEvent.click(await screen.findByRole('menuitem', { name: /ქართული/ }))
   expect(await screen.findByText('ჩემი აპარტამენტები')).toBeInTheDocument()
 })
 
-test('sidebar footer shows fixed 5 units, not the prototype 3-unit bug', () => {
+test('the sidebar no longer carries an identity footer (it lives in the header menu)', () => {
   renderApp(['/news'])
-  expect(screen.getByText('Guga M.')).toBeInTheDocument()
-  expect(screen.getByText('Owner · 5 units')).toBeInTheDocument()
+  expect(screen.queryByText('Owner · 5 units')).not.toBeInTheDocument()
+  // The signed-in user is shown once, by the header account menu.
+  expect(screen.getByRole('button', { expanded: false, name: /Guga/ })).toBeInTheDocument()
 })
 
 test('root redirects to /dashboard and unknown paths redirect to /dashboard', () => {
