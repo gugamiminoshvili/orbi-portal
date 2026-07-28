@@ -1,0 +1,153 @@
+.wrap {
+  position: relative;
+  flex: none;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 8px 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink-2);
+  transition: var(--t);
+}
+.trigger:hover,
+.trigger.open {
+  border-color: var(--teal);
+}
+.greet {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.greet b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.badge {
+  flex: none;
+}
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  flex: none;
+}
+.chev {
+  color: var(--muted);
+  transition: transform var(--t);
+  flex: none;
+}
+.trigger.open .chev {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 264px;
+  background: var(--card);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  z-index: 60;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 14px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 6px;
+}
+.avatar-lg {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex: none;
+}
+.head-body {
+  min-width: 0;
+}
+.head-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.head-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-align: left;
+  cursor: pointer;
+  transition: var(--t);
+}
+.item:hover {
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.item svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+.danger:hover {
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+}
+.sep {
+  height: 1px;
+  background: var(--line);
+  margin: 6px 0;
+}
+
+@media (max-width: 880px) {
+  .greet {
+    display: none;
+  }
+  .trigger {
+    padding: 0 8px;
+  }
+}

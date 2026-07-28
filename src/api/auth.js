@@ -165,3 +165,14 @@ export function patchUserLang(uiLang) {
     body: JSON.stringify({ lang: langToApi(uiLang) }),
   })
 }
+
+// PATCH /mobileApi/user/passwordChange/ (docs/api-reference.md). Failure
+// codes surface as ApiError.errorCode — CURRENT_PASSWORD_IS_WRONG,
+// NEW_PASSWORD_IS_THE_SAME, PASSWORD_LENGTH_TOO_SHORT — which the profile
+// form maps to per-field messages.
+export function changePassword({ currentPassword, newPassword }) {
+  return http('/mobileApi/user/passwordChange/', {
+    method: 'PATCH',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  })
+}

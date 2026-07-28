@@ -25,6 +25,7 @@
     "ariaMainNav": "Основная навигация",
     "owner": "Владелец",
     "logout": "Выйти",
+    "greeting": "Здравствуйте,",
     "cancel": "Отмена",
     "close": "Закрыть",
     "download": "Скачать",
@@ -466,5 +467,43 @@
     "requestMaintenanceActionSub": "Создать новый тикет на обслуживание",
     "contactSupportAction": "Связаться с поддержкой",
     "contactSupportActionSub": "Напишите в чат поддержки ORBI"
+  },
+  "profile": {
+    "title": "Профиль",
+    "myProfile": "Мой профиль",
+    "security": "Настройки безопасности",
+    "accountStatus": "Статус аккаунта:",
+    "customerId": "ID клиента",
+    "tabProfile": "Профиль",
+    "tabSecurity": "Смена пароля",
+    "status": {
+      "valid": "Действителен",
+      "pending": "Ожидает подтверждения",
+      "invalid": "Недействителен"
+    },
+    "fields": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "email": "Эл. почта",
+      "phone": "Номер телефона",
+      "personalId": "Номер паспорта (TIN)",
+      "regDate": "Дата регистрации"
+    },
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "repeatPassword": "Повторите новый пароль",
+    "updatePassword": "Обновить пароль",
+    "passwordHint": "Используйте не менее {{min}} символов. Сессия на этом устройстве сохранится.",
+    "passwordChanged": "Пароль успешно изменён.",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "errors": {
+      "required": "Обязательное поле.",
+      "tooShort": "Используйте не менее {{min}} символов.",
+      "mismatch": "Пароли не совпадают.",
+      "CURRENT_PASSWORD_IS_WRONG": "Текущий пароль неверен.",
+      "NEW_PASSWORD_IS_THE_SAME": "Новый пароль совпадает с текущим.",
+      "PASSWORD_LENGTH_TOO_SHORT": "Пароль слишком короткий."
+    }
   }
 }

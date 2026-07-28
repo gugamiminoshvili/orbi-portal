@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Icon from '../ui/Icon'
 import { useAuth } from '../../context/AuthContext'
@@ -41,13 +41,7 @@ const NAV = [
 
 export default function Sidebar({ open, onNavigate }) {
   const { t } = useTranslation()
-  const { user, mock, logout } = useAuth()
-  const navigate = useNavigate()
-
-  async function handleLogout() {
-    await logout()
-    navigate('/login')
-  }
+  const { user, mock } = useAuth()
 
   return (
     <aside
@@ -102,19 +96,12 @@ export default function Sidebar({ open, onNavigate }) {
           </>
         ) : (
           <>
+            {/* Sign-out moved to the header account menu (UserMenu). */}
             <div className={styles.av}>{initials(user?.fullname)}</div>
             <div className={styles.nm}>
               {user?.fullname}
               <small>{t('common:owner')}</small>
             </div>
-            <button
-              type="button"
-              className={styles.logoutBtn}
-              aria-label={t('common:logout')}
-              onClick={handleLogout}
-            >
-              <Icon name="logout" />
-            </button>
           </>
         )}
       </div>

@@ -9,6 +9,7 @@ import ApartmentsPage from './features/apartments/ApartmentsPage'
 import ApartmentDetailPage from './features/apartments/ApartmentDetailPage'
 import MultiPayFlow from './features/pay/MultiPayFlow'
 import PayRedirect from './features/pay/PayRedirect'
+import ProfilePage from './features/profile/ProfilePage'
 import SupportPage from './features/support/SupportPage'
 import EmptyPane from './features/support/EmptyPane'
 import NewTicketPane from './features/support/NewTicketPane'
@@ -30,6 +31,7 @@ export function AppRoutes() {
             kept working via PayRedirect (see that file for why). */}
         <Route path="/pay" element={<MultiPayFlow />} />
         <Route path="/pay/:id" element={<PayRedirect />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/support" element={<SupportPage />}>
           <Route index element={<EmptyPane />} />
           <Route path="new" element={<NewTicketPane />} />

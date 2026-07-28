@@ -25,6 +25,7 @@
     "ariaMainNav": "მთავარი ნავიგაცია",
     "owner": "მფლობელი",
     "logout": "გასვლა",
+    "greeting": "გამარჯობა,",
     "cancel": "გაუქმება",
     "close": "დახურვა",
     "download": "ჩამოტვირთვა",
@@ -450,5 +451,43 @@
     "requestMaintenanceActionSub": "შექმენით ახალი საექსპლუატაციო თიქეთი",
     "contactSupportAction": "მხარდაჭერასთან დაკავშირება",
     "contactSupportActionSub": "მიმოწერეთ ORBI-ს მხარდაჭერის გუნდთან"
+  },
+  "profile": {
+    "title": "პროფილი",
+    "myProfile": "ჩემი პროფილი",
+    "security": "უსაფრთხოების პარამეტრები",
+    "accountStatus": "ანგარიშის სტატუსი:",
+    "customerId": "მომხმარებლის ID",
+    "tabProfile": "პროფილი",
+    "tabSecurity": "პაროლის შეცვლა",
+    "status": {
+      "valid": "ვალიდური",
+      "pending": "ვერიფიკაციის მოლოდინში",
+      "invalid": "არავალიდური"
+    },
+    "fields": {
+      "firstName": "სახელი",
+      "lastName": "გვარი",
+      "email": "ელფოსტა",
+      "phone": "ტელეფონის ნომერი",
+      "personalId": "პასპორტის ნომერი (TIN)",
+      "regDate": "რეგისტრაციის თარიღი"
+    },
+    "currentPassword": "მიმდინარე პაროლი",
+    "newPassword": "ახალი პაროლი",
+    "repeatPassword": "გაიმეორეთ ახალი პაროლი",
+    "updatePassword": "პაროლის განახლება",
+    "passwordHint": "გამოიყენეთ მინიმუმ {{min}} სიმბოლო. ამ მოწყობილობაზე სესია შენარჩუნდება.",
+    "passwordChanged": "პაროლი წარმატებით შეიცვალა.",
+    "showPassword": "პაროლის ჩვენება",
+    "hidePassword": "პაროლის დამალვა",
+    "errors": {
+      "required": "ველი სავალდებულოა.",
+      "tooShort": "გამოიყენეთ მინიმუმ {{min}} სიმბოლო.",
+      "mismatch": "პაროლები არ ემთხვევა.",
+      "CURRENT_PASSWORD_IS_WRONG": "მიმდინარე პაროლი არასწორია.",
+      "NEW_PASSWORD_IS_THE_SAME": "ახალი პაროლი მიმდინარეს ემთხვევა.",
+      "PASSWORD_LENGTH_TOO_SHORT": "პაროლი ძალიან მოკლეა."
+    }
   }
 }

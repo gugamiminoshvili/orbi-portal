@@ -25,6 +25,7 @@
     "ariaMainNav": "Main navigation",
     "owner": "Owner",
     "logout": "Log out",
+    "greeting": "Hello,",
     "cancel": "Cancel",
     "close": "Close",
     "download": "Download",
@@ -450,5 +451,43 @@
     "requestMaintenanceActionSub": "Open a new maintenance ticket",
     "contactSupportAction": "Contact support",
     "contactSupportActionSub": "Chat with the ORBI support team"
+  },
+  "profile": {
+    "title": "Profile",
+    "myProfile": "My profile",
+    "security": "Security settings",
+    "accountStatus": "Account status:",
+    "customerId": "Customer ID",
+    "tabProfile": "Profile",
+    "tabSecurity": "Change password",
+    "status": {
+      "valid": "Valid",
+      "pending": "Pending verification",
+      "invalid": "Invalid"
+    },
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone number",
+      "personalId": "Passport number (TIN)",
+      "regDate": "Member since"
+    },
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "repeatPassword": "Repeat new password",
+    "updatePassword": "Update password",
+    "passwordHint": "Use at least {{min}} characters. You will stay signed in on this device.",
+    "passwordChanged": "Password changed successfully.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "errors": {
+      "required": "This field is required.",
+      "tooShort": "Use at least {{min}} characters.",
+      "mismatch": "Passwords do not match.",
+      "CURRENT_PASSWORD_IS_WRONG": "Current password is wrong.",
+      "NEW_PASSWORD_IS_THE_SAME": "The new password matches the current one.",
+      "PASSWORD_LENGTH_TOO_SHORT": "Password is too short."
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Icon from '../ui/Icon'
 import Breadcrumbs from './Breadcrumbs'
+import UserMenu from './UserMenu'
 import { setLang } from '../../i18n'
 import styles from './Header.module.css'
 
@@ -42,6 +43,7 @@ export default function Header({ crumbs, onBurger }) {
       <button className={`${styles['icon-btn']} ${styles['hide-sm']}`} aria-label={t('common:ariaHelp')}>
         ?
       </button>
+      <UserMenu />
     </header>
   )
 }
