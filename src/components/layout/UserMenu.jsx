@@ -82,10 +82,17 @@ export default function UserMenu() {
             <span className={styles['avatar-lg']}>{initials(name)}</span>
             <div className={styles['head-body']}>
               <div className={styles['head-name']}>{name}</div>
-              <div className={styles['head-status']}>
-                {t('profile:accountStatus')}{' '}
-                <Badge tone={STATUS_TONE[status]}>{t(`profile:status.${status}`)}</Badge>
-              </div>
+              {/* Same rule as the trigger badge (owner call): the menu head
+                  only mentions the status when it needs attention. A healthy
+                  account shows the email instead of a redundant "verified". */}
+              {needsAttention(status) ? (
+                <div className={styles['head-status']}>
+                  {t('profile:accountStatus')}{' '}
+                  <Badge tone={STATUS_TONE[status]}>{t(`profile:status.${status}`)}</Badge>
+                </div>
+              ) : (
+                user?.mail && <div className={styles['head-mail']}>{user.mail}</div>
+              )}
             </div>
           </div>
           <Link to="/profile" role="menuitem" className={styles.item} onClick={() => setOpen(false)}>

@@ -464,7 +464,7 @@
     "tabProfile": "Profile",
     "tabSecurity": "Change password",
     "status": {
-      "valid": "Valid",
+      "valid": "Verified",
       "pending": "Pending verification",
       "invalid": "Invalid"
     },

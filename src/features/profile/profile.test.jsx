@@ -41,7 +41,7 @@ describe('header user menu', () => {
 
     const trigger = await screen.findByRole('button', { expanded: false, name: /Guga/ })
     // A verified account is NOT badged in the header (owner call).
-    expect(screen.queryByText('Valid')).not.toBeInTheDocument()
+    expect(screen.queryByText('Verified')).not.toBeInTheDocument()
 
     fireEvent.click(trigger)
     expect(screen.getByRole('menuitem', { name: /My profile/ })).toHaveAttribute('href', '/profile')
@@ -50,8 +50,11 @@ describe('header user menu', () => {
       'href',
       '/profile?tab=security'
     )
-    // The menu header always shows the status, even when it's valid.
-    expect(screen.getByText('Valid')).toBeInTheDocument()
+    // Nor in the open menu's head — a healthy account shows its email there
+    // instead of a redundant status line (owner call).
+    expect(screen.queryByText('Verified')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Account status/)).not.toBeInTheDocument()
+    expect(screen.getAllByText('guga@example.com').length).toBeGreaterThan(0)
   })
 })
 
