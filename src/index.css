@@ -28,10 +28,7 @@
   /* Surfaces */
   --bg:#EEF1F4;
   --card:#ffffff;
-  --sidebar:#15663B;       /* ORBI dark green shell */
-  --sidebar-2:#0E4A2A;
-  --sidebar-hover:#1C7A48;
-  --sidebar-active:#1A7044;
+  /* Sidebar surface tokens live with the rest of the sidebar roles below. */
 
   /* Text */
   --ink:#1b1b2c;
@@ -60,20 +57,23 @@
   --header-bg:rgba(238, 240, 248, .82);
   --header-line:rgba(20, 24, 60, .08);
 
-  /* Sidebar text/surface roles (P3-6). Same values Sidebar.module.css
-     already hardcoded, now named so a dark theme can override them —
-     except --sidebar-group, which is a deliberate contrast fix: the
-     old #5d6191 label color measured ~1.5:1 against the sidebar's
-     dark green (WCAG requires 3:1+ even for this size), effectively
-     invisible; this mint-tinted gray keeps the "muted label" feel
-     while landing at ~5:1. */
-  --sidebar-ink:#b6b9d8;        /* idle nav item text/icon */
-  --sidebar-ink-strong:#ffffff; /* hover/active nav text, brand wordmark */
-  --sidebar-muted:#7c80a8;      /* tagline, footer subtext, idle logout icon */
-  --sidebar-group:#9fd4b6;      /* group label (was #5d6191 — contrast fix) */
-  --sidebar-name:#e6e7f4;       /* footer user name */
+  /* Sidebar surface + text roles. The shell is LIGHT (owner-picked
+     "minimal" variant): a white rail whose only brand colour is the logo
+     tile and the active row's teal-soft pill. Every value here is a token
+     so a dark theme swaps the whole rail without touching the module CSS.
+     Contrast on white: --sidebar-ink 8.6:1, --sidebar-muted 4.6:1,
+     --sidebar-group 4.6:1 — all above WCAG AA for their sizes. */
+  --sidebar:#ffffff;            /* rail surface (gradient start) */
+  --sidebar-2:#ffffff;          /* rail surface (gradient end) */
+  --sidebar-hover:#f4f7f9;      /* idle row hover */
+  --sidebar-active:var(--teal-soft); /* active row pill */
+  --sidebar-ink:#3f425a;        /* idle nav item text */
+  --sidebar-ink-strong:#1b1b2c; /* hover text, brand wordmark */
+  --sidebar-muted:#7E8299;      /* tagline, idle icons */
+  --sidebar-group:#7E8299;      /* group label */
+  --sidebar-name:#1b1b2c;       /* user name (header menu reuse) */
   --sidebar-avatar-bg:#2a2a52;
-  --sidebar-line:rgba(255, 255, 255, .06);
+  --sidebar-line:#eceef4;       /* brand/footer separators */
 }
 
 /* Dark theme (scaffolding only — NOT implemented in this task).
