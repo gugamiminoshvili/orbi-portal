@@ -20,6 +20,10 @@
   border-radius: var(--r-pill);
   font-size: 11.5px;
   font-weight: 600;
+  /* A pill is a fixed-height chip — wrapping its label breaks the shape
+     (the text spills past the rounded ends). Labels that don't fit belong
+     in a shorter variant, not on a second line. */
+  white-space: nowrap;
 }
 .badge .b-dot {
   width: 7px;

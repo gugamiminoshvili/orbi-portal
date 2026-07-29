@@ -466,6 +466,7 @@
     "status": {
       "valid": "Verified",
       "pending": "Pending verification",
+      "pendingShort": "Pending",
       "invalid": "Invalid"
     },
     "fields": {

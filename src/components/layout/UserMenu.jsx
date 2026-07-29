@@ -45,6 +45,11 @@ export default function UserMenu() {
   const name = user?.fullname || user?.username || ''
   const firstName = name.split(' ').filter(Boolean)[0] || name
   const status = accountStatus(user)
+  // The header pill and the menu head are narrow, so they use the short label
+  // where one exists ("Pending" rather than "Pending verification") — a badge
+  // is a fixed-height chip and must never wrap. The profile page's status card
+  // has the room for the full wording.
+  const shortStatusLabel = t([`profile:status.${status}Short`, `profile:status.${status}`])
 
   async function handleLogout() {
     setOpen(false)
@@ -69,7 +74,7 @@ export default function UserMenu() {
             shows the status either way. */}
         {needsAttention(status) && (
           <Badge tone={STATUS_TONE[status]} className={styles.badge}>
-            {t(`profile:status.${status}`)}
+            {shortStatusLabel}
           </Badge>
         )}
         <span className={styles.avatar}>{initials(name)}</span>
@@ -87,8 +92,7 @@ export default function UserMenu() {
                   account shows the email instead of a redundant "verified". */}
               {needsAttention(status) ? (
                 <div className={styles['head-status']}>
-                  {t('profile:accountStatus')}{' '}
-                  <Badge tone={STATUS_TONE[status]}>{t(`profile:status.${status}`)}</Badge>
+                  <Badge tone={STATUS_TONE[status]}>{shortStatusLabel}</Badge>
                 </div>
               ) : (
                 user?.mail && <div className={styles['head-mail']}>{user.mail}</div>
