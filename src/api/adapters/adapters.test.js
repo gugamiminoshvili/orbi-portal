@@ -111,8 +111,8 @@ describe('adaptProperty', () => {
 
   test('fields with no live source get documented, render-safe fallbacks', () => {
     const { services } = adaptProperty(flats[0])
-    // numeric fields piped through fmt() -> 0, never NaN/undefined
-    expect(services.maintenance.tariff).toBe(0)
+    // UNKNOWN, not zero: the card renders '—' rather than a "0.00 $" price
+    expect(services.maintenance.tariff).toBeNull()
     // plain-text fields -> the app's '—' unknown placeholder
     expect(services.maintenance.start).toBe('—')
     expect(services.water.updated).toBe('—')
@@ -177,7 +177,7 @@ describe('adaptProperty + adaptFlatDetail cover every key the UI reads off an ap
   test('merged services object has every key each service card reads', () => {
     const merged = { ...adaptFlatDetail(flat), ...adaptProperty(flats[0]) }
     expect(merged.services.maintenance).toEqual(
-      expect.objectContaining({ balance: expect.any(Number), tariff: expect.any(Number), start: expect.any(String) })
+      expect.objectContaining({ balance: expect.any(Number), tariff: null, start: expect.any(String) })
     )
     expect(merged.services.water).toEqual(
       expect.objectContaining({ counter: expect.any(String), indication: expect.any(String), updated: expect.any(String) })

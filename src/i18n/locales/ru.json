@@ -159,7 +159,7 @@
     "suspended": "Приостановлено",
     "inactive": "Неактивно",
     "serviceStatus": "Статус услуги",
-    "providerPlanLine": "{{provider}} · {{plan}} ({{mbps}} Мбит/с)",
+    "speedMbps": "{{mbps}} Мбит/с",
     "billingCycle": "Расчётный период",
     "daysLeftShort": "дней осталось",
     "daysLeftValue": "осталось {{count}} дн.",

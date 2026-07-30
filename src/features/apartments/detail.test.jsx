@@ -32,7 +32,9 @@ test('internet card shows active plan', async () => {
   renderApp(['/apartments/A1'])
   // plan name appears twice by design: header sub + provider line (ref 1406/1420)
   expect((await screen.findAllByText(/Package 2/)).length).toBeGreaterThanOrEqual(2)
-  expect(screen.getByText('Magti · Package 2 (75 Mbps)')).toBeInTheDocument()
+  // Joined from the parts that exist, so a payload missing the provider or
+  // the advertised speed drops that part instead of rendering it empty.
+  expect(screen.getByText('Magti · Package 2 · 75 Mbps')).toBeInTheDocument()
   // days left ring + the "40 days left" billing-cycle value
   expect(screen.getByRole('img', { name: '40 days left of 60' })).toBeInTheDocument()
   expect(screen.getByText('40 days left')).toBeInTheDocument()

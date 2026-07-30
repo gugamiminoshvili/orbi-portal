@@ -93,9 +93,10 @@ export function adaptProperty(dto = {}) {
 // The flat record carries everything the 4 service accordions render except
 // a few date/tariff fields with no live source anywhere yet:
 //  - maintenance.tariff / maintenance.start, water.updated,
-//    electricity.updated — no source field on the live payload; numeric
-//    fields piped through fmt() get 0 (fmt(0) renders "₾0.00", never NaN),
-//    plain-text fields get the app's '—' placeholder.
+//    electricity.updated — no source field on the live payload. These are
+//    UNKNOWN, not zero, so the numeric ones are null and the card renders a
+//    '—' placeholder; a literal "0.00 $" monthly tariff read as a real
+//    (free) price.
 //  - electricity.status has no direct field either; `display_services`
 //    (live: ["electricity","water","orbinet","maintenance","doors"]) is the
 //    closest signal — a flat whose display_services lists electricity is
@@ -118,13 +119,13 @@ function adaptServicesFromProperty(dto = {}) {
       ? {
           balance: num(dto.apartmentBalance),
           currency: symbolFor(dto.apartmentBalanceCurrency, '$'),
-          tariff: 0, // no source field on the live flat payload
+          tariff: null, // no source field on the live flat payload
           start: '—', // no source field on the live flat payload
         }
       : {
           balance: num(dto.apartmentBalanceGEL),
           currency: '₾',
-          tariff: 0,
+          tariff: null,
           start: '—',
         },
     water: {

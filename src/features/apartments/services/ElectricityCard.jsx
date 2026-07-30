@@ -35,7 +35,7 @@ export default function ElectricityCard({ apt }) {
         </Metric>
       }
     >
-      <div className={styles['svc-grid']} style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+      <div className={`${styles['svc-grid']} ${styles.cols4}`}>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:counterId')}</div>
           <div className={styles.v}>{s.counter}</div>

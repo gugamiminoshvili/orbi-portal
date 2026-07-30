@@ -37,10 +37,18 @@ export default function InternetCard({ apt, onReload }) {
   // name (orbinet_agreement.net_tariff.name, Task L1), so prefer the mock
   // catalog hit (mock mode) and fall back to the agreement's name.
   const planName = pl ? pl.name : s.planName && s.planName !== '—' ? s.planName : ''
+  // The live agreement carries no provider and no advertised speed (only the
+  // mock plan catalog has mbps), so both lines are joined from whatever parts
+  // exist rather than interpolated into a fixed template — otherwise a
+  // missing value rendered literally as "— · Package 2 ( Mbps)".
+  const provider = s.provider && s.provider !== '—' ? s.provider : ''
+  const planLine = [provider, planName, pl ? t('apartments:speedMbps', { mbps: pl.mbps }) : '']
+    .filter(Boolean)
+    .join(' · ')
   const [resuming, setResuming] = useState(false)
 
   const sub = active
-    ? `${planName} · ${s.provider}`
+    ? [planName, provider].filter(Boolean).join(' · ') || t('apartments:active')
     : paused
       ? t('apartments:pausedLabel')
       : t('apartments:noActivePlan')
@@ -125,13 +133,9 @@ export default function InternetCard({ apt, onReload }) {
             <div className={styles.v}>
               <Badge tone="pos" dot>{t('apartments:active')}</Badge>
             </div>
-            <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>
-              {t('apartments:providerPlanLine', {
-                provider: s.provider,
-                plan: planName,
-                mbps: pl ? pl.mbps : '',
-              })}
-            </div>
+            {planLine && (
+              <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>{planLine}</div>
+            )}
           </div>
           <div className={styles.cell}>
             <div className={styles.k}>{t('apartments:monthlyTariff')}</div>

@@ -157,7 +157,7 @@
     "suspended": "Suspended",
     "inactive": "Inactive",
     "serviceStatus": "Service status",
-    "providerPlanLine": "{{provider}} · {{plan}} ({{mbps}} Mbps)",
+    "speedMbps": "{{mbps}} Mbps",
     "billingCycle": "Billing cycle",
     "daysLeftShort": "days left",
     "daysLeftValue": "{{count}} days left",

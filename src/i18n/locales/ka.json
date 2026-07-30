@@ -157,7 +157,7 @@
     "suspended": "შეჩერებული",
     "inactive": "არააქტიური",
     "serviceStatus": "სერვისის სტატუსი",
-    "providerPlanLine": "{{provider}} · {{plan}} ({{mbps}} Mbps)",
+    "speedMbps": "{{mbps}} Mbps",
     "billingCycle": "ბილინგის ციკლი",
     "daysLeftShort": "დარჩენილი დღე",
     "daysLeftValue": "დარჩენილია {{count}} დღე",
