@@ -37,26 +37,29 @@ export default function InternetCard({ apt, onReload }) {
   // name (orbinet_agreement.net_tariff.name, Task L1), so prefer the mock
   // catalog hit (mock mode) and fall back to the agreement's name.
   const planName = pl ? pl.name : s.planName && s.planName !== '—' ? s.planName : ''
-  // The live agreement carries no provider and no advertised speed (only the
-  // mock plan catalog has mbps), so both lines are joined from whatever parts
-  // exist rather than interpolated into a fixed template — otherwise a
-  // missing value rendered literally as "— · Package 2 ( Mbps)".
-  const provider = s.provider && s.provider !== '—' ? s.provider : ''
-  const planLine = [provider, planName, pl ? t('apartments:speedMbps', { mbps: pl.mbps }) : '']
+  // The provider name is not shown (owner call 2026-07-30) — the live
+  // agreement doesn't carry one anyway, and on mock data it only repeated
+  // what the plan already says. The speed comes from the mock plan catalog
+  // alone, so the line is joined from whatever parts exist rather than
+  // interpolated into a fixed template.
+  const planLine = [planName, pl ? t('apartments:speedMbps', { mbps: pl.mbps }) : '']
     .filter(Boolean)
     .join(' · ')
   const [resuming, setResuming] = useState(false)
 
   const sub = active
-    ? [planName, provider].filter(Boolean).join(' · ') || t('apartments:active')
+    ? planName || t('apartments:active')
     : paused
       ? t('apartments:pausedLabel')
       : t('apartments:noActivePlan')
 
+  // Balance, not the monthly tariff — the same metric the Maintenance and
+  // Electricity headers show, so the three read as one column (owner call
+  // 2026-07-30). The tariff still has its own cell in the panel below.
   const right = (
-    <Metric label={t('apartments:monthly')}>
+    <Metric label={active || paused ? t('apartments:balance') : t('apartments:monthly')}>
       {active || paused ? (
-        <span style={{ fontSize: 14 }}>{fmt(s.tariff)}</span>
+        <span className={`${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(neg ? s.balance : 0)}</span>
       ) : (
         <span style={{ fontSize: 13, color: 'var(--muted)' }}>{t('apartments:inactive')}</span>
       )}

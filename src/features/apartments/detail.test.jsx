@@ -30,14 +30,29 @@ test('renders info grid without duplicated block and toggles accordion', async (
 
 test('internet card shows active plan', async () => {
   renderApp(['/apartments/A1'])
-  // plan name appears twice by design: header sub + provider line (ref 1406/1420)
+  // plan name appears twice by design: header sub + plan line (ref 1406/1420)
   expect((await screen.findAllByText(/Package 2/)).length).toBeGreaterThanOrEqual(2)
-  // Joined from the parts that exist, so a payload missing the provider or
-  // the advertised speed drops that part instead of rendering it empty.
-  expect(screen.getByText('Magti · Package 2 · 75 Mbps')).toBeInTheDocument()
+  // No provider name (owner call), and joined from the parts that exist so a
+  // payload without an advertised speed drops that part instead of rendering
+  // it empty.
+  expect(screen.getByText('Package 2 · 75 Mbps')).toBeInTheDocument()
+  expect(screen.queryByText(/Magti/)).not.toBeInTheDocument()
+  // The header metric is the balance, matching the other service cards.
+  const net = screen.getByRole('button', { name: /Internet & TV/ })
+  expect(within(net).getByText('Balance')).toBeInTheDocument()
   // days left ring + the "40 days left" billing-cycle value
   expect(screen.getByRole('img', { name: '40 days left of 60' })).toBeInTheDocument()
   expect(screen.getByText('40 days left')).toBeInTheDocument()
+})
+
+test('water card shows the counter id, not the meter indication', async () => {
+  renderApp(['/apartments/A1'])
+  const water = await screen.findByRole('button', { name: /Water/ })
+  expect(within(water).getByText('Counter ID')).toBeInTheDocument()
+  expect(within(water).getByText('W-3026-01')).toBeInTheDocument()
+  // Indication was dropped from the card entirely (owner call 2026-07-30).
+  expect(screen.queryByText('Indication')).not.toBeInTheDocument()
+  expect(screen.queryByText('00428 m³')).not.toBeInTheDocument()
 })
 
 test('unknown apartment id shows not-found state', async () => {

@@ -285,6 +285,9 @@
 .svc-grid.cols4 {
   grid-template-columns: repeat(4, 1fr);
 }
+.svc-grid.cols2 {
+  grid-template-columns: repeat(2, 1fr);
+}
 .svc-grid .cell {
   background: #fff;
   padding: 14px 16px;
@@ -461,6 +464,7 @@
   .svc-grid.cols4 {
     grid-template-columns: repeat(2, 1fr);
   }
+  /* .cols2 already fits here — it only collapses at the 520 step below. */
 }
 
 @media (max-width: 520px) {
@@ -475,7 +479,8 @@
     font-size: 12.5px;
   }
   .svc-grid,
-  .svc-grid.cols4 {
+  .svc-grid.cols4,
+  .svc-grid.cols2 {
     grid-template-columns: 1fr;
   }
   .svc-head {
