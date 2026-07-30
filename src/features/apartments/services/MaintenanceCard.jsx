@@ -14,6 +14,9 @@ export default function MaintenanceCard({ apt }) {
   const toast = useToast()
   const s = apt.services.maintenance
   const neg = s.balance < 0
+  // Maintenance is billed in the contract currency (live USD, mock GEL) —
+  // the adapter reports the symbol alongside the balance.
+  const cur = s.currency || '₾'
 
   return (
     <ServiceShell
@@ -24,18 +27,18 @@ export default function MaintenanceCard({ apt }) {
       sub={t('apartments:maintenanceSub')}
       right={
         <Metric label={t('apartments:balance')}>
-          <span className={`${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(neg ? s.balance : 0)}</span>
+          <span className={`${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(neg ? s.balance : 0, cur)}</span>
         </Metric>
       }
     >
       <div className={styles['svc-grid']}>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:balance')}</div>
-          <div className={`${styles.v} ${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(s.balance)}</div>
+          <div className={`${styles.v} ${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(s.balance, cur)}</div>
         </div>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:monthlyTariff')}</div>
-          <div className={styles.v}>{fmt(s.tariff)}</div>
+          <div className={styles.v}>{fmt(s.tariff, cur)}</div>
         </div>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:serviceStartDate')}</div>
@@ -52,7 +55,7 @@ export default function MaintenanceCard({ apt }) {
             state={{ apartmentCode: apt.code, utility: 'maintenance' }}
             className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
           >
-            {t('apartments:payAmount', { amount: fmt(-s.balance) })}
+            {t('apartments:payAmount', { amount: fmt(-s.balance, cur) })}
           </Link>
         )}
       </div>

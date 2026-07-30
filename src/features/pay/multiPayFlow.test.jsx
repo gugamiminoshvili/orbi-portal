@@ -107,12 +107,12 @@ describe('MultiPayFlow — step 1 (complexes)', () => {
     expect(screen.getByText('2 apartments')).toBeInTheDocument()
     // row1 owes on all 3 utilities (50 + 10 + 80 GEL), row2 owes nothing
     expect(screen.getByText('3 unpaid bills')).toBeInTheDocument()
-    expect(screen.getByText('₾140.00')).toBeInTheDocument()
+    expect(screen.getByText('140.00 ₾')).toBeInTheDocument()
 
     expect(screen.getByText('Orbi Sea Towers')).toBeInTheDocument()
     expect(screen.getByText('1 apartment')).toBeInTheDocument()
     expect(screen.getByText('1 unpaid bill')).toBeInTheDocument()
-    expect(screen.getByText('₾5.00')).toBeInTheDocument()
+    expect(screen.getByText('5.00 ₾')).toBeInTheDocument()
   })
 })
 
@@ -155,11 +155,11 @@ describe('MultiPayFlow — step 3 table', () => {
     await openOrbiCityElectricity()
 
     const creditRow = screen.getByText('OCT.A.14.1408').closest('tr')
-    expect(within(creditRow).getByText('-₾20.00')).toBeInTheDocument()
+    expect(within(creditRow).getByText('-20.00 ₾')).toBeInTheDocument()
     expect(within(creditRow).getByRole('checkbox')).toBeDisabled()
 
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
-    expect(within(debtRow).getByText('₾50.00')).toBeInTheDocument()
+    expect(within(debtRow).getByText('50.00 ₾')).toBeInTheDocument()
     expect(within(debtRow).getByRole('checkbox')).not.toBeDisabled()
   })
 
@@ -171,12 +171,12 @@ describe('MultiPayFlow — step 3 table', () => {
 
     // Payable amount defaults to the full owed amount — shown in both the
     // Outstanding column (red) and the summary panel's Payable amount.
-    expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
 
     const amountInput = within(debtRow).getByRole('spinbutton')
     fireEvent.change(amountInput, { target: { value: '30' } })
 
-    expect(screen.getByText('₾30.00')).toBeInTheDocument()
+    expect(screen.getByText('30.00 ₾')).toBeInTheDocument()
   })
 
   test('amount edits above the owed amount are capped at the owed amount', async () => {
@@ -191,7 +191,7 @@ describe('MultiPayFlow — step 3 table', () => {
     fireEvent.change(amountInput, { target: { value: '999' } })
 
     expect(amountInput).toHaveValue(50)
-    expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
   })
 
   // Carried fix from the P3-5 review: switching roleFilter re-derives the
@@ -227,7 +227,7 @@ describe('MultiPayFlow — step 3 table', () => {
       const row = screen.getByText(code).closest('tr')
       fireEvent.click(within(row).getByRole('checkbox'))
     }
-    expect(screen.getByText('2 of 2 selected · Total ₾80.00')).toBeInTheDocument()
+    expect(screen.getByText('2 of 2 selected · Total 80.00 ₾')).toBeInTheDocument()
 
     // Switch the filter to Owner-only — the Trusted row (and its ₾30
     // selection) drops out of the table...
@@ -237,8 +237,8 @@ describe('MultiPayFlow — step 3 table', () => {
     // ...and the footer must agree: 1 of 1 selected, total only the still
     // visible Owner row's ₾50 — not the stale ₾80 that double-counted the
     // now-hidden Trusted row.
-    expect(screen.getByText('1 of 1 selected · Total ₾50.00')).toBeInTheDocument()
-    expect(screen.getAllByText('₾50.00').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('1 of 1 selected · Total 50.00 ₾')).toBeInTheDocument()
+    expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
   })
 
   test("maintenance step 3 converts USD owed via the rate and shows the $1 = X₾ line (currency 'USD')", async () => {
@@ -248,9 +248,9 @@ describe('MultiPayFlow — step 3 table', () => {
     fireEvent.click(await screen.findByText('Maintenance').then((el) => el.closest('button')))
     await screen.findByText('OCT.A.30.3026')
 
-    // owed 40 USD * rate 2 = ₾80.00, and the conversion-rate line renders
+    // owed 40 USD * rate 2 = 80.00 ₾, and the conversion-rate line renders
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
-    expect(within(debtRow).getByText('₾80.00')).toBeInTheDocument()
+    expect(within(debtRow).getByText('80.00 ₾')).toBeInTheDocument()
     expect(screen.getByText('$1 = 2.0000₾')).toBeInTheDocument()
   })
 })
@@ -264,7 +264,7 @@ describe('MultiPayFlow — deep-link preselect', () => {
     expect(screen.getByText('Orbi Sea Towers')).toBeInTheDocument()
     const row = screen.getByText('OST.A.08.0803').closest('tr')
     expect(within(row).getByRole('checkbox')).toBeChecked()
-    expect(screen.getAllByText('₾5.00').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('5.00 ₾').length).toBeGreaterThanOrEqual(2)
   })
 })
 
@@ -299,7 +299,7 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
 
     const modal = await screen.findByTestId('modal-box')
     expect(within(modal).getByText('Orbi Sea Towers • Electricity')).toBeInTheDocument()
-    expect(within(modal).getAllByText('₾5.00').length).toBeGreaterThanOrEqual(1)
+    expect(within(modal).getAllByText('5.00 ₾').length).toBeGreaterThanOrEqual(1)
 
     fireEvent.click(within(modal).getByRole('button', { name: /Bank Card/ }))
     fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))
@@ -374,7 +374,7 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
     const modal = await screen.findByTestId('modal-box')
     // Banner total reflects the same current selections (50 + 10)
-    expect(within(modal).getByText('₾60.00')).toBeInTheDocument()
+    expect(within(modal).getByText('60.00 ₾')).toBeInTheDocument()
 
     fireEvent.click(within(modal).getByRole('button', { name: /Crypto/ }))
     fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))

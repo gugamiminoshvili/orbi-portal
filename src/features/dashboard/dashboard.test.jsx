@@ -53,19 +53,19 @@ describe('DashboardPage', () => {
 
     // maintenance debt = abs(debtSum), not the credit-only `sum` field —
     // rendered in the Maintenance stat tile (which uses fmt's inline symbol).
-    expect(screen.getAllByText('$637.12').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('637.12 $').length).toBeGreaterThan(0)
     // utilities = electricitySum + internetSum = 121.38 — same tile treatment.
-    expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('121.38 ₾').length).toBeGreaterThan(0)
     // The debt card splits the symbol into its own element, so the number is
     // its own text node — twice each: the headline figure and the legend line.
     expect(screen.getAllByText('637.12')).toHaveLength(2)
     expect(screen.getAllByText('121.38')).toHaveLength(2)
     // Each headline carries the balance it stands for, for assistive tech.
-    expect(screen.getByText('Maintenance Debt: $637.12')).toBeInTheDocument()
-    expect(screen.getByText('Utilities Debt: ₾121.38')).toBeInTheDocument()
+    expect(screen.getByText('Maintenance Debt: 637.12 $')).toBeInTheDocument()
+    expect(screen.getByText('Utilities Debt: 121.38 ₾')).toBeInTheDocument()
     // No merged cross-currency total (owner request 2026-07-21): the two
-    // currencies stay on their own lines, nothing shows the old $683.21.
-    expect(screen.queryByText('$683.21')).not.toBeInTheDocument()
+    // currencies stay on their own lines, nothing shows the old 683.21 $.
+    expect(screen.queryByText('683.21 $')).not.toBeInTheDocument()
     expect(screen.queryByText('683.21')).not.toBeInTheDocument()
     expect(screen.queryByText('Total')).not.toBeInTheDocument()
 
@@ -91,13 +91,13 @@ describe('DashboardPage', () => {
     await screen.findByRole('heading', { name: 'Dashboard' })
 
     // maintenance debt = abs(-300) = 300, shown in ₾ (not $).
-    expect(screen.getAllByText('₾300.00').length).toBeGreaterThan(0)
-    expect(screen.getByText('Maintenance Debt: ₾300.00')).toBeInTheDocument()
+    expect(screen.getAllByText('300.00 ₾').length).toBeGreaterThan(0)
+    expect(screen.getByText('Maintenance Debt: 300.00 ₾')).toBeInTheDocument()
     // utilities = 71.38 + 50 = 121.38 — same as the USD-branch fixture.
-    expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('121.38 ₾').length).toBeGreaterThan(0)
     // No merged total row (owner request 2026-07-21) — neither the summed
     // figure nor a "Total" label is rendered.
-    expect(screen.queryByText('₾421.38')).not.toBeInTheDocument()
+    expect(screen.queryByText('421.38 ₾')).not.toBeInTheDocument()
     expect(screen.queryByText('Total')).not.toBeInTheDocument()
   })
 
@@ -106,8 +106,8 @@ describe('DashboardPage', () => {
     renderApp(['/dashboard'])
 
     await screen.findByRole('heading', { name: 'Dashboard' })
-    expect(screen.getAllByText('$637.12').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('₾121.38').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('637.12 $').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('121.38 ₾').length).toBeGreaterThan(0)
     expect(screen.queryByText('Exchange rates')).not.toBeInTheDocument()
   })
 

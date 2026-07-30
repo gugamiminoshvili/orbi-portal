@@ -65,7 +65,7 @@ describe('getApartment (real branch)', () => {
     expect(apt.waterCode).toBe('271/4a-205a')
     expect(apt.apCode).toBe('—') // live flat epcode is ""
     // services synthesized from the flat record, not clobbered by flat detail
-    expect(apt.services.maintenance.balance).toBe(-1677.73)
+    expect(apt.services.maintenance.balance).toBe(-637.12) // contract currency (USD)
     expect(apt.services.internet.planId).toBe(3)
   })
 

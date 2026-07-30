@@ -7,14 +7,17 @@
 //    element handed to adaptProperty here is one FLAT record.
 //  - A flat carries THREE variants of each money field (e.g. apartmentBalance
 //    in the contract currency, apartmentBalanceGEL, apartmentBalanceCurrency/
-//    apartmentCurrencyRate). The UI renders ₾ everywhere (utils/format.js's
-//    fmt), so the *GEL variants are the ones read below. The live sign
-//    convention matches the v1 mock exactly: negative = owed (live
-//    apartmentBalanceGEL -1677.73 / InternetTVBalanceGEL -95.13 are debts),
+//    apartmentCurrencyRate). Electricity and internet are GEL-native, so
+//    their *GEL variants are read below; MAINTENANCE is billed in the
+//    contract currency (live: USD) and is read from the un-converted
+//    `apartmentBalance` + `apartmentBalanceCurrency` (owner call 2026-07-30).
+//    The live sign convention matches the v1 mock exactly: negative = owed
+//    (live apartmentBalance -637.12 / InternetTVBalanceGEL -69.13 are debts),
 //    so values pass through un-negated.
 //  - Each flat embeds its internet subscription as `orbinet_agreement`
 //    (empty {} when there is no plan) — services.internet is synthesized
 //    from it via adapters/internet.js's adaptAgreement.
+import { symbolFor } from '../../utils/format.js'
 import { adaptAgreement } from './internet.js'
 
 // Live flats carry `ownership_status` ("owner" observed) plus
@@ -105,11 +108,25 @@ export function adaptProperty(dto = {}) {
 function adaptServicesFromProperty(dto = {}) {
   const displayServices = Array.isArray(dto.display_services) ? dto.display_services : []
   return {
-    maintenance: {
-      balance: num(dto.apartmentBalanceGEL ?? dto.apartmentBalance),
-      tariff: 0, // no source field on the live flat payload
-      start: '—', // no source field on the live flat payload
-    },
+    // Maintenance is billed in the CONTRACT currency (live: USD) — owner
+    // call 2026-07-30, so the card shows `apartmentBalance` + its
+    // `apartmentBalanceCurrency` rather than the pre-converted
+    // `apartmentBalanceGEL` the page used to render. A payload with only the
+    // GEL variant (mock, or a flat with no contract currency) falls back to
+    // it and stays in ₾.
+    maintenance: dto.apartmentBalance != null
+      ? {
+          balance: num(dto.apartmentBalance),
+          currency: symbolFor(dto.apartmentBalanceCurrency, '$'),
+          tariff: 0, // no source field on the live flat payload
+          start: '—', // no source field on the live flat payload
+        }
+      : {
+          balance: num(dto.apartmentBalanceGEL),
+          currency: '₾',
+          tariff: 0,
+          start: '—',
+        },
     water: {
       counter: dto.waterCode ?? '—',
       indication: dto.WaterIndication ?? '—',

@@ -64,17 +64,17 @@ describe('MethodModal — rendering', () => {
     renderModal()
 
     expect(screen.getByText('Orbi City • Electricity')).toBeInTheDocument()
-    expect(screen.getByText('₾30.00')).toBeInTheDocument()
+    expect(screen.getByText('30.00 ₾')).toBeInTheDocument()
 
     expect(screen.getByRole('button', { name: /Bank Card/ })).toBeInTheDocument()
-    expect(screen.getAllByText('Max ₾3,000.00').length).toBe(2) // Bank Card + Apple Pay share the same max
+    expect(screen.getAllByText('Max 3,000.00 ₾').length).toBe(2) // Bank Card + Apple Pay share the same max
     expect(screen.getAllByText('2.5%').length).toBe(2) // Bank Card + Apple Pay
 
     expect(screen.getByRole('button', { name: /Apple Pay/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Online Bank/ })).toBeInTheDocument()
-    expect(screen.getByText('Max ₾50,000.00')).toBeInTheDocument()
+    expect(screen.getByText('Max 50,000.00 ₾')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Crypto/ })).toBeInTheDocument()
-    expect(screen.getByText('Max ₾100,000.00')).toBeInTheDocument()
+    expect(screen.getByText('Max 100,000.00 ₾')).toBeInTheDocument()
     expect(screen.getAllByText('0.6%').length).toBe(2) // Online Bank + Crypto
 
     expect(screen.getByRole('button', { name: /Invoice/ })).toBeInTheDocument()

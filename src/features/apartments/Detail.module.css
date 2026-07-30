@@ -2,10 +2,14 @@
    308-326 (overview block / qr / copy), 329-352 (service accordion cards),
    387-397 (sub-panel / ring), 435-438 (warn-box) */
 
+/* No text-align here: inside .svc-grid a BALANCE cell is the only value that
+   carries .money, and a right-aligned number under a left-aligned label read
+   as a misalignment next to the other cells (owner call 2026-07-30). The
+   collapsed header keeps its right edge from .svc-metric, and .neg-strip
+   from its own flex layout. */
 .money {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  text-align: right;
   white-space: nowrap;
 }
 .money.pos {

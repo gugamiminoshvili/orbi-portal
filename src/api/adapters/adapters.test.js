@@ -69,9 +69,12 @@ describe('adaptProperty', () => {
     expect(adaptProperty({}).epcode).toBe('—')
   })
 
-  test('synthesizes services with real GEL balances, counters and indication', () => {
+  test('synthesizes services with real balances, counters and indication', () => {
     const { services } = adaptProperty(flats[0])
-    expect(services.maintenance.balance).toBe(-1677.73)
+    // Maintenance keeps the CONTRACT currency (apartmentBalance/USD), not the
+    // pre-converted apartmentBalanceGEL the other services use.
+    expect(services.maintenance.balance).toBe(-637.12)
+    expect(services.maintenance.currency).toBe('$')
     expect(services.electricity.balance).toBe(-230.73)
     expect(services.electricity.counter).toBe('35010009')
     expect(services.electricity.status).toBe('Active') // display_services includes electricity
