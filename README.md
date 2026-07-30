@@ -327,6 +327,23 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     to GEL (as `payFlowData.js`'s `owedFor` does today, FLAGged) or the raw
     USD figure — no live sample of a submitted multi-pay body exists to
     check against.
+17. **Sign convention on balances — BLOCKING a UI change (raised 2026-07-30).**
+    Everything the app does today assumes **negative = owed**: the dashboard
+    renders `abs(flatBalance.debt_sum)` as "Maintenance Debt",
+    `payFlowData.js`'s `owedFor` returns `-balance` and only lets
+    negative-balance rows be selected for payment, and `.money.neg` paints
+    them red. The live account matches that naming — one flat at
+    `apartmentBalance` −637.12, three at +148.13/+346.50/+163.08, with
+    `debt_sum` = the sum of the negatives and `balance_sum` = the sum of the
+    positives. The owner reports the opposite for maintenance and
+    electricity (negative = the resident is **in advance**, internet being
+    the one exception where negative really is a debt). Both can't hold. If
+    the owner's reading is right this is not a colour tweak: the dashboard
+    figure, which rows the multi-pay flow offers to charge, and the red/green
+    treatment all invert. Needs the backend team to state, per field
+    (`flatBalance.debt_sum`/`balance_sum`, `apartmentBalance`,
+    `electricityBalanceGEL`, `InternetTVBalanceGEL`), which sign means the
+    resident owes money.
 
 To wire up more of a real backend once these are answered:
 
