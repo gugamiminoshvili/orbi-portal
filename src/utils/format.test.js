@@ -20,9 +20,9 @@ test('symbolFor maps ISO codes, falls back, and passes unknown codes through', (
   expect(symbolFor(undefined, '$')).toBe('$')
   expect(symbolFor('JPY')).toBe('JPY')
 })
-test('fmtDate keeps the date part only, as DD/MM/YYYY', () => {
-  expect(fmtDate('2015-04-16T00:00:00')).toBe('16/04/2015')
-  expect(fmtDate('2015-04-16')).toBe('16/04/2015')
+test('fmtDate keeps the date part only, as YYYY-MM-DD', () => {
+  expect(fmtDate('2015-04-16T00:00:00')).toBe('2015-04-16')
+  expect(fmtDate('2015-04-16')).toBe('2015-04-16')
 })
 test('fmtDate passes through anything that is not a leading ISO date', () => {
   expect(fmtDate('')).toBe('')
