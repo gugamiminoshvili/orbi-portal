@@ -19,3 +19,13 @@ export const fmt = (n, cur = '₾') => `${fmtNum(n)} ${cur}`
 // wrong symbol.
 const SYMBOLS = { USD: '$', GEL: '₾', EUR: '€', GBP: '£' }
 export const symbolFor = (code, fallback = '₾') => (code ? SYMBOLS[code] || code : fallback)
+
+// `YYYY-MM-DD...` -> `DD/MM/YYYY`, date only. Read straight off the string
+// rather than through Date: the backend sends zone-less timestamps
+// ("2015-04-16T00:00:00") and parsing one would let a UTC-vs-local reading
+// move the day. Anything that doesn't start with a date passes through, so
+// the caller's own '—' fallback still applies to empty values.
+export function fmtDate(value) {
+  const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : value
+}

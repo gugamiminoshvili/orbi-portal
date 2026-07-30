@@ -7,6 +7,7 @@ import { useToast } from '../../context/ToastContext'
 import { changePassword } from '../../api/auth'
 import { USE_MOCK } from '../../api/client'
 import { accountStatus, STATUS_TONE } from '../../utils/accountStatus'
+import { fmtDate } from '../../utils/format'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
@@ -44,7 +45,8 @@ export default function ProfilePage() {
     { key: 'email', icon: 'mail', value: user?.mail },
     { key: 'phone', icon: 'phone', value: user?.phone },
     { key: 'personalId', icon: 'idcard', value: user?.personalId },
-    { key: 'regDate', icon: 'cal', value: user?.regDate },
+    // Date only — the backend sends a full timestamp ("2015-04-16T00:00:00").
+    { key: 'regDate', icon: 'cal', value: fmtDate(user?.regDate) },
   ]
 
   return (

@@ -1,4 +1,4 @@
-import { fmt, fmtNum, symbolFor } from './format'
+import { fmt, fmtNum, fmtDate, symbolFor } from './format'
 
 test('formats positive amounts with currency and thousands', () => {
   expect(fmt(1450)).toBe('1,450.00\u00a0₾')
@@ -19,4 +19,13 @@ test('symbolFor maps ISO codes, falls back, and passes unknown codes through', (
   expect(symbolFor('GEL')).toBe('₾')
   expect(symbolFor(undefined, '$')).toBe('$')
   expect(symbolFor('JPY')).toBe('JPY')
+})
+test('fmtDate keeps the date part only, as DD/MM/YYYY', () => {
+  expect(fmtDate('2015-04-16T00:00:00')).toBe('16/04/2015')
+  expect(fmtDate('2015-04-16')).toBe('16/04/2015')
+})
+test('fmtDate passes through anything that is not a leading ISO date', () => {
+  expect(fmtDate('')).toBe('')
+  expect(fmtDate(undefined)).toBeUndefined()
+  expect(fmtDate('16 Apr 2015')).toBe('16 Apr 2015')
 })

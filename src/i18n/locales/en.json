@@ -474,7 +474,7 @@
       "email": "Email",
       "phone": "Phone number",
       "personalId": "Passport number (TIN)",
-      "regDate": "Member since"
+      "regDate": "Registration date"
     },
     "currentPassword": "Current password",
     "newPassword": "New password",
