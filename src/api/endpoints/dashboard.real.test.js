@@ -35,7 +35,7 @@ describe('getRates (real branch)', () => {
     vi.useRealTimers()
   })
 
-  test('GETs currency/rate/ for USD and EUR with today\'s date and assembles pair labels', async () => {
+  test('GETs currency/rate/ for USD, EUR and GBP with today\'s date and assembles pair labels', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-17T12:00:00'))
     http.mockResolvedValue(currencyRateUSD)
@@ -44,11 +44,13 @@ describe('getRates (real branch)', () => {
 
     expect(http).toHaveBeenNthCalledWith(1, '/mobileApi/currency/rate/?currency=USD&date=2026-07-17')
     expect(http).toHaveBeenNthCalledWith(2, '/mobileApi/currency/rate/?currency=EUR&date=2026-07-17')
-    expect(http).toHaveBeenCalledTimes(2)
+    expect(http).toHaveBeenNthCalledWith(3, '/mobileApi/currency/rate/?currency=GBP&date=2026-07-17')
+    expect(http).toHaveBeenCalledTimes(3)
     expect(source).toBe('NBG')
     expect(rates).toEqual([
       { pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 },
       { pair: 'EUR/GEL', rate: 2.6333, delta: -0.0011 },
+      { pair: 'GBP/GEL', rate: 2.6333, delta: -0.0011 },
     ])
   })
 

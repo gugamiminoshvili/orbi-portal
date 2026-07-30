@@ -34,6 +34,9 @@ function todayYMD() {
 const RATE_CURRENCIES = [
   { pair: 'USD/GEL', currency: 'USD' },
   { pair: 'EUR/GEL', currency: 'EUR' },
+  // GBP added at owner request (2026-07-30) — verified live first: the
+  // endpoint answers `code:1` for `currency=GBP` (3.4923, +0.0031).
+  { pair: 'GBP/GEL', currency: 'GBP' },
   // RUB removed at owner request (2026-07-21).
 ]
 

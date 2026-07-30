@@ -84,7 +84,7 @@ src/
   features/
     news/                # list, filters, detail, skeletons
     apartments/          # list, detail, service accordions (services/), modals (modals/)
-    dashboard/            # Phase 3: totals/rates/contracts/unpaid-invoices tiles + donut chart
+    dashboard/            # Phase 3: dual-currency debt card + rates/contracts/unpaid-invoices tiles
     pay/                 # Phase 3: 3-step multi-apartment payment flow (complex -> utility ->
                           # apartment table) + method-picker modal -> POST payment/multi/;
                           # payFlowData.js holds the pure grouping/owed-amount helpers

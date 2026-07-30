@@ -13,6 +13,8 @@ import { SERVICES } from './services'
 export const RATES = [
   { pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 },
   { pair: 'EUR/GEL', rate: 3.0191, delta: 0.0119 },
+  // GBP added 2026-07-30, pinned to that day's live probe of the same endpoint.
+  { pair: 'GBP/GEL', rate: 3.4923, delta: 0.0031 },
 ]
 
 function sumPositive(nums) {

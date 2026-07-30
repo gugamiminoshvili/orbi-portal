@@ -42,7 +42,7 @@
   --warn:#FFA800; --warn-bg:#FFF4DE; --warn-ink:#b57400;  /* pause / pending / warning */
   --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
   --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
-  --violet:#7C5CFC; --violet-bg:#ECE8FE; --violet-ink:#5B3FD1; /* maintenance accent (dashboard donut/legend) */
+  --violet:#7C5CFC; --violet-bg:#ECE8FE; --violet-ink:#5B3FD1; /* maintenance accent (dashboard legend) */
 
   /* Depth (colored — shadow/ring tints follow the theme) */
   --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
@@ -115,3 +115,16 @@ body{
 button{font-family:inherit}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
+
+/* Screen-reader-only text. For cases where the visual design carries meaning
+   through layout that the DOM alone can't state — e.g. the dashboard's two
+   headline balances, which read as bare numbers without their label. */
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  margin:-1px;padding:0;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap;
+  border:0;
+}

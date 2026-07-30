@@ -3,13 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from '../../api/endpoints/dashboard'
-import { fmt } from '../../utils/format'
+import { fmt, fmtNum } from '../../utils/format'
 import Card from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
 import Skeleton from '../../components/ui/Skeleton'
 import buttonStyles from '../../components/ui/Button.module.css'
-import DonutChart from './DonutChart'
 import styles from './Dashboard.module.css'
 
 // One combined fetch (rather than 4 separate useAsync calls) so the whole
@@ -23,12 +22,6 @@ async function loadDashboard() {
     getUnpaidInvoices(),
   ])
   return { communals, rates, contracts, unpaid }
-}
-
-// Shared by the donut's common-currency proportions — the USD/GEL number.
-function usdGelRate(rates) {
-  const row = rates?.rates?.find((r) => r.pair === 'USD/GEL')
-  return row ? row.rate : null
 }
 
 export default function DashboardPage() {
@@ -63,27 +56,19 @@ export default function DashboardPage() {
   const utilitiesTotal = communals.utilities.electricitySum + communals.utilities.internetSum
 
   // Currency-conditional (same pattern as payFlowData.owedFor): LIVE
-  // maintenance arrives in USD, MOCK in GEL. We never DISPLAY a merged
-  // cross-currency total (owner request 2026-07-21) — each balance stays in
-  // its native currency. The rate is only used internally, to size the donut
-  // slices in one common currency.
+  // maintenance arrives in USD, MOCK in GEL. Nothing on this card merges the
+  // two currencies (owner request 2026-07-21, reaffirmed 2026-07-30) — no
+  // summed figure, and no chart either: a donut states "one whole split into
+  // parts", which two unrelated currencies are not. Each currency gets its
+  // own headline figure, and the legend on the right names the lines.
   const maintenanceCurrency = communals.maintenance.currency || 'USD'
   const maintenanceSymbol = maintenanceCurrency === 'GEL' ? '₾' : '$'
-  const isGelMaintenance = maintenanceCurrency === 'GEL'
-  const rate = usdGelRate(rates)
 
-  // Both slices in one currency (GEL) for the ring proportions only.
-  const maintenanceGel = isGelMaintenance ? maintenanceDebt : rate != null ? maintenanceDebt * rate : null
-  const donutSegments =
-    maintenanceGel != null
-      ? [
-          { key: 'maintenance', value: maintenanceGel, color: 'var(--violet)' },
-          { key: 'utilities', value: utilitiesTotal, color: 'var(--neg)' },
-        ]
-      : null
-  const proportionTotal = maintenanceGel != null ? maintenanceGel + utilitiesTotal : 0
-  const maintenancePct = proportionTotal > 0 ? Math.round((maintenanceGel / proportionTotal) * 100) : 0
-  const hasDebt = maintenanceDebt > 0 || utilitiesTotal > 0
+  // No backend source for "other charges" yet — kept as an explicit 0 rather
+  // than a hardcoded literal in the JSX so the GEL headline stays correct
+  // the day it IS wired up.
+  const otherCharges = 0
+  const gelTotal = utilitiesTotal + otherCharges
 
   return (
     <div>
@@ -102,47 +87,42 @@ export default function DashboardPage() {
           </Card.Head>
           <Card.Pad>
             <div className={styles['debt-body']}>
-              {donutSegments && hasDebt && (
-                <DonutChart
-                  segments={donutSegments}
-                  size={132}
-                  strokeWidth={18}
-                  ariaLabel={t('dashboard:donutAria', {
-                    maintenance: fmt(maintenanceDebt, maintenanceSymbol),
-                    utilities: fmt(utilitiesTotal, '₾'),
-                  })}
-                  center={
-                    <>
-                      <span className={styles['donut-pct']}>{maintenancePct}%</span>
-                      <span className={styles['donut-cap']}>{t('dashboard:maintenanceLabel')}</span>
-                    </>
-                  }
+              <div className={styles['debt-totals']}>
+                <Amount
+                  value={maintenanceDebt}
+                  symbol={maintenanceSymbol}
+                  label={t('dashboard:maintenanceLabel')}
                 />
-              )}
+                <Amount value={gelTotal} symbol="₾" label={t('dashboard:utilitiesLabel')} />
+                <Link
+                  to="/pay"
+                  className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${styles['pay-btn']}`}
+                >
+                  <Icon name="wallet" /> {t('dashboard:payNow')}
+                </Link>
+              </div>
               <ul className={styles['debt-lines']}>
-                <li className={styles['debt-row']}>
-                  <span className={styles.dot} style={{ background: 'var(--violet)' }} />
-                  <span className={styles.k}>{t('dashboard:maintenanceLabel')}</span>
-                  <span className={styles.v}>{fmt(maintenanceDebt, maintenanceSymbol)}</span>
-                </li>
-                <li className={styles['debt-row']}>
-                  <span className={styles.dot} style={{ background: 'var(--neg)' }} />
-                  <span className={styles.k}>{t('dashboard:utilitiesLabel')}</span>
-                  <span className={styles.v}>{fmt(utilitiesTotal, '₾')}</span>
-                </li>
-                <li className={`${styles['debt-row']} ${styles.muted}`}>
-                  <span className={styles.dot} style={{ background: 'var(--muted)' }} />
-                  <span className={styles.k}>{t('dashboard:otherChargesLabel')}</span>
-                  <span className={styles.v}>{fmt(0, '₾')}</span>
-                </li>
+                <DebtRow
+                  color="var(--violet)"
+                  label={t('dashboard:maintenanceLabel')}
+                  value={maintenanceDebt}
+                  symbol={maintenanceSymbol}
+                />
+                <DebtRow
+                  color="var(--neg)"
+                  label={t('dashboard:utilitiesLabel')}
+                  value={utilitiesTotal}
+                  symbol="₾"
+                />
+                <DebtRow
+                  color="var(--line-2)"
+                  label={t('dashboard:otherChargesLabel')}
+                  value={otherCharges}
+                  symbol="₾"
+                  muted
+                />
               </ul>
             </div>
-            <Link
-              to="/pay"
-              className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${styles['pay-btn']}`}
-            >
-              <Icon name="wallet" /> {t('dashboard:payNow')}
-            </Link>
           </Card.Pad>
         </Card>
 
@@ -285,6 +265,36 @@ export default function DashboardPage() {
         />
       </div>
     </div>
+  )
+}
+
+// A headline balance: big grouped number with the currency symbol as its own
+// smaller element. The label is carried by a screen-reader-only string rather
+// than aria-label (which a generic <div> can't be named by) — visually the
+// legend beside it names the two figures, but a bare "637.12" read on its own
+// tells a screen-reader user nothing about WHICH balance it is.
+function Amount({ value, symbol, label }) {
+  return (
+    <div className={styles.big}>
+      <span className="sr-only">{`${label}: ${fmt(value, symbol)}`}</span>
+      <span aria-hidden="true">
+        {fmtNum(value)}
+        <span className={styles.cur}>{symbol}</span>
+      </span>
+    </div>
+  )
+}
+
+function DebtRow({ color, label, value, symbol, muted }) {
+  return (
+    <li className={`${styles['debt-row']} ${muted ? styles.muted : ''}`}>
+      <span className={styles.dot} style={{ background: color }} />
+      <span className={styles.k}>{label}</span>
+      <span className={styles.v}>
+        {fmtNum(value)}
+        <span className={styles.cur}>{symbol}</span>
+      </span>
+    </li>
   )
 }
 

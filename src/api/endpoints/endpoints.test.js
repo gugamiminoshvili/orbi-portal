@@ -41,7 +41,7 @@ test('getCommunals resolves the mock dashboard shape', async () => {
 test('getRates resolves the static mock NBG snapshot', async () => {
   const { rates, source } = await getRates()
   expect(source).toBe('NBG')
-  expect(rates.map((r) => r.pair)).toEqual(['USD/GEL', 'EUR/GEL'])
+  expect(rates.map((r) => r.pair)).toEqual(['USD/GEL', 'EUR/GEL', 'GBP/GEL'])
 })
 test('getContractsSummary resolves the mock crm-less zero-state', async () => {
   expect(await getContractsSummary()).toEqual({ empty: true })

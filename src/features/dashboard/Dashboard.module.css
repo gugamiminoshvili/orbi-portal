@@ -44,15 +44,40 @@
   font-weight: 500;
 }
 
+/* Two currencies, side by side: the headline figures + Pay on the left, the
+   named lines on the right. No chart — see DashboardPage's comment on why a
+   donut can't honestly hold two currencies. */
 .debt-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s6) var(--s7);
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .debt-body {
+    grid-template-columns: 1fr;
+  }
+}
+.debt-totals {
   display: flex;
-  align-items: center;
-  gap: var(--s7);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--s4);
+  align-items: flex-start;
+}
+.big {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.big .cur {
+  font-size: 0.68em;
+  font-weight: 700;
+  margin-left: 6px;
+  letter-spacing: -0.5px;
 }
 .debt-lines {
-  flex: 1;
-  min-width: 210px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -73,42 +98,30 @@
 }
 .debt-row .v {
   font-weight: 700;
-  font-size: 20px;
+  font-size: 17px;
   letter-spacing: -0.3px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.debt-row.muted .k {
+.debt-row .v .cur {
   color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 5px;
 }
+.debt-row.muted .k,
 .debt-row.muted .v {
   color: var(--muted);
-  font-weight: 600;
-  font-size: 16px;
 }
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   flex: none;
 }
 
-.donut-pct {
-  font-size: 23px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.donut-cap {
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--muted);
-}
-
 .pay-btn {
-  margin-top: var(--s6);
+  margin-top: var(--s3);
   width: 100%;
   justify-content: center;
   height: 48px;
