@@ -72,25 +72,47 @@ describe('profile page', () => {
     expect(screen.getByText('23818')).toBeInTheDocument()
   })
 
-  test('?tab=security opens the change-password form and validates before submitting', async () => {
+  test('?tab=security keeps submit disabled until all three fields are filled', async () => {
     renderApp(['/profile?tab=security'])
 
-    const submit = await screen.findByRole('button', { name: /Update password/ })
-    fireEvent.click(submit)
+    const submit = await screen.findByRole('button', { name: 'Update password' })
+    expect(submit).toBeDisabled()
 
-    expect(await screen.findByText('This field is required.')).toBeInTheDocument()
-    expect(screen.getByText('Use at least 6 characters.')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Current password'), { target: { value: 'oldpass1' } })
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpass1' } })
+    expect(submit).toBeDisabled() // repeat is still empty
+
+    fireEvent.change(screen.getByLabelText('Repeat new password'), { target: { value: 'newpass1' } })
+    expect(submit).toBeEnabled()
   })
 
-  test('mismatched repeat password is rejected', async () => {
+  test('a too-short new password is rejected on submit', async () => {
+    renderApp(['/profile?tab=security'])
+
+    fireEvent.change(await screen.findByLabelText('Current password'), { target: { value: 'oldpass1' } })
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'abc' } })
+    fireEvent.change(screen.getByLabelText('Repeat new password'), { target: { value: 'abc' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Update password' }))
+
+    expect(await screen.findByText('Use at least 6 characters.')).toBeInTheDocument()
+  })
+
+  test('mismatched repeat password is reported on blur, before any submit', async () => {
     renderApp(['/profile?tab=security'])
 
     fireEvent.change(await screen.findByLabelText('Current password'), { target: { value: 'oldpass1' } })
     fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpass1' } })
-    fireEvent.change(screen.getByLabelText('Repeat new password'), { target: { value: 'different' } })
-    fireEvent.click(screen.getByRole('button', { name: /Update password/ }))
+    const repeat = screen.getByLabelText('Repeat new password')
+    fireEvent.change(repeat, { target: { value: 'different' } })
+    // Nothing yet — the field is still being typed into.
+    expect(screen.queryByText('Passwords do not match.')).not.toBeInTheDocument()
 
+    fireEvent.blur(repeat)
     expect(await screen.findByText('Passwords do not match.')).toBeInTheDocument()
+
+    // Once flagged it re-checks live, so correcting it clears the message.
+    fireEvent.change(repeat, { target: { value: 'newpass1' } })
+    await waitFor(() => expect(screen.queryByText('Passwords do not match.')).not.toBeInTheDocument())
   })
 
   test('a valid submission clears the form (mock mode has no password endpoint)', async () => {

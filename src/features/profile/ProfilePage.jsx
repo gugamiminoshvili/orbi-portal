@@ -145,7 +145,20 @@ function SecurityPane() {
   const [next, setNext] = useState('')
   const [repeat, setRepeat] = useState('')
   const [errors, setErrors] = useState({})
+  const [repeatTouched, setRepeatTouched] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  // Submit stays disabled until all three fields have something in them —
+  // there is nothing to send otherwise, and the button shouldn't invite a
+  // click that can only fail.
+  const filled = Boolean(current && next && repeat)
+
+  // The mismatch is reported as soon as the repeat field has been left once,
+  // then live on every keystroke after that — waiting for submit made the
+  // user find out only after committing, and checking on every keystroke
+  // from the first character flags a match that is still being typed.
+  const mismatch = repeatTouched && Boolean(repeat) && repeat !== next
+  const repeatError = errors.repeat || (mismatch ? t('profile:errors.mismatch') : '')
 
   function validate() {
     const e = {}
@@ -173,6 +186,7 @@ function SecurityPane() {
       setCurrent('')
       setNext('')
       setRepeat('')
+      setRepeatTouched(false)
       toast(t('profile:passwordChanged'))
     } catch (err) {
       const field = ERROR_FIELD[err?.errorCode]
@@ -210,19 +224,20 @@ function SecurityPane() {
         label={t('profile:repeatPassword')}
         value={repeat}
         onChange={setRepeat}
-        error={errors.repeat}
+        onBlur={() => setRepeatTouched(true)}
+        error={repeatError}
         autoComplete="new-password"
       />
       <div className={styles['form-foot']}>
-        <Button type="submit" disabled={busy}>
-          <Icon name="check" /> {t('profile:updatePassword')}
+        <Button type="submit" disabled={busy || !filled}>
+          {t('profile:updatePassword')}
         </Button>
       </div>
     </form>
   )
 }
 
-function PasswordField({ id, label, value, onChange, error, autoComplete }) {
+function PasswordField({ id, label, value, onChange, onBlur, error, autoComplete }) {
   const [shown, setShown] = useState(false)
   const { t } = useTranslation()
   return (
@@ -236,6 +251,7 @@ function PasswordField({ id, label, value, onChange, error, autoComplete }) {
           value={value}
           autoComplete={autoComplete}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
           aria-invalid={error ? 'true' : undefined}
         />
         <button
