@@ -155,7 +155,10 @@
 }
 @media (max-width: 900px) {
   .step3-grid {
-    grid-template-columns: 1fr;
+    /* minmax(0, …), not a bare 1fr: a bare fr track floors at its content's
+       min-width, so the table card widened the whole page instead of letting
+       .tbl-wrap scroll the table inside it. */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -199,9 +202,89 @@ table.tbl tbody tr:last-child td {
 table.tbl tbody tr.credit {
   color: var(--muted);
 }
-.amount-input {
-  width: 110px;
-  text-align: right;
+/* A checked row is banded so the eye can group "what am I paying for" without
+   re-reading every checkbox — the same read the reference recording gives. */
+table.tbl tbody tr.on td {
+  background: var(--row-on);
+}
+
+/* ---------- Amount field ----------
+   The caption lives INSIDE the box, above the value: at a glance the column
+   reads as a set of labelled amounts rather than bare numbers in a cell, and
+   the box has room to carry its own state (inactive / focused) without a
+   separate legend. Modelled on the reference recording. */
+.amt {
+  display: inline-block;
+  width: 190px;
+  text-align: left;
+  padding: 6px 12px 8px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--card);
+  transition: border-color var(--t), box-shadow var(--t), background var(--t);
+}
+.amt-lab {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  transition: color var(--t);
+}
+.amt-input {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  margin-top: 1px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  outline: none;
+}
+.amt:focus-within {
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+}
+.amt:focus-within .amt-lab {
+  color: var(--teal-ink);
+}
+/* Row not selected: the box stays in place holding its last amount, but reads
+   as inactive rather than disappearing — toggling a row off and on again
+   shouldn't cost the number that was typed into it. */
+.amt.off {
+  background: transparent;
+  border-color: var(--line);
+}
+.amt.off .amt-lab,
+.amt.off .amt-input {
+  color: var(--muted);
+}
+@media (max-width: 700px) {
+  .amt {
+    width: 140px;
+  }
+}
+/* On a phone the four columns only fit if the table tightens up — otherwise
+   the Amount field, the one thing being edited here, starts off-screen behind
+   a horizontal scroll. */
+@media (max-width: 560px) {
+  table.tbl {
+    font-size: 12px;
+  }
+  table.tbl th,
+  table.tbl td {
+    padding: 11px 6px;
+  }
+  .amt {
+    width: 104px;
+    padding: 5px 8px 7px;
+  }
+  .amt-input {
+    font-size: 13.5px;
+  }
 }
 
 .tbl-foot {

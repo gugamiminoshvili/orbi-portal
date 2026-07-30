@@ -36,6 +36,7 @@
   --muted:#7E8299;
   --line:#eceef4;
   --line-2:#e4e7f0;
+  --row-on:#f4faf7;        /* selected row band (multi-pay table) */
 
   /* Semantic (replace meaningless colored stripes) */
   --pos:#1A8A4E;  --pos-bg:#DCF3E5;  --pos-ink:#0E6B3B;   /* paid / active / positive */

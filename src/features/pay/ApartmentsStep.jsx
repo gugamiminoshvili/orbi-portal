@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../context/ModalContext'
-import { fmt } from '../../utils/format'
+import { fmt, fmtNum } from '../../utils/format'
 import { owedFor, round2, serviceTypeFor } from './payFlowData'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
@@ -11,6 +11,56 @@ import MethodModal from './MethodModal'
 import styles from './PayFlow.module.css'
 
 const ROLE_OPTIONS = ['All', 'Owner']
+
+// One row's payable amount: a caption inside the box, the figure under it.
+// While the field has focus it shows exactly what was typed; the moment it
+// loses focus the value is re-rendered grouped ("1,234.56"), which is why it
+// is a text input rather than type="number" — a number input refuses to
+// display the separators, and its spinners have no place in a payment table.
+//
+// `max` clamps to the outstanding amount: partial payments are allowed (the
+// design screenshots show editable amounts), paying MORE is not — FLAG:
+// whether /payment/multi/ accepts prepayment/overpayment is an open backend
+// question, and capping is the safe reading until it's answered.
+function AmountField({ label, value, max, disabled, onChange, ariaLabel }) {
+  const [draft, setDraft] = useState(null) // non-null only while being edited
+
+  // A field disabled mid-edit (its row unchecked while it still had focus)
+  // never receives the blur that would clear the draft, and would go on
+  // showing the raw "40" instead of "40.00" — here and again when the row is
+  // re-checked. Dropping the draft on disable covers both; the next focus
+  // rebuilds it.
+  useEffect(() => {
+    if (disabled) setDraft(null)
+  }, [disabled])
+
+  function handleChange(raw) {
+    const n = parseFloat(raw.replace(/[^\d.]/g, ''))
+    const clamped = Number.isNaN(n) ? 0 : Math.min(max, Math.max(0, n))
+    // Normally the field shows exactly what was typed. The exception is when
+    // the cap bites: then it snaps to the capped figure straight away, so the
+    // limit is visible as it happens rather than on blur.
+    setDraft(!Number.isNaN(n) && clamped !== n ? String(clamped) : raw)
+    onChange(clamped)
+  }
+
+  return (
+    <span className={`${styles.amt} ${disabled ? styles.off : ''}`}>
+      <span className={styles['amt-lab']}>{label}</span>
+      <input
+        type="text"
+        inputMode="decimal"
+        className={styles['amt-input']}
+        disabled={disabled}
+        value={draft ?? fmtNum(Number(value) || 0)}
+        aria-label={ariaLabel}
+        onFocus={() => setDraft(String(Number(value) || 0))}
+        onBlur={() => setDraft(null)}
+        onChange={(e) => handleChange(e.target.value)}
+      />
+    </span>
+  )
+}
 
 // Step 3: the apartment checkbox table for the selected complex+utility,
 // plus the summary/Pay-Now panel. `selections` is the lifted `{epcode:
@@ -29,6 +79,12 @@ export default function ApartmentsStep({
   const { t } = useTranslation()
   const { openModal } = useModal()
   const [roleFilter, setRoleFilter] = useState('All')
+  // What each row's field DISPLAYS, kept separately from `selections` (what
+  // will actually be paid) so unchecking a row leaves its amount on screen,
+  // greyed out, instead of wiping it — re-checking a row you toggled off by
+  // mistake shouldn't cost the number you typed. Only `selections` feeds the
+  // footer total and the POST body.
+  const [amounts, setAmounts] = useState({})
 
   // Per-row owed amount (see payFlowData's owedFor doc comment for the sign
   // convention: positive = debt/selectable/red, <=0 = credit-or-zero,
@@ -73,24 +129,30 @@ export default function ApartmentsStep({
     })
   }
 
+  // Both setState calls stay OUT of the onSelectionsChange updater — React
+  // runs that during the owner component's render, and a setAmounts() in
+  // there is a cross-component update mid-render.
   function toggleRow(row) {
-    onSelectionsChange((prev) => {
-      const next = { ...prev }
-      if (next[row.epcode] != null) delete next[row.epcode]
-      else next[row.epcode] = round2(row.owed)
-      return next
-    })
+    if (selections[row.epcode] != null) {
+      onSelectionsChange((prev) => {
+        const next = { ...prev }
+        delete next[row.epcode] // the displayed amount deliberately stays
+        return next
+      })
+      return
+    }
+    // Re-checking restores whatever was last typed here, falling back to the
+    // full outstanding amount the first time.
+    const amount = amounts[row.epcode] ?? round2(row.owed)
+    setAmounts((a) => ({ ...a, [row.epcode]: amount }))
+    onSelectionsChange((prev) => ({ ...prev, [row.epcode]: amount }))
   }
 
-  // Clamped to [0, owed]: partial payments are allowed (the screenshots show
-  // editable amounts), but paying MORE than the outstanding amount is capped
-  // — FLAG: whether the backend accepts prepayment/overpayment on
-  // /payment/multi/ is an open backend question; until answered, capping at
-  // the owed amount is the safe interpretation.
-  function updateAmount(row, raw) {
-    const n = parseFloat(raw)
-    const clamped = Number.isNaN(n) ? 0 : Math.min(round2(row.owed), Math.max(0, n))
-    onSelectionsChange((prev) => ({ ...prev, [row.epcode]: clamped }))
+  // AmountField has already parsed and clamped to [0, owed] — this just
+  // records the number in both maps.
+  function updateAmount(row, amount) {
+    setAmounts((a) => ({ ...a, [row.epcode]: amount }))
+    onSelectionsChange((prev) => ({ ...prev, [row.epcode]: amount }))
   }
 
   return (
@@ -129,7 +191,10 @@ export default function ApartmentsStep({
               {rows.map((row) => {
                 const checked = selections[row.epcode] != null
                 return (
-                  <tr key={row.epcode} className={row.selectable ? undefined : styles.credit}>
+                  <tr
+                    key={row.epcode}
+                    className={`${row.selectable ? '' : styles.credit} ${checked ? styles.on : ''}`}
+                  >
                     <td>
                       <input
                         type="checkbox"
@@ -147,16 +212,13 @@ export default function ApartmentsStep({
                       {fmt(row.owed, '₾')}
                     </td>
                     <td className={styles.r}>
-                      <input
-                        type="number"
-                        className={styles['amount-input']}
-                        min="0"
-                        max={row.selectable ? round2(row.owed) : undefined}
-                        step="0.01"
+                      <AmountField
+                        label={t('pay:tableAmountHeader')}
+                        value={checked ? selections[row.epcode] : (amounts[row.epcode] ?? 0)}
+                        max={round2(row.owed)}
                         disabled={!checked}
-                        value={checked ? selections[row.epcode] : ''}
-                        onChange={(e) => updateAmount(row, e.target.value)}
-                        aria-label={`${t('pay:tableAmountHeader')} ${row.code}`}
+                        onChange={(raw) => updateAmount(row, raw)}
+                        ariaLabel={`${t('pay:tableAmountHeader')} ${row.code}`}
                       />
                     </td>
                   </tr>

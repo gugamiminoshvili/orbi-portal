@@ -94,7 +94,7 @@ test('Maintenance Pay link lands on step 3 with A1 preselected and the SAME owed
   const row = screen.getByText('OCT.A.30.3026').closest('tr')
   expect(within(row).getByRole('checkbox')).toBeChecked()
   // detail-page owed === flow default amount, verbatim — no rate multiply
-  expect(within(row).getByRole('spinbutton')).toHaveValue(120)
+  expect(within(row).getByRole('textbox')).toHaveValue('120.00')
   expect(within(row).getByText('120.00 ₾')).toBeInTheDocument()
   // GEL-native maintenance involves no USD conversion -> no "$1 = X₾" line
   expect(screen.queryByText(/\$1 =/)).not.toBeInTheDocument()

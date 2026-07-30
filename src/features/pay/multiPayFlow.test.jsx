@@ -173,7 +173,7 @@ describe('MultiPayFlow — step 3 table', () => {
     // Outstanding column (red) and the summary panel's Payable amount.
     expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
 
-    const amountInput = within(debtRow).getByRole('spinbutton')
+    const amountInput = within(debtRow).getByRole('textbox')
     fireEvent.change(amountInput, { target: { value: '30' } })
 
     expect(screen.getByText('30.00 ₾')).toBeInTheDocument()
@@ -185,12 +185,12 @@ describe('MultiPayFlow — step 3 table', () => {
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
     fireEvent.click(within(debtRow).getByRole('checkbox'))
 
-    const amountInput = within(debtRow).getByRole('spinbutton')
+    const amountInput = within(debtRow).getByRole('textbox')
     // owed is 50 — an attempted 999 clamps back to 50 (prepayment/overpay
     // support is an open backend question, see ApartmentsStep's FLAG).
     fireEvent.change(amountInput, { target: { value: '999' } })
 
-    expect(amountInput).toHaveValue(50)
+    expect(amountInput).toHaveValue('50')
     expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
   })
 
@@ -366,7 +366,7 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     }
     // ...edit row 2's amount down from its owed 30 to a partial 10...
     const row2 = screen.getByText('OCB.A.02.0202').closest('tr')
-    fireEvent.change(within(row2).getByRole('spinbutton'), { target: { value: '10' } })
+    fireEvent.change(within(row2).getByRole('textbox'), { target: { value: '10' } })
     // ...and uncheck row 3 again, so it must NOT appear in the POST body.
     const row3 = screen.getByText('OCB.A.03.0303').closest('tr')
     fireEvent.click(within(row3).getByRole('checkbox'))
