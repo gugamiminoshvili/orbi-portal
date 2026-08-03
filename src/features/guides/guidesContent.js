@@ -21,6 +21,7 @@
 export const GUIDES = [
   {
     slug: 'handover',
+    columns: 3,
     navKey: 'guideHandover',
     icon: 'building',
     category: {
@@ -68,6 +69,7 @@ export const GUIDES = [
       },
       {
         icon: 'swap',
+        wide: true,
         title: { ka: 'ფინანსური განაწილება', en: 'Financial distribution', ru: 'Распределение дохода' },
         split: {
           ownerPct: 91,
@@ -128,6 +130,7 @@ export const GUIDES = [
       },
       {
         icon: 'doc',
+        wide: true,
         title: {
           ka: 'მიღება-ჩაბარება და პასუხისმგებლობა',
           en: 'Acceptance and responsibilities',
@@ -171,6 +174,7 @@ export const GUIDES = [
       },
       {
         icon: 'arrow',
+        wide: true,
         title: {
           ka: 'როგორ დავიწყოთ თანამშრომლობა',
           en: 'How to get started',
@@ -221,6 +225,7 @@ export const GUIDES = [
 
   {
     slug: 'power-of-attorney',
+    columns: 2,
     navKey: 'guidePowerOfAttorney',
     icon: 'doc',
     category: {
@@ -268,6 +273,7 @@ export const GUIDES = [
       },
       {
         icon: 'doc',
+        wide: true,
         title: {
           ka: 'მინდობილობაში აუცილებლად უნდა იყოს',
           en: 'The Power of Attorney must include',
@@ -360,6 +366,7 @@ export const GUIDES = [
       },
       {
         icon: 'help',
+        wide: true,
         title: {
           ka: 'დამატებითი ინფორმაცია',
           en: 'Additional information',
@@ -428,6 +435,7 @@ export const GUIDES = [
 
   {
     slug: 'service',
+    columns: 2,
     navKey: 'guideService',
     icon: 'wrench',
     category: {
@@ -560,6 +568,7 @@ export const GUIDES = [
 
   {
     slug: 'contact-centre',
+    columns: 2,
     navKey: 'guideContactCentre',
     icon: 'chat',
     category: {
@@ -638,6 +647,7 @@ export const GUIDES = [
       },
       {
         icon: 'arrow',
+        wide: true,
         title: { ka: 'როგორ მუშაობს', en: 'How it works', ru: 'Как это работает' },
         steps: [
           {

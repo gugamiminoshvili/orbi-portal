@@ -64,16 +64,27 @@
   line-height: 1.4;
 }
 
-/* ---------- Sections ---------- */
+/* ---------- Sections ----------
+   A grid, not a stack: the posters laid their blocks out three-up (handover)
+   or two-up (the rest) with a handful spanning the full width, and reading
+   them as one full-width row each lost that rhythm. `--cols` is set per guide
+   from the content; `align-items: start` keeps a short card short instead of
+   stretching it to its row's tallest sibling. */
 .sections {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
   gap: var(--s4);
+  align-items: start;
 }
 .section {
   padding: var(--s5);
   position: relative;
   overflow: hidden;
+  /* Fills its row so neighbours in the same row share a baseline height. */
+  height: 100%;
+}
+.sec-wide {
+  grid-column: 1 / -1;
 }
 /* Everything except the watermark sits above it. .sec-n is a positioned
    element, so without this the number would paint OVER the text: a static
@@ -83,31 +94,28 @@
   position: relative;
   z-index: 1;
 }
+/* Icon on its own line above the title, as in the posters' blocks — in a
+   narrow grid column an icon beside the title left too little room for it. */
 .sec-head {
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-  margin-bottom: var(--s4);
+  margin-bottom: var(--s3);
   /* Room for the watermark so a long title never runs under it. */
   padding-right: 58px;
 }
 .sec-head h2 {
-  flex: 1;
-  min-width: 0;
   margin: 0;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.2px;
 }
 .sec-ic {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 13px;
   border-radius: var(--r-sm);
   background: var(--teal-soft);
   color: var(--teal-ink);
   display: grid;
   place-items: center;
-  flex: none;
 }
 /* The posters' big ghost number, kept: a pale watermark in the card's top-right
    corner rather than a counter in the heading row (owner call 2026-07-30). It
@@ -369,12 +377,24 @@
 }
 
 /* ---------- Responsive ---------- */
+@media (max-width: 1180px) {
+  /* Three columns of prose get too narrow once the shell takes its rail, so
+     any guide drops to two here regardless of its own column count. */
+  .sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 @media (max-width: 900px) {
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .sections {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 560px) {

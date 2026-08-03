@@ -66,17 +66,20 @@ export default function GuidePage() {
         </div>
       )}
 
-      <div className={styles.sections}>
+      {/* Columns come from the guide, matching each poster's own .grid rule
+          (handover was three-up, the rest two-up). Sections marked `wide`
+          span the whole row, exactly as the posters' .wide blocks did. */}
+      <div className={styles.sections} style={{ '--cols': guide.columns }}>
         {guide.sections.map((section, i) => (
-          <Card key={i} className={styles.section}>
+          <Card key={i} className={`${styles.section} ${section.wide ? styles['sec-wide'] : ''}`}>
+            <span className={styles['sec-n']} aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
             <div className={styles['sec-head']}>
               <span className={styles['sec-ic']}>
                 <Icon name={section.icon} />
               </span>
               <h2>{pick(section.title, lang)}</h2>
-              <span className={styles['sec-n']} aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
             </div>
 
             {section.text && (
