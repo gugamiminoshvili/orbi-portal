@@ -48,7 +48,10 @@ export default function GuidePage() {
   if (!guide) return <Navigate to="/guides/handover" replace />
 
   return (
-    <div>
+    // The wrapper is the query container the layout below sizes itself
+    // against — see Guides.module.css's responsive block for why it keys off
+    // the content column rather than the viewport.
+    <div className={styles.wrap}>
       <div className={styles['page-head']}>
         <div className={styles.kicker}>{pick(guide.category, lang)}</div>
         <h1>{pick(guide.title, lang)}</h1>

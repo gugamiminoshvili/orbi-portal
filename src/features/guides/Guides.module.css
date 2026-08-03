@@ -376,27 +376,78 @@
   flex: none;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 1180px) {
-  /* Three columns of prose get too narrow once the shell takes its rail, so
-     any guide drops to two here regardless of its own column count. */
+/* ---------- Responsive ----------
+   Sized by CONTAINER, not viewport. The shell's rail is 264px wide and
+   disappears at 880px, so the same viewport width can leave the content
+   column ~260px wider or narrower — viewport breakpoints put a guide's grid
+   at three columns exactly where the rail had squeezed them thinnest. Two
+   containers: the grid area decides how many section columns fit, and each
+   section decides how its own pairs/steps/split behave, so a block inside a
+   full-width card can stay four-up while the same block in a one-third
+   column goes single-file.
+
+   Container queries land with the same browser floor as the :has() this
+   codebase already relies on; the @supports fallback at the bottom keeps the
+   old viewport steps for anything older. */
+.wrap {
+  container-type: inline-size;
+  container-name: guide;
+}
+.section {
+  container-type: inline-size;
+  container-name: guidesec;
+}
+
+@container guide (max-width: 940px) {
   .sections {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@media (max-width: 900px) {
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .steps {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 760px) {
+@container guide (max-width: 620px) {
   .sections {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+@container guide (max-width: 760px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container guide (max-width: 380px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Inside one card. 760px is roughly where four step tiles stop holding a
+   readable line; 460px where two label/value cells do. */
+@container guidesec (max-width: 760px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container guidesec (max-width: 460px) {
+  .pairs,
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pair.wide {
+    grid-column: auto;
+  }
+  /* The 9% sliver can't hold its label this narrow, so the bar becomes two
+     stacked rows and the legend below carries the reading. */
+  .split {
+    height: auto;
+    flex-direction: column;
+  }
+  .split div {
+    flex-basis: auto !important;
+    padding: 11px 8px;
+  }
+}
+
+/* Type and chrome still key off the viewport — a phone wants smaller headings
+   whatever the container arithmetic says. */
 @media (max-width: 560px) {
   .page-head h1 {
     font-size: 22px;
@@ -408,27 +459,49 @@
   .sec-head {
     padding-right: 44px;
   }
-  .pairs,
-  .steps {
-    grid-template-columns: 1fr;
-  }
-  .pair.wide {
-    grid-column: auto;
-  }
   .section {
     padding: var(--s4);
   }
-  /* The split label doesn't fit a 9% sliver on a phone, so the bar becomes two
-     stacked rows and the legend below carries the reading. */
-  .split {
-    height: auto;
-    flex-direction: column;
-  }
-  .split div {
-    flex-basis: auto !important;
-    padding: 11px 8px;
-  }
   .banner p {
     font-size: 14.5px;
+  }
+  .banner {
+    align-items: flex-start;
+  }
+}
+
+@supports not (container-type: inline-size) {
+  @media (max-width: 1180px) {
+    .sections {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 900px) {
+    .stats,
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 760px) {
+    .sections {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .pairs,
+    .steps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pair.wide {
+      grid-column: auto;
+    }
+    .split {
+      height: auto;
+      flex-direction: column;
+    }
+    .split div {
+      flex-basis: auto !important;
+      padding: 11px 8px;
+    }
   }
 }
