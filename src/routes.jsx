@@ -10,6 +10,7 @@ import ApartmentDetailPage from './features/apartments/ApartmentDetailPage'
 import MultiPayFlow from './features/pay/MultiPayFlow'
 import PayRedirect from './features/pay/PayRedirect'
 import ProfilePage from './features/profile/ProfilePage'
+import GuidePage from './features/guides/GuidePage'
 import SupportPage from './features/support/SupportPage'
 import EmptyPane from './features/support/EmptyPane'
 import NewTicketPane from './features/support/NewTicketPane'
@@ -32,6 +33,10 @@ export function AppRoutes() {
         <Route path="/pay" element={<MultiPayFlow />} />
         <Route path="/pay/:id" element={<PayRedirect />} />
         <Route path="/profile" element={<ProfilePage />} />
+        {/* The company's process rules (handover / power of attorney /
+            service / contact centre). One route, one page component; the
+            content comes from features/guides/guidesContent.js. */}
+        <Route path="/guides/:slug" element={<GuidePage />} />
         <Route path="/support" element={<SupportPage />}>
           <Route index element={<EmptyPane />} />
           <Route path="new" element={<NewTicketPane />} />

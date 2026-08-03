@@ -22,6 +22,15 @@ const NAV = [
   //   { key: 'payments', icon: 'swap', label: 'common:payments', disabled: true },
   //   { key: 'reports', icon: 'doc', label: 'common:reports', disabled: true },
   // ] },
+  // The company's process rules, added at the owner's request (2026-07-30) as
+  // their own group rather than as one "Guides" index entry — four rules is a
+  // short, stable list, and one click beats two.
+  { group: 'common:guides', items: [
+    { key: 'guideHandover', icon: 'building', label: 'common:guideHandover', to: '/guides/handover' },
+    { key: 'guidePowerOfAttorney', icon: 'doc', label: 'common:guidePowerOfAttorney', to: '/guides/power-of-attorney' },
+    { key: 'guideService', icon: 'wrench', label: 'common:guideService', to: '/guides/service' },
+    { key: 'guideContactCentre', icon: 'chat', label: 'common:guideContactCentre', to: '/guides/contact-centre' },
+  ] },
   { group: 'common:account', items: [
     { key: 'settings', icon: 'dots', label: 'common:settings', disabled: true },
     { key: 'support', icon: 'chat', label: 'common:support', to: '/support' },

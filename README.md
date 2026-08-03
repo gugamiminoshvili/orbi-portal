@@ -89,6 +89,10 @@ src/
                           # apartment table) + method-picker modal -> POST payment/multi/;
                           # payFlowData.js holds the pure grouping/owed-amount helpers
     support/              # ticket list, chat pane, new-ticket pane
+    guides/               # the company's process rules (handover / power of attorney /
+                          # service / contact centre), rebuilt from the print posters in
+                          # ../orbi-instructions/posters/; content (ka/en/ru) lives in
+                          # guidesContent.js, one GuidePage renders every slug
   hooks/
     useAsync.js          # fetch-on-mount hook with a stale-response guard
   i18n/

@@ -379,7 +379,7 @@
   gap: 16px;
   padding: 16px;
   background: var(--warn-bg);
-  border: 1px solid #ffe1a8;
+  border: 1px solid var(--warn-line);
   border-radius: 12px;
 }
 .wi {

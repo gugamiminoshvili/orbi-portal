@@ -1,0 +1,388 @@
+/* Process-guide pages. The source posters were print artefacts — a dark-green
+   1080px sheet with its own logo, hero and language pills. Here the same
+   content adopts the portal's language instead: light Card surfaces, teal
+   accents, the shell's own header and language menu. Every colour is a token,
+   so these pages follow the theme like the rest of the app. */
+
+.page-head {
+  margin-bottom: var(--s6);
+  max-width: 78ch;
+}
+/* Editorial eyebrow rather than a Badge: the muted badge's own grey sits a
+   shade off the page background and read as plain text. */
+.kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--teal-ink);
+}
+.page-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 10px 0 0;
+  letter-spacing: -0.4px;
+}
+/* The one paragraph a guide leads with. It is content (the poster's standfirst),
+   not the muted page subtitle that was removed from the module headers — hence
+   full ink and a reading measure. */
+.lead {
+  margin: 10px 0 0;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ---------- Stats strip (Service guide) ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s4);
+  margin-bottom: var(--s5);
+}
+.stat {
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
+  border-radius: var(--r);
+  padding: 18px 16px;
+  text-align: center;
+}
+.stat b {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--teal-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat span {
+  display: block;
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* ---------- Sections ---------- */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.section {
+  padding: var(--s5);
+}
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+}
+.sec-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.sec-ic {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-sm);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+/* The posters set a big ghost number behind each block; kept as a quiet
+   counter at the end of the heading row instead, where it can't collide with
+   wrapped Georgian titles. */
+.sec-n {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+.body {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.65;
+  max-width: 78ch;
+}
+.body strong {
+  color: var(--teal-ink);
+  font-weight: 700;
+}
+
+/* ---------- Checklist ---------- */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.tick {
+  flex: none;
+  width: 21px;
+  height: 21px;
+  margin-top: 1px;
+  border-radius: 6px;
+  background: var(--teal);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+.tick svg {
+  width: 13px;
+  height: 13px;
+}
+.tag {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* ---------- Label/value pairs ---------- */
+.pairs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s3);
+  margin: 0;
+}
+.pair {
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+}
+.pair.wide {
+  grid-column: 1 / -1;
+}
+.pair dt {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--teal-ink);
+  margin-bottom: 3px;
+}
+.pair dd {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+/* ---------- Numbered steps ---------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.step {
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
+  border-radius: var(--r-sm);
+  padding: 15px;
+}
+.step-n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.step h3 {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.step p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+/* ---------- Revenue split bar ---------- */
+.split {
+  display: flex;
+  height: 52px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: var(--s3);
+}
+.split div {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+.split .a {
+  background: var(--teal);
+  font-size: 15px;
+}
+.split .b {
+  background: var(--teal-ink);
+  font-size: 12.5px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3) var(--s5);
+  margin-bottom: var(--s4);
+}
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.legend i {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}
+.dotA {
+  background: var(--teal);
+}
+.dotB {
+  background: var(--teal-ink);
+}
+
+.footnote {
+  margin: var(--s4) 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 78ch;
+}
+
+/* ---------- Note / banner / footer ---------- */
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  margin-top: var(--s4);
+  padding: 15px 18px;
+  border-radius: var(--r);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+}
+.note svg {
+  flex: none;
+  margin-top: 1px;
+}
+.note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  margin-top: var(--s4);
+  padding: 20px 22px;
+  border-radius: var(--r);
+  background: var(--teal);
+  color: #fff;
+}
+.banner svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+.banner p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.foot svg {
+  flex: none;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .page-head h1 {
+    font-size: 22px;
+  }
+  .pairs,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .pair.wide {
+    grid-column: auto;
+  }
+  .section {
+    padding: var(--s4);
+  }
+  /* The split label doesn't fit a 9% sliver on a phone, so the bar becomes two
+     stacked rows and the legend below carries the reading. */
+  .split {
+    height: auto;
+    flex-direction: column;
+  }
+  .split div {
+    flex-basis: auto !important;
+    padding: 11px 8px;
+  }
+  .banner p {
+    font-size: 14.5px;
+  }
+}
