@@ -51,13 +51,13 @@ export function owedFor(row, utility, usdRate, maintenanceCurrency = 'USD') {
 // listApartments()'s `project`/`role` so the flow can group by complex —
 // mirrors the join the brief describes (byApartment.code <-> apartments.code).
 // A byApartment row with no matching apartment (shouldn't happen live, but
-// defensive) gets project '—' rather than being dropped, so its debt isn't
+// defensive) gets project '-' rather than being dropped, so its debt isn't
 // silently lost from the totals.
 export function buildRows(byApartment, apartments) {
   const aptByCode = new Map(apartments.map((a) => [a.code, a]))
   return byApartment.map((row) => {
     const apt = aptByCode.get(row.code)
-    return { ...row, project: apt?.project ?? '—', role: apt?.role ?? null, aptId: apt?.id ?? null }
+    return { ...row, project: apt?.project ?? '-', role: apt?.role ?? null, aptId: apt?.id ?? null }
   })
 }
 

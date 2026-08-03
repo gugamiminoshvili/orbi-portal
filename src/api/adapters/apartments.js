@@ -77,13 +77,13 @@ export function adaptProperty(dto = {}) {
     // `objectId` is kept alongside `id` — it's the id `/flat/{flat_id}/`
     // expects (live flat: id 748 vs objectId 9910; both present).
     objectId: dto.objectId ?? dto.id,
-    project: dto.complex ?? '—',
-    code: dto.apartmentName ?? '—',
-    block: dto.block ?? '—',
-    number: dto.room_number != null ? String(dto.room_number) : '—',
+    project: dto.complex ?? '-',
+    code: dto.apartmentName ?? '-',
+    block: dto.block ?? '-',
+    number: dto.room_number != null ? String(dto.room_number) : '-',
     floor: num(dto.floor),
     area: num(dto.square),
-    epcode: dto.epcode ?? '—',
+    epcode: dto.epcode ?? '-',
     balance: num(dto.apartmentBalanceGEL ?? dto.apartmentBalance),
     role: ROLE_BY_OWNERSHIP[dto.ownership_status] || roleFromCategory(dto.apartmentCategory) || 'Owner',
     services: adaptServicesFromProperty(dto),
@@ -95,7 +95,7 @@ export function adaptProperty(dto = {}) {
 //  - maintenance.tariff / maintenance.start, water.updated,
 //    electricity.updated — no source field on the live payload. These are
 //    UNKNOWN, not zero, so the numeric ones are null and the card renders a
-//    '—' placeholder; a literal "0.00 $" monthly tariff read as a real
+//    '-' placeholder; a literal "0.00 $" monthly tariff read as a real
 //    (free) price.
 //  - electricity.status has no direct field either; `display_services`
 //    (live: ["electricity","water","orbinet","maintenance","doors"]) is the
@@ -120,24 +120,24 @@ function adaptServicesFromProperty(dto = {}) {
           balance: num(dto.apartmentBalance),
           currency: symbolFor(dto.apartmentBalanceCurrency, '$'),
           tariff: null, // no source field on the live flat payload
-          start: '—', // no source field on the live flat payload
+          start: '-', // no source field on the live flat payload
         }
       : {
           balance: num(dto.apartmentBalanceGEL),
           currency: '₾',
           tariff: null,
-          start: '—',
+          start: '-',
         },
     water: {
-      counter: dto.waterCode ?? '—',
-      indication: dto.WaterIndication ?? '—',
-      updated: '—', // no source field on the live flat payload
+      counter: dto.waterCode ?? '-',
+      indication: dto.WaterIndication ?? '-',
+      updated: '-', // no source field on the live flat payload
     },
     electricity: {
-      counter: dto.electricityMeterNo ?? '—',
+      counter: dto.electricityMeterNo ?? '-',
       status: displayServices.includes('electricity') ? 'Active' : 'Inactive',
       balance: num(dto.electricityBalanceGEL ?? dto.electricityBalance),
-      updated: '—', // no source field on the live flat payload
+      updated: '-', // no source field on the live flat payload
     },
     internet: {
       ...adaptAgreement(dto.orbinet_agreement || {}),
@@ -158,18 +158,18 @@ function adaptServicesFromProperty(dto = {}) {
 export function adaptFlatDetail(dto = {}) {
   return {
     id: dto.id,
-    project: dto.complex ?? '—',
-    code: dto.apartmentName ?? '—',
-    block: dto.block ?? '—',
-    number: dto.number != null ? String(dto.number) : '—',
+    project: dto.complex ?? '-',
+    code: dto.apartmentName ?? '-',
+    block: dto.block ?? '-',
+    number: dto.number != null ? String(dto.number) : '-',
     floor: num(dto.floor),
     area: num(dto.square),
-    building: dto.complex ? (dto.block ? `${dto.complex}, Block ${dto.block}` : dto.complex) : '—',
-    cadastral: dto.cadastre ?? '—',
-    waterCode: dto.waterCode ?? '—',
+    building: dto.complex ? (dto.block ? `${dto.complex}, Block ${dto.block}` : dto.complex) : '-',
+    cadastral: dto.cadastre ?? '-',
+    waterCode: dto.waterCode ?? '-',
     // The doors/QR "ap code": epcode is the only code-like candidate on the
     // live payload (empty string on the captured sample -> placeholder).
-    apCode: dto.epcode || '—',
+    apCode: dto.epcode || '-',
     role: roleFromCategory(dto.apartmentCategory) || 'Owner',
   }
 }

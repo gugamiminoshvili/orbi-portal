@@ -66,7 +66,7 @@ describe('adaptProperty', () => {
   })
 
   test('missing epcode falls back to the em-dash placeholder', () => {
-    expect(adaptProperty({}).epcode).toBe('—')
+    expect(adaptProperty({}).epcode).toBe('-')
   })
 
   test('synthesizes services with real balances, counters and indication', () => {
@@ -111,13 +111,13 @@ describe('adaptProperty', () => {
 
   test('fields with no live source get documented, render-safe fallbacks', () => {
     const { services } = adaptProperty(flats[0])
-    // UNKNOWN, not zero: the card renders '—' rather than a "0.00 $" price
+    // UNKNOWN, not zero: the card renders '-' rather than a "0.00 $" price
     expect(services.maintenance.tariff).toBeNull()
-    // plain-text fields -> the app's '—' unknown placeholder
-    expect(services.maintenance.start).toBe('—')
-    expect(services.water.updated).toBe('—')
-    expect(services.electricity.updated).toBe('—')
-    expect(services.internet.provider).toBe('—')
+    // plain-text fields -> the app's '-' unknown placeholder
+    expect(services.maintenance.start).toBe('-')
+    expect(services.water.updated).toBe('-')
+    expect(services.electricity.updated).toBe('-')
+    expect(services.internet.provider).toBe('-')
   })
 })
 
@@ -134,20 +134,20 @@ describe('adaptFlatDetail', () => {
       building: 'Orbi Plaza, Block A', // synthesized — no building-name field exists
       cadastral: '05.24.03.036.01.543', // real field name: cadastre
       waterCode: '271/4a-205a',
-      apCode: '—', // epcode is "" on the live sample
+      apCode: '-', // epcode is "" on the live sample
       role: 'Owner', // apartmentCategory "OWN - Owner" -> the part after ' - '
     })
   })
 
   test('unknown fields fall back to the em-dash placeholder', () => {
     const detail = adaptFlatDetail({})
-    expect(detail.project).toBe('—')
-    expect(detail.code).toBe('—')
-    expect(detail.block).toBe('—')
-    expect(detail.building).toBe('—')
-    expect(detail.cadastral).toBe('—')
-    expect(detail.waterCode).toBe('—')
-    expect(detail.apCode).toBe('—')
+    expect(detail.project).toBe('-')
+    expect(detail.code).toBe('-')
+    expect(detail.block).toBe('-')
+    expect(detail.building).toBe('-')
+    expect(detail.cadastral).toBe('-')
+    expect(detail.waterCode).toBe('-')
+    expect(detail.apCode).toBe('-')
     expect(detail.role).toBe('Owner')
   })
 })
@@ -253,7 +253,7 @@ describe('adaptNewsList', () => {
   test('missing/invalid created_at falls back to ts 0 and a placeholder date', () => {
     const item = adaptNewsItem({ id: 999 })
     expect(item.ts).toBe(0)
-    expect(item.date).toBe('—')
+    expect(item.date).toBe('-')
   })
 
   test('empty dto list yields an empty, well-shaped result', () => {
@@ -273,7 +273,7 @@ describe('adaptTariffs', () => {
   test('maps `boost` tariffs to the v1 BOOSTS shape — no duration field exists on the live payload', () => {
     const { boosts } = adaptTariffs(tariffs)
     expect(boosts).toEqual([
-      { id: 6, name: 'Boost', price: 10, speed: '+65 Mbps', duration: '—' },
+      { id: 6, name: 'Boost', price: 10, speed: '+65 Mbps', duration: '-' },
     ])
   })
 
@@ -301,7 +301,7 @@ describe('adaptAgreement', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-17T00:00:00Z'))
     expect(adaptAgreement(agreement)).toEqual({
-      provider: '—', // no provider field on the live agreement
+      provider: '-', // no provider field on the live agreement
       planId: 3, // net_tariff.id
       planName: 'Package 2',
       tariff: 70, // cost_gel
@@ -322,8 +322,8 @@ describe('adaptAgreement', () => {
     expect(s.tariff).toBe(0)
     expect(s.daysLeft).toBe(0)
     expect(s.cycleDays).toBe(0)
-    expect(s.provider).toBe('—')
-    expect(s.renewal).toBe('—')
+    expect(s.provider).toBe('-')
+    expect(s.renewal).toBe('-')
   })
 
   test('daysLeft clamps to 0 for an already-ended agreement', () => {

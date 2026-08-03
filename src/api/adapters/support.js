@@ -50,7 +50,7 @@ function parseServerDate(value) {
 
 function formatCreated(value) {
   const d = parseServerDate(value)
-  if (!d) return '—'
+  if (!d) return '-'
   const yyyy = d.getUTCFullYear()
   const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
   const dd = String(d.getUTCDate()).padStart(2, '0')
@@ -108,7 +108,7 @@ export function adaptTicket(dto = {}, subjects = [], lang = 'en') {
     status: ticketStatus(dto),
     statusLabel: ticketStatusLabel(dto, lang),
     statusTone: dto.closed_at ? 'muted' : 'pos',
-    created: dto.created_at ? formatCreated(dto.created_at) : '—',
+    created: dto.created_at ? formatCreated(dto.created_at) : '-',
     preview: dto.last_msg ?? '',
     msgs: [],
   }
@@ -126,7 +126,7 @@ export function adaptTicketList(dto = {}, subjects = [], lang = 'en') {
 // src/api/mock/tickets.js's TICKETS already use (e.g. "09.07.2026" / "14:20").
 function msgDateTime(value) {
   const d = parseServerDate(value)
-  if (!d) return { date: '—', time: '—' }
+  if (!d) return { date: '-', time: '-' }
   const dd = String(d.getUTCDate()).padStart(2, '0')
   const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
   const yyyy = d.getUTCFullYear()
@@ -177,7 +177,7 @@ export function adaptSubjects(dto = [], lang = 'en') {
     const topic = topicById(id) || OTHER_TOPIC
     return {
       id,
-      label: s[lang] ?? s.en ?? '—',
+      label: s[lang] ?? s.en ?? '-',
       desc: topic.desc,
       icon: topic.icon,
       tintBg: topic.tintBg,

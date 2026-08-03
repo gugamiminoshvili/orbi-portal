@@ -34,7 +34,7 @@ export default function ProfilePage() {
   const tab = params.get('tab') === 'security' ? 'security' : 'profile'
   useCrumbs([{ label: t('profile:title') }])
 
-  const name = user?.fullname || user?.username || '—'
+  const name = user?.fullname || user?.username || '-'
   const status = accountStatus(user)
 
   // Each detail row carries its own icon (Variant 2 layout) — the icon is
@@ -88,7 +88,7 @@ export default function ProfilePage() {
           </span>
           <div className={styles['stat-body']}>
             <div className={styles['stat-k']}>{t('profile:customerId')}</div>
-            <div className={styles['stat-v']}>{user?.id ?? '—'}</div>
+            <div className={styles['stat-v']}>{user?.id ?? '-'}</div>
           </div>
         </Card>
       </div>
@@ -123,7 +123,7 @@ function ProfileDetails({ rows }) {
             <Icon name={icon} />
           </span>
           <dt>{t(`profile:fields.${key}`)}</dt>
-          <dd>{value || '—'}</dd>
+          <dd>{value || '-'}</dd>
         </div>
       ))}
     </dl>

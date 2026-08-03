@@ -37,7 +37,7 @@ function tsFromDate(value) {
 // Human date string in the same format mock/news.js hand-wrote, e.g. "Jun 6, 2026".
 function formatDate(value) {
   const d = parseCreatedAt(value)
-  if (!d) return '—'
+  if (!d) return '-'
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
@@ -58,7 +58,7 @@ export function adaptNewsItem(dto = {}, lang = 'en') {
     cat: CAT_FALLBACK,
     ts: tsFromDate(dto.created_at),
     date: formatDate(dto.created_at),
-    title: pickLang(dto, 'name', lang) || '—',
+    title: pickLang(dto, 'name', lang) || '-',
     excerpt: pickLang(dto, 'desc', lang),
     // Raw CMS HTML — NewsDetailPage renders it via dangerouslySetInnerHTML
     // inside its existing prose wrapper (first-party CMS content).

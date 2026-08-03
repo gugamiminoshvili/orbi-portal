@@ -55,13 +55,13 @@ export function adaptLockHistory(dto = []) {
 // future report table, kept intentionally minimal per the brief.
 export function adaptTransaction(dto = {}) {
   return {
-    date: dto.docDate ?? '—',
-    desc: dto.event || dto.service || '—',
-    doc: dto.docNo ?? '—',
-    type: dto.docType ?? '—',
+    date: dto.docDate ?? '-',
+    desc: dto.event || dto.service || '-',
+    doc: dto.docNo ?? '-',
+    type: dto.docType ?? '-',
     amount: num(dto.amount),
     balance: num(dto.balance),
-    currency: dto.currencySymbol || dto.currency || '—',
+    currency: dto.currencySymbol || dto.currency || '-',
     reading: dto.electricity_reading ?? null,
   }
 }

@@ -36,7 +36,7 @@ const TARIFFS = {
     { id: 902, name: 'Server Plan B', price: 85, mbps: 100, ch: 40, netId: 12, tvId: 22 },
   ],
   boosts: [
-    { id: 801, name: 'Server Boost X', price: 12, speed: '+80 Mbps', duration: '—' },
+    { id: 801, name: 'Server Boost X', price: 12, speed: '+80 Mbps', duration: '-' },
   ],
 }
 
@@ -44,7 +44,7 @@ const APT = {
   id: 501,
   objectId: 3026,
   code: 'OCT.A.30.3026',
-  services: { internet: { planId: null, renewal: '—', boost: null } },
+  services: { internet: { planId: null, renewal: '-', boost: null } },
 }
 
 function renderModal(node) {

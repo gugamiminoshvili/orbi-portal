@@ -46,7 +46,7 @@ describe('guide pages', () => {
     expect(screen.getByText('Rental Department')).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Hotel standard' })).toBeInTheDocument()
     // The 91/9 split bar and its legend.
-    expect(screen.getByRole('img', { name: '91% — Owner' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: '91% - Owner' })).toBeInTheDocument()
     expect(screen.getByText('9%')).toBeInTheDocument()
     expect(screen.getByText('9% is the company’s commission')).toBeInTheDocument()
     // Steps come out as an ordered list of four.
@@ -80,7 +80,7 @@ describe('guide pages', () => {
     expect(screen.getByText('Improve coordination between departments')).toBeInTheDocument()
     expect(screen.getByText('A single communication channel')).toBeInTheDocument()
     expect(
-      screen.getByText('Contact Centre — your simple way to communicate with ORBI GROUP.')
+      screen.getByText('Contact Centre - your simple way to communicate with ORBI GROUP.')
     ).toBeInTheDocument()
   })
 

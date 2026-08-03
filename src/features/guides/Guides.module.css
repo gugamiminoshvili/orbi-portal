@@ -72,12 +72,24 @@
 }
 .section {
   padding: var(--s5);
+  position: relative;
+  overflow: hidden;
+}
+/* Everything except the watermark sits above it. .sec-n is a positioned
+   element, so without this the number would paint OVER the text: a static
+   block's content is painted before any positioned sibling, whatever its
+   z-index. */
+.section > *:not(.sec-n) {
+  position: relative;
+  z-index: 1;
 }
 .sec-head {
   display: flex;
   align-items: center;
   gap: var(--s3);
   margin-bottom: var(--s4);
+  /* Room for the watermark so a long title never runs under it. */
+  padding-right: 58px;
 }
 .sec-head h2 {
   flex: 1;
@@ -97,16 +109,23 @@
   place-items: center;
   flex: none;
 }
-/* The posters set a big ghost number behind each block; kept as a quiet
-   counter at the end of the heading row instead, where it can't collide with
-   wrapped Georgian titles. */
+/* The posters' big ghost number, kept: a pale watermark in the card's top-right
+   corner rather than a counter in the heading row (owner call 2026-07-30). It
+   is decorative — the sections are already in order and each has its own
+   heading — so it's aria-hidden and can't be selected or clicked. */
 .sec-n {
-  flex: none;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted);
+  position: absolute;
+  top: 8px;
+  right: 18px;
+  z-index: 0;
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--teal-ghost);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
+  user-select: none;
+  pointer-events: none;
 }
 
 .body {
@@ -361,6 +380,13 @@
 @media (max-width: 560px) {
   .page-head h1 {
     font-size: 22px;
+  }
+  .sec-n {
+    font-size: 40px;
+    right: 14px;
+  }
+  .sec-head {
+    padding-right: 44px;
   }
   .pairs,
   .steps {

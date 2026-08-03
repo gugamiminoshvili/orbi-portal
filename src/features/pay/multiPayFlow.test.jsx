@@ -49,7 +49,7 @@ const COMMUNALS = {
       code: 'OCT.A.30.3026',
       epcode: 'EP1',
       electricity: -50, // owed 50
-      waterIndication: '—',
+      waterIndication: '-',
       internet: { balance: -10, balanceWithPenalty: -10, cost: 5, penalty: 0 }, // owed 10
       maintenance: -40, // USD, owed 40 -> 80 GEL at rate 2
       displayServices: [],
@@ -58,7 +58,7 @@ const COMMUNALS = {
       code: 'OCT.A.14.1408',
       epcode: 'EP2',
       electricity: 20, // credit
-      waterIndication: '—',
+      waterIndication: '-',
       internet: { balance: 0, balanceWithPenalty: 0, cost: 5, penalty: 0 }, // zero
       maintenance: 0, // zero
       displayServices: [],
@@ -67,7 +67,7 @@ const COMMUNALS = {
       code: 'OST.A.08.0803',
       epcode: 'EP3',
       electricity: -5, // owed 5
-      waterIndication: '—',
+      waterIndication: '-',
       internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 },
       maintenance: 0,
       displayServices: [],
@@ -211,8 +211,8 @@ describe('MultiPayFlow — step 3 table', () => {
       utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
       maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
       byApartment: [
-        { code: 'OCM.A.01.0101', epcode: 'MEP1', electricity: -50, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
-        { code: 'OCM.A.02.0202', epcode: 'MEP2', electricity: -30, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCM.A.01.0101', epcode: 'MEP1', electricity: -50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCM.A.02.0202', epcode: 'MEP2', electricity: -30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
       ],
     })
 
@@ -346,9 +346,9 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
       utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
       maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
       byApartment: [
-        { code: 'OCB.A.01.0101', epcode: 'XEP1', electricity: -50, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
-        { code: 'OCB.A.02.0202', epcode: 'XEP2', electricity: -30, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
-        { code: 'OCB.A.03.0303', epcode: 'XEP3', electricity: -20, waterIndication: '—', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.01.0101', epcode: 'XEP1', electricity: -50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.02.0202', epcode: 'XEP2', electricity: -30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.03.0303', epcode: 'XEP3', electricity: -20, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
       ],
     })
     const openSpy = vi.spyOn(window, 'open').mockReturnValue({ opener: {} })

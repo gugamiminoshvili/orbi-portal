@@ -28,7 +28,7 @@ function sumNegative(nums) {
 // apartment. `epcode` has no mock equivalent (mock apartments carry no real
 // epcode field) — `apCode` is reused, the same live-epcode stand-in
 // apartments.js's `adaptFlatDetail` already documents (`apCode: dto.epcode
-// || '—'`), so this is consistent with the existing mock/live correspondence
+// || '-'`), so this is consistent with the existing mock/live correspondence
 // rather than a new guess. `internet.penalty` has no mock concept and is
 // always 0 — so `balanceWithPenalty` (the collectable amount adaptCommunals
 // reads off live `balance_with_penalty`) equals the plain balance here.
@@ -107,7 +107,7 @@ export function mockUnpaidInvoices() {
         debtAmount: -s.maintenance.balance,
         service: 'maintenance',
         flat: a.id,
-        createdAt: '—',
+        createdAt: '-',
       })
     }
     if (s.electricity.balance < 0) {
@@ -117,7 +117,7 @@ export function mockUnpaidInvoices() {
         debtAmount: -s.electricity.balance,
         service: 'electricity',
         flat: a.id,
-        createdAt: '—',
+        createdAt: '-',
       })
     }
   }

@@ -8,7 +8,7 @@
 // are long prose documents, not UI chrome, and dropping ~200 sentences into
 // the locale files would bury the interface strings. `useGuideText` (see
 // GuidePage) picks the field for the active i18next language, so the global
-// language menu still drives them — the posters' own ქარ/ENG/РУС pills are
+// language menu still drives them - the posters' own ქარ/ENG/РУС pills are
 // gone.
 //
 // `**bold**` in any string marks emphasis (the posters used <strong>); the
@@ -34,9 +34,9 @@ export const GUIDES = [
       ru: 'Управление апартаментов',
     },
     intro: {
-      ka: 'აპარტამენტების მართვის სრული ციკლი — სასტუმრო სტანდარტებით მომზადება, გაქირავება, ფინანსური აღრიცხვა და მესაკუთრის სრული მხარდაჭერა.',
-      en: 'A full-cycle apartment management service — preparation to hotel standards, rental, financial accounting, and complete owner support.',
-      ru: 'Полный цикл управления апартаментами — подготовка под гостиничный стандарт, аренда, финансовый учёт и полная поддержка собственника.',
+      ka: 'აპარტამენტების მართვის სრული ციკლი - სასტუმრო სტანდარტებით მომზადება, გაქირავება, ფინანსური აღრიცხვა და მესაკუთრის სრული მხარდაჭერა.',
+      en: 'A full-cycle apartment management service - preparation to hotel standards, rental, financial accounting, and complete owner support.',
+      ru: 'Полный цикл управления апартаментами - подготовка под гостиничный стандарт, аренда, финансовый учёт и полная поддержка собственника.',
     },
     sections: [
       {
@@ -61,7 +61,7 @@ export const GUIDES = [
         icon: 'card',
         title: { ka: 'დაკომპლექტების სერვისი', en: 'Furnishing service', ru: 'Услуга комплектации' },
         text: {
-          ka: 'თუ ბინა ვერ აკმაყოფილებს სტანდარტს — სრული დაკომპლექტება მესაკუთრის მიერ ინვოისის დადასტურებისა და ანაზღაურების საფუძველზე.',
+          ka: 'თუ ბინა ვერ აკმაყოფილებს სტანდარტს - სრული დაკომპლექტება მესაკუთრის მიერ ინვოისის დადასტურებისა და ანაზღაურების საფუძველზე.',
           en: 'If the apartment does not meet the standard, a complete furnishing service is offered based on the owner’s approval and payment of the issued invoice.',
           ru: 'Если апартамент не соответствует стандарту, компания предоставляет полную услугу комплектации после подтверждения и оплаты счёта собственником.',
         },
@@ -71,7 +71,7 @@ export const GUIDES = [
         title: { ka: 'ფინანსური განაწილება', en: 'Financial distribution', ru: 'Распределение дохода' },
         split: {
           ownerPct: 91,
-          owner: { ka: '91% — მესაკუთრე', en: '91% — Owner', ru: '91% — Собственник' },
+          owner: { ka: '91% - მესაკუთრე', en: '91% - Owner', ru: '91% - Собственник' },
           legend: [
             {
               ka: '91% ეკუთვნის მესაკუთრეს',
@@ -81,7 +81,7 @@ export const GUIDES = [
             {
               ka: '9% კომპანიის საკომისიო',
               en: '9% is the company’s commission',
-              ru: '9% — комиссия компании',
+              ru: '9% - комиссия компании',
             },
           ],
         },
@@ -121,9 +121,9 @@ export const GUIDES = [
         icon: 'cal',
         title: { ka: 'ანგარიშსწორება', en: 'Settlement', ru: 'Расчёты' },
         text: {
-          ka: 'ყოველთვიურად, თვის **15-დან 25 რიცხვამდე**. მესაკუთრეს მიეწოდება დეტალური ფინანსური ანგარიში — გაქირავების დღეები, შემოსავალი და გამოქვითვები.',
-          en: 'Monthly, **between the 15th and 25th**. The owner receives a detailed financial report — rental days, income, and deductions.',
-          ru: 'Ежемесячно, **с 15 по 25 число**. Собственник получает подробный финансовый отчёт — дни аренды, доход и удержания.',
+          ka: 'ყოველთვიურად, თვის **15-დან 25 რიცხვამდე**. მესაკუთრეს მიეწოდება დეტალური ფინანსური ანგარიში - გაქირავების დღეები, შემოსავალი და გამოქვითვები.',
+          en: 'Monthly, **between the 15th and 25th**. The owner receives a detailed financial report - rental days, income, and deductions.',
+          ru: 'Ежемесячно, **с 15 по 25 число**. Собственник получает подробный финансовый отчёт - дни аренды, доход и удержания.',
         },
       },
       {
@@ -196,7 +196,7 @@ export const GUIDES = [
           {
             title: { ka: 'შემოწმება', en: 'Inspection', ru: 'Проверка' },
             text: {
-              ka: 'ბინის შემოწმება, საჭიროებისამებრ — დაკომპლექტება.',
+              ka: 'ბინის შემოწმება, საჭიროებისამებრ - დაკომპლექტება.',
               en: 'Apartment inspection, and furnishing if required.',
               ru: 'Проверка апартамента и, при необходимости, комплектация.',
             },
@@ -420,9 +420,9 @@ export const GUIDES = [
       ru: '**Примечание:** Требования зависят от страны оформления документа.',
     },
     footer: {
-      ka: 'კითხვის შემთხვევაში — Contact Centre 24/7',
-      en: 'Questions? — Contact Centre 24/7',
-      ru: 'Есть вопросы? — Contact Centre 24/7',
+      ka: 'კითხვის შემთხვევაში - Contact Centre 24/7',
+      en: 'Questions? - Contact Centre 24/7',
+      ru: 'Есть вопросы? - Contact Centre 24/7',
     },
   },
 
@@ -437,9 +437,9 @@ export const GUIDES = [
     },
     title: { ka: 'სერვისი', en: 'Service', ru: 'Обслуживание' },
     intro: {
-      ka: 'საერთო სარგებლობაში არსებული ქონების მოვლა — კომპლექსის გამართული მუშაობის უზრუნველყოფა 24/7. ეს ხარჯები შედის მომსახურების გადასახადში.',
-      en: 'Maintenance of common property — ensuring the smooth operation of the complex 24/7. These costs are included in the service fee.',
-      ru: 'Обслуживание общего имущества — обеспечение бесперебойной работы комплекса 24/7. Эти расходы входят в плату за обслуживание.',
+      ka: 'საერთო სარგებლობაში არსებული ქონების მოვლა - კომპლექსის გამართული მუშაობის უზრუნველყოფა 24/7. ეს ხარჯები შედის მომსახურების გადასახადში.',
+      en: 'Maintenance of common property - ensuring the smooth operation of the complex 24/7. These costs are included in the service fee.',
+      ru: 'Обслуживание общего имущества - обеспечение бесперебойной работы комплекса 24/7. Эти расходы входят в плату за обслуживание.',
     },
     stats: [
       {
@@ -514,9 +514,9 @@ export const GUIDES = [
         icon: 'eye',
         title: { ka: 'დაცვა და მონიტორინგი', en: 'Security and monitoring', ru: 'Охрана и мониторинг' },
         text: {
-          ka: '24/7 რეჟიმში უზრუნველყოფს უსაფრთხოებასა და სიმშვიდეს მთელ კომპლექსში — **3500+ კამერა** და **150+ დაცვის თანამშრომელი**.',
-          en: 'Operating 24/7 to ensure safety and peace throughout the complex — **3,500+ cameras** and **150+ security officers**.',
-          ru: 'Круглосуточно обеспечивает безопасность на всей территории комплекса — **3500+ камер** и **150+ сотрудников охраны**.',
+          ka: '24/7 რეჟიმში უზრუნველყოფს უსაფრთხოებასა და სიმშვიდეს მთელ კომპლექსში - **3500+ კამერა** და **150+ დაცვის თანამშრომელი**.',
+          en: 'Operating 24/7 to ensure safety and peace throughout the complex - **3,500+ cameras** and **150+ security officers**.',
+          ru: 'Круглосуточно обеспечивает безопасность на всей территории комплекса - **3500+ камер** и **150+ сотрудников охраны**.',
         },
       },
       {
@@ -545,16 +545,16 @@ export const GUIDES = [
         icon: 'help',
         title: { ka: '24/7 მხარდაჭერა', en: '24/7 support', ru: 'Поддержка 24/7' },
         text: {
-          ka: 'Reception და Contact Centre მუშაობს 24/7 რეჟიმში — მუდმივი კომუნიკაცია და დახმარება.',
-          en: 'Reception and Contact Centre operate 24/7 — constant communication and assistance.',
-          ru: 'Reception и Contact Centre работают 24/7 — постоянная связь и помощь.',
+          ka: 'Reception და Contact Centre მუშაობს 24/7 რეჟიმში - მუდმივი კომუნიკაცია და დახმარება.',
+          en: 'Reception and Contact Centre operate 24/7 - constant communication and assistance.',
+          ru: 'Reception и Contact Centre работают 24/7 - постоянная связь и помощь.',
         },
       },
     ],
     footer: {
-      ka: 'უსაფრთხო და კომფორტული გარემო — 24/7',
-      en: 'A safe and comfortable environment — 24/7',
-      ru: 'Безопасная и комфортная среда — 24/7',
+      ka: 'უსაფრთხო და კომფორტული გარემო - 24/7',
+      en: 'A safe and comfortable environment - 24/7',
+      ru: 'Безопасная и комфортная среда - 24/7',
     },
   },
 
@@ -569,9 +569,9 @@ export const GUIDES = [
     },
     title: { ka: 'Contact Centre', en: 'Contact Centre', ru: 'Contact Centre' },
     intro: {
-      ka: 'ჩვენ აქ ვართ მხარდასაჭერად. ცენტრალიზებული საკონტაქტო ცენტრი უზრუნველყოფს სწრაფ, ეფექტურ და მარტივ კომუნიკაციას — ერთიან სივრცეს ინფორმაციის, მოთხოვნისა და დახმარებისთვის.',
-      en: 'We are here to support you. A centralized Contact Centre provides fast, efficient, and seamless communication — a unified hub for information, requests, and assistance.',
-      ru: 'Мы здесь, чтобы помочь. Централизованный Contact Centre обеспечивает быстрое, эффективное и удобное взаимодействие — единое пространство для информации, обращений и помощи.',
+      ka: 'ჩვენ აქ ვართ მხარდასაჭერად. ცენტრალიზებული საკონტაქტო ცენტრი უზრუნველყოფს სწრაფ, ეფექტურ და მარტივ კომუნიკაციას - ერთიან სივრცეს ინფორმაციის, მოთხოვნისა და დახმარებისთვის.',
+      en: 'We are here to support you. A centralized Contact Centre provides fast, efficient, and seamless communication - a unified hub for information, requests, and assistance.',
+      ru: 'Мы здесь, чтобы помочь. Централизованный Contact Centre обеспечивает быстрое, эффективное и удобное взаимодействие - единое пространство для информации, обращений и помощи.',
     },
     sections: [
       {
@@ -676,14 +676,14 @@ export const GUIDES = [
       },
     ],
     banner: {
-      ka: 'Contact Centre — თქვენი კომუნიკაციის მარტივი გზა ORBI GROUP-თან.',
-      en: 'Contact Centre — your simple way to communicate with ORBI GROUP.',
-      ru: 'Contact Centre — простой путь для общения с ORBI GROUP.',
+      ka: 'Contact Centre - თქვენი კომუნიკაციის მარტივი გზა ORBI GROUP-თან.',
+      en: 'Contact Centre - your simple way to communicate with ORBI GROUP.',
+      ru: 'Contact Centre - простой путь для общения с ORBI GROUP.',
     },
     footer: {
-      ka: 'სწრაფი კოორდინაცია და ოპერატიული რეაგირება — 24/7',
-      en: 'Fast coordination and prompt response — 24/7',
-      ru: 'Быстрая координация и оперативное реагирование — 24/7',
+      ka: 'სწრაფი კოორდინაცია და ოპერატიული რეაგირება - 24/7',
+      en: 'Fast coordination and prompt response - 24/7',
+      ru: 'Быстрая координация и оперативное реагирование - 24/7',
     },
   },
 ]

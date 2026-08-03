@@ -56,9 +56,9 @@ export function adaptCommunals(dto = {}) {
       elec.display_services || water.display_services || net.display_services || flat.display_services || []
     return {
       code,
-      epcode: elec.epcode ?? water.epcode ?? net.epcode ?? flat.epcode ?? '—',
+      epcode: elec.epcode ?? water.epcode ?? net.epcode ?? flat.epcode ?? '-',
       electricity: num(elec.electricityBalanceGEL),
-      waterIndication: water.indication ?? '—',
+      waterIndication: water.indication ?? '-',
       internet: {
         balance: num(net.balance),
         // Live internettv detail carries `balance_with_penalty` alongside
@@ -123,7 +123,7 @@ export function adaptContractsSummary(tournoverDto, scheduleDto) {
           total: num(d.total),
           paid: num(d.paid),
           remain: num(d.remain),
-          status: d.status ?? '—',
+          status: d.status ?? '-',
           overdue: num(d.overdue),
           paidPercentage: num(d.paid_percentage),
         }))
@@ -139,7 +139,7 @@ function adaptScheduleItem(item = {}) {
   return {
     id: item.id,
     dealId: item.UF_DEAL_ID ?? null,
-    dueDate: item.DATE_PAY_BEFORE ?? '—',
+    dueDate: item.DATE_PAY_BEFORE ?? '-',
     invoiceSum: num(item.INVOICE_SUM),
     paidSum: num(item.PAID_SUM),
     debts: num(item.DEBTS),
@@ -155,11 +155,11 @@ export function adaptUnpaidInvoices(dto = []) {
   const list = Array.isArray(dto) ? dto : dto.result || []
   const invoices = list.map((inv) => ({
     id: inv.id,
-    epcode: inv.epcode ?? '—',
+    epcode: inv.epcode ?? '-',
     debtAmount: num(inv.debtAmount),
     service: inv.service ?? null,
     flat: inv.flat ?? null,
-    createdAt: inv.created_at ?? '—',
+    createdAt: inv.created_at ?? '-',
   }))
   return { count: invoices.length, invoices }
 }

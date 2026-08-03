@@ -36,7 +36,7 @@ export default function InternetCard({ apt, onReload }) {
   // catalog can't resolve — but the adapted agreement carries the plan's own
   // name (orbinet_agreement.net_tariff.name, Task L1), so prefer the mock
   // catalog hit (mock mode) and fall back to the agreement's name.
-  const planName = pl ? pl.name : s.planName && s.planName !== '—' ? s.planName : ''
+  const planName = pl ? pl.name : s.planName && s.planName !== '-' ? s.planName : ''
   // The provider name is not shown (owner call 2026-07-30) — the live
   // agreement doesn't carry one anyway, and on mock data it only repeated
   // what the plan already says. The speed comes from the mock plan catalog

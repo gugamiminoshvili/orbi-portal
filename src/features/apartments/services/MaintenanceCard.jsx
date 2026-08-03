@@ -40,7 +40,7 @@ export default function MaintenanceCard({ apt }) {
           <div className={styles.k}>{t('apartments:monthlyTariff')}</div>
           {/* null (not 0) when the payload carries no tariff — see
               adaptServicesFromProperty. */}
-          <div className={styles.v}>{s.tariff != null ? fmt(s.tariff, cur) : '—'}</div>
+          <div className={styles.v}>{s.tariff != null ? fmt(s.tariff, cur) : '-'}</div>
         </div>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:serviceStartDate')}</div>

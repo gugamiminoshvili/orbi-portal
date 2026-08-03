@@ -86,7 +86,7 @@ describe('buildRows', () => {
   test('an unmatched code gets a placeholder project rather than being dropped', () => {
     const rows = buildRows([{ ...ROW1, code: 'UNKNOWN' }], APARTMENTS)
     expect(rows).toHaveLength(1)
-    expect(rows[0]).toMatchObject({ project: '—', role: null, aptId: null })
+    expect(rows[0]).toMatchObject({ project: '-', role: null, aptId: null })
   })
 })
 

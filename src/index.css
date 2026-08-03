@@ -24,6 +24,7 @@
   --teal-600:#146F3E;
   --teal-soft:#DCF3E5;     /* chip / badge background */
   --teal-line:#BFE3CD;     /* border on a teal-soft surface */
+  --teal-ghost:#E9F6EF;    /* watermark tint (guide section numbers) */
   --teal-ink:#0E6B3B;
 
   /* Surfaces */

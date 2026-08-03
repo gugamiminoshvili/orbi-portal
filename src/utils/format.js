@@ -24,7 +24,7 @@ export const symbolFor = (code, fallback = '₾') => (code ? SYMBOLS[code] || co
 // the string rather than through Date: the backend sends zone-less
 // timestamps ("2015-04-16T00:00:00") and parsing one would let a
 // UTC-vs-local reading move the day. Anything that doesn't start with a date
-// passes through, so the caller's own '—' fallback still applies to empty
+// passes through, so the caller's own '-' fallback still applies to empty
 // values.
 export function fmtDate(value) {
   const m = typeof value === 'string' && value.match(/^(\d{4})-(\d{2})-(\d{2})/)
