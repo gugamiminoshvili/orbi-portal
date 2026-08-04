@@ -211,7 +211,7 @@ export default function InternetCard({ apt, onReload }) {
   }
 
   return (
-    <ServiceShell icon="wifi" iconBg="var(--violet-bg)" iconColor="var(--violet-ink)" name={t('apartments:internetName')} sub={sub} right={right}>
+    <ServiceShell icon="wifi" iconBg="var(--indigo-bg)" iconColor="var(--indigo-ink)" name={t('apartments:internetName')} sub={sub} right={right}>
       {body}
     </ServiceShell>
   )

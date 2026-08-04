@@ -138,8 +138,8 @@
   width: 34px;
   height: 34px;
   border-radius: var(--r-sm);
-  background: var(--violet-bg);
-  color: var(--violet-ink);
+  background: var(--indigo-bg);
+  color: var(--indigo-ink);
   display: grid;
   place-items: center;
   flex: none;
@@ -232,9 +232,9 @@
   place-items: center;
   flex: none;
 }
-.stat-icon.violet {
-  background: var(--violet-bg);
-  color: var(--violet-ink);
+.stat-icon.indigo {
+  background: var(--indigo-bg);
+  color: var(--indigo-ink);
 }
 .stat-icon.warn {
   background: var(--warn-bg);
@@ -323,9 +323,9 @@
   place-items: center;
   flex: none;
 }
-.soon-icon.violet {
-  background: var(--violet-bg);
-  color: var(--violet-ink);
+.soon-icon.indigo {
+  background: var(--indigo-bg);
+  color: var(--indigo-ink);
 }
 .soon-icon.slate {
   background: var(--fill);
@@ -423,15 +423,15 @@
 }
 .action-card.pos {
   background: var(--pos-bg);
-  border-color: var(--tint-line-teal);
+  border-color: var(--teal-line);
 }
 .action-card.warn {
   background: var(--warn-bg);
-  border-color: var(--tint-line-warn);
+  border-color: var(--warn-line);
 }
 .action-card.info {
   background: var(--info-bg);
-  border-color: var(--tint-line-info);
+  border-color: var(--info-line);
 }
 .action-icon {
   width: 46px;

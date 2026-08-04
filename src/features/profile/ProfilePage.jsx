@@ -83,7 +83,7 @@ export default function ProfilePage() {
         </Card>
 
         <Card className={styles.stat}>
-          <span className={`${styles['stat-ic']} ${styles.violet}`}>
+          <span className={`${styles['stat-ic']} ${styles.indigo}`}>
             <Icon name="user" />
           </span>
           <div className={styles['stat-body']}>

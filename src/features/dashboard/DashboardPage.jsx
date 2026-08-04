@@ -103,7 +103,7 @@ export default function DashboardPage() {
               </div>
               <ul className={styles['debt-lines']}>
                 <DebtRow
-                  color="var(--violet)"
+                  color="var(--indigo)"
                   label={t('dashboard:maintenanceLabel')}
                   value={maintenanceDebt}
                   symbol={maintenanceSymbol}
@@ -161,7 +161,7 @@ export default function DashboardPage() {
       </div>
 
       <div className={styles['stats-grid']}>
-        <StatCard icon="doc" tone="violet" title={t('dashboard:contractsTitle')}>
+        <StatCard icon="doc" tone="indigo" title={t('dashboard:contractsTitle')}>
           {contracts.empty ? (
             <div className={styles['stat-empty']}>{t('dashboard:contractsEmpty')}</div>
           ) : (
@@ -194,7 +194,7 @@ export default function DashboardPage() {
         <Card className={styles['soon-card']}>
           <div className={styles['soon-head']}>
             <span className={styles['soon-titlewrap']}>
-              <span className={`${styles['soon-icon']} ${styles.violet}`}>
+              <span className={`${styles['soon-icon']} ${styles.indigo}`}>
                 <Icon name="tag" />
               </span>
               <h3>{t('dashboard:activeOffersTitle')}</h3>

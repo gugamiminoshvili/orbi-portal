@@ -116,11 +116,21 @@ instead. The two deliberate exceptions are commented where they appear: the QR
 quiet zone and the bank tiles in the payment-method modal are literally white /
 literally the bank's brand colour in both themes.
 
-Two roles are easy to confuse:
+The values come from the owner's design-tool colour library, which names its
+entries by role (Dark text, Light icon, Background 2, Water, TV & Internet,
+Pending or ongoing, …). Each token in `index.css` carries a `library: <name>`
+note, or says how it was derived; the trailing comment lists the library
+colours the app has no role for yet, so nobody spends them by accident.
+
+Three roles are easy to confuse:
 
 - `--teal` is the brand green as a **fill**; text on it is `--on-accent`
   (white in light, near-black in dark, because the dark fill is brighter).
 - `--teal-ink` is the brand green as a **foreground** — text, icons, links.
+  In light mode it happens to equal `--teal`; in dark it does not.
+- `--*-bg` / `--*-line` / `--*-ink` are the library's 10% tint, its 40%
+  border, and a shade dark enough to read on that tint. A tinted panel wants
+  all three, not a hand-picked hex.
 
 The active theme is stored in `localStorage` under `orbi-theme` and stamped on
 `<html data-theme>` by three places that must stay in step: the pre-paint

@@ -12,7 +12,7 @@ import styles from './PayFlow.module.css'
 const UTILITY_ICON = {
   maintenance: { icon: 'wrench', bg: 'var(--teal-soft)', color: 'var(--teal-ink)' },
   electricity: { icon: 'bolt', bg: 'var(--warn-bg)', color: 'var(--warn-ink)' },
-  internettv: { icon: 'wifi', bg: 'var(--violet-bg)', color: 'var(--violet-ink)' },
+  internettv: { icon: 'wifi', bg: 'var(--indigo-bg)', color: 'var(--indigo-ink)' },
 }
 
 // Step 2: pick which utility type to pay across multiple apartments of the

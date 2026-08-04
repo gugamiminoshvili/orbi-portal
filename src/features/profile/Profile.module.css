@@ -102,9 +102,9 @@
   background: var(--neg-bg);
   color: var(--neg-ink);
 }
-.stat-ic.violet {
-  background: var(--violet-bg);
-  color: var(--violet-ink);
+.stat-ic.indigo {
+  background: var(--indigo-bg);
+  color: var(--indigo-ink);
 }
 .stat-body {
   min-width: 0;

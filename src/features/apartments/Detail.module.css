@@ -369,7 +369,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border: 1px solid var(--neg-bg);
+  /* Same shape as .warn-box below: the 10% tint as the fill, the 40% as its
+     edge. It used to border in --neg-bg, i.e. no visible edge at all. */
+  border: 1px solid var(--neg-line);
   background: var(--neg-bg);
   border-radius: 10px;
   margin-bottom: 14px;
