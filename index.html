@@ -10,6 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      // Stamp the saved theme before the first paint, so a reload in dark mode
+      // never flashes the light palette. Kept inline and dependency-free
+      // because anything module-loaded arrives after the browser has already
+      // painted the body background. Mirrors utils/theme.js's storage key and
+      // 'light' default; ThemeContext takes over once React mounts.
+      try {
+        var t = localStorage.getItem('orbi-theme')
+        document.documentElement.dataset.theme = t === 'dark' ? 'dark' : 'light'
+      } catch (e) {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

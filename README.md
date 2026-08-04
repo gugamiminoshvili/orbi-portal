@@ -79,8 +79,8 @@ src/
     endpoints/          # one file per domain — the only layer that imports mock/ or calls http()
   components/
     layout/             # AppShell, Sidebar, Header, Breadcrumbs
-    ui/                  # design-system primitives (Button, Card, Badge, Field, Skeleton, EmptyState, Icon, ProgressRing, CopyButton)
-  context/               # ModalContext (focus-trapped dialog host) and ToastContext
+    ui/                  # design-system primitives (Button, Card, Badge, Field, Skeleton, EmptyState, Icon, ProgressRing, CopyButton, Switch)
+  context/               # ModalContext (focus-trapped dialog host), ToastContext, ThemeContext (light/dark)
   features/
     news/                # list, filters, detail, skeletons
     apartments/          # list, detail, service accordions (services/), modals (modals/)
@@ -105,6 +105,28 @@ scripts/
 reference/
   orbi-portal-redesign.html   # the design source of truth (do not delete)
 ```
+
+### Theming (light / dark)
+
+Every colour in the app is a custom property declared twice in `src/index.css`
+— once under `:root, [data-theme='light']` and once under `[data-theme='dark']`
+— and component CSS only ever writes `var(--name)`. **Adding a raw hex or
+`rgba()` to a module stylesheet breaks dark mode silently**, so add a token
+instead. The two deliberate exceptions are commented where they appear: the QR
+quiet zone and the bank tiles in the payment-method modal are literally white /
+literally the bank's brand colour in both themes.
+
+Two roles are easy to confuse:
+
+- `--teal` is the brand green as a **fill**; text on it is `--on-accent`
+  (white in light, near-black in dark, because the dark fill is brighter).
+- `--teal-ink` is the brand green as a **foreground** — text, icons, links.
+
+The active theme is stored in `localStorage` under `orbi-theme` and stamped on
+`<html data-theme>` by three places that must stay in step: the pre-paint
+inline script in `index.html` (so a reload never flashes the wrong palette),
+`src/utils/theme.js`, and `src/context/ThemeContext.jsx`. The user-facing
+toggle is the "Dark mode" row of the header account menu.
 
 ## Backend integration
 

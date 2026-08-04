@@ -27,13 +27,13 @@
   height: 38px;
   border-radius: 11px;
   flex: none;
-  background: linear-gradient(135deg, var(--teal), #28a862);
+  background: linear-gradient(135deg, var(--teal), var(--teal-400));
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   font-size: 18px;
-  box-shadow: 0 6px 16px rgba(26, 138, 78, .28);
+  box-shadow: 0 6px 16px var(--tint-teal-glow);
 }
 .brand b {
   color: var(--sidebar-ink-strong);
@@ -92,15 +92,15 @@
   color: var(--teal);
 }
 .navItem[aria-disabled='true'] {
-  color: #b9bdcc;
+  color: var(--sidebar-disabled);
   cursor: not-allowed;
 }
 .navItem[aria-disabled='true'] .ic {
-  color: #c6cad6;
+  color: var(--sidebar-disabled-ic);
 }
 .navItem[aria-disabled='true']:hover {
   background: transparent;
-  color: #b9bdcc;
+  color: var(--sidebar-disabled);
 }
 .ic {
   width: 20px;

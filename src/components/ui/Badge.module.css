@@ -48,14 +48,14 @@
   color: var(--info-ink);
 }
 .badge.muted {
-  background: #eef0f6;
+  background: var(--fill);
   color: var(--muted);
 }
 
 /* Filter pills (segmented) */
 .seg {
   display: inline-flex;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line-2);
   border-radius: var(--r-pill);
   padding: 4px;

@@ -41,7 +41,7 @@
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
 }
 .banner h4 {
   margin: 0 0 2px;

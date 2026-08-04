@@ -17,7 +17,7 @@
   padding: 0 14px;
   font-size: 13.5px;
   color: var(--ink);
-  background: #fff;
+  background: var(--card);
   transition: var(--t);
 }
 .input:focus {

@@ -8,7 +8,9 @@
   align-items: center;
   gap: 10px;
   height: 42px;
-  padding: 0 8px 0 14px;
+  /* Tighter on the left than the right: the avatar is a filled circle and
+     needs less breathing room than the chevron's thin strokes. */
+  padding: 0 10px 0 6px;
   border: 1px solid var(--line-2);
   border-radius: var(--r-pill);
   background: var(--card);
@@ -16,19 +18,24 @@
   font-family: inherit;
   color: var(--ink-2);
   transition: var(--t);
+  max-width: 280px;
 }
 .trigger:hover,
 .trigger.open {
   border-color: var(--teal);
 }
-.greet {
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
 }
-.greet b {
-  color: var(--ink);
+.name {
+  font-size: 13px;
   font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .badge {
   flex: none;
@@ -38,7 +45,7 @@
   height: 30px;
   border-radius: 50%;
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
   display: grid;
   place-items: center;
   font-size: 11.5px;
@@ -59,7 +66,7 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 264px;
+  width: 288px;
   background: var(--card);
   border: 1px solid var(--line-2);
   border-radius: var(--r);
@@ -67,20 +74,24 @@
   padding: 6px;
   z-index: 60;
 }
+
+/* Identity block: a tinted panel rather than a bordered strip, so the rows
+   below read as one list starting under it. */
 .head {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 12px 14px;
-  border-bottom: 1px solid var(--line);
+  padding: 12px;
   margin-bottom: 6px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
 }
 .avatar-lg {
   width: 42px;
   height: 42px;
   border-radius: 50%;
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
   display: grid;
   place-items: center;
   font-size: 14px;
@@ -136,10 +147,35 @@
   background: var(--teal-soft);
   color: var(--teal-ink);
 }
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
 .item svg {
   width: 17px;
   height: 17px;
   flex: none;
+}
+/* Takes the slack so whatever follows it (current language, chevron, toggle)
+   sits hard against the right edge. */
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.trail {
+  font-size: 12.5px;
+  color: var(--muted);
+  flex: none;
+}
+.item:hover .trail {
+  color: inherit;
+}
+.more {
+  color: var(--muted);
+  flex: none;
+}
+.danger {
+  color: var(--neg-ink);
 }
 .danger:hover {
   background: var(--neg-bg);
@@ -151,11 +187,69 @@
   margin: 6px 0;
 }
 
+/* ---------- Language pane ---------- */
+.pane-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.backbtn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--t);
+}
+.backbtn:hover {
+  background: var(--fill);
+  color: var(--ink);
+}
+.backbtn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.flag {
+  font-size: 17px;
+  line-height: 1;
+  flex: none;
+}
+.item.on {
+  color: var(--teal-ink);
+  font-weight: 600;
+}
+.tick {
+  color: var(--teal);
+  flex: none;
+}
+
 @media (max-width: 880px) {
-  .greet {
+  /* Phones keep the avatar and chevron only — the name is already on the
+     profile page, and the header has ~95px of room left at this width. */
+  .name,
+  .badge {
     display: none;
   }
   .trigger {
-    padding: 0 8px;
+    padding: 0 6px;
+    gap: 4px;
+  }
+}
+
+/* The menu is anchored to the trigger's right edge, so on a narrow phone a
+   288px panel would run off the left of the header instead. */
+@media (max-width: 380px) {
+  .menu {
+    width: calc(100vw - 28px);
   }
 }

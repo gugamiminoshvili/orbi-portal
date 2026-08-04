@@ -20,15 +20,15 @@
 }
 .btn-primary {
   background: var(--teal);
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(26, 138, 78, .30);
+  color: var(--on-accent);
+  box-shadow: 0 8px 18px var(--tint-teal-glow);
 }
 .btn-primary:hover {
   background: var(--teal-600);
   transform: translateY(-1px);
 }
 .btn-ghost {
-  background: #fff;
+  background: var(--card);
   border-color: var(--line-2);
   color: var(--ink-2);
 }
@@ -41,16 +41,16 @@
   color: var(--teal-ink);
 }
 .btn-soft:hover {
-  background: #b6f2ef;
+  background: var(--teal-soft-hover);
 }
 /* Ported from reference/orbi-portal-redesign.html lines 439-440 */
 .btn-warn {
   background: var(--warn);
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(255, 168, 0, .28);
+  color: var(--on-accent);
+  box-shadow: 0 8px 18px var(--tint-warn-glow);
 }
 .btn-warn:hover {
-  background: #e89800;
+  background: var(--warn-600);
 }
 .btn-sm {
   height: 36px;

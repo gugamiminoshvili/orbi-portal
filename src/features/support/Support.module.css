@@ -102,10 +102,10 @@
   color: inherit;
 }
 .sup-item:hover {
-  background: #f9fafd;
+  background: var(--surface-2);
 }
 .sup-item.on {
-  background: #f4fcf7;
+  background: var(--teal-tint);
   border-color: var(--teal);
 }
 .sup-item:focus-visible {
@@ -204,7 +204,7 @@
   height: 36px;
   border-radius: 10px;
   border: 1px solid var(--line-2);
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -227,7 +227,7 @@
   display: flex;
   gap: 10px;
   justify-content: space-between;
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 
 .sup-empty {
@@ -321,7 +321,7 @@
   bottom: 10px;
   font-size: 11px;
   color: var(--muted);
-  background: #fff;
+  background: var(--card);
   padding: 0 4px;
   pointer-events: none;
 }
@@ -354,7 +354,7 @@
   padding: 16px;
   border: 1.5px solid var(--line-2);
   border-radius: 14px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   transition: var(--t);
   font-family: inherit;
@@ -366,7 +366,7 @@
 }
 .topic-card.sel {
   border-color: var(--teal);
-  background: #f6fefe;
+  background: var(--teal-tint);
   box-shadow: 0 0 0 1px var(--teal) inset;
 }
 .tc-ic {
@@ -404,7 +404,7 @@
   border: 1.5px solid var(--line-2);
   border-radius: 12px;
   padding: 0 14px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   font-family: inherit;
   font-size: 13.5px;
@@ -441,7 +441,7 @@
   border: 1.5px solid var(--line-2);
   border-radius: 12px;
   padding: 8px 12px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   transition: var(--t);
 }
@@ -465,7 +465,7 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line-2);
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
@@ -500,7 +500,7 @@
   transition: var(--t);
 }
 .combo-opt:hover {
-  background: #f4fcf7;
+  background: var(--teal-tint);
 }
 .combo-opt.sel {
   background: var(--teal-soft);
@@ -511,7 +511,7 @@
   border-radius: 9px;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   flex: none;
 }
 .co-ic svg {
@@ -530,7 +530,7 @@
   color: var(--muted);
 }
 .combo-opt.general .co-ic {
-  background: #eef0f6;
+  background: var(--fill);
   color: var(--muted);
 }
 .combo-empty {
@@ -549,7 +549,7 @@
   border: 1.5px solid var(--line-2);
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
 }
 .opt-check.on {
   background: var(--teal);
@@ -569,7 +569,7 @@
   padding: 12px 14px;
   border: 1.5px solid var(--line-2);
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   font-family: inherit;
   text-align: left;
@@ -631,14 +631,14 @@
   height: 18px;
   border: none;
   border-radius: 50%;
-  background: rgba(14, 107, 59, 0.12);
+  background: var(--tint-ink-teal);
   color: var(--teal-ink);
   font-size: 11px;
   cursor: pointer;
   line-height: 1;
 }
 .apt-chip button:hover {
-  background: rgba(14, 107, 59, 0.24);
+  background: var(--tint-ink-teal-strong);
 }
 
 .sup-attach-row {
@@ -657,8 +657,8 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, .5);
-  border-top-color: #fff;
+  border: 2px solid var(--tint-on-accent);
+  border-top-color: var(--on-accent);
   display: inline-block;
   animation: sup-spin .7s linear infinite;
 }
@@ -673,7 +673,7 @@
   margin: 6px 0 16px;
 }
 .chat-day span {
-  background: #eef0f6;
+  background: var(--fill);
   color: var(--muted);
   font-size: 11px;
   font-weight: 600;
@@ -697,7 +697,7 @@
   overflow-wrap: anywhere;
 }
 .msg.them .bubble {
-  background: #f1f3f9;
+  background: var(--surface-2);
   color: var(--ink);
   border-bottom-left-radius: 4px;
 }
@@ -727,7 +727,7 @@
   display: flex;
   gap: 10px;
   align-items: flex-end;
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 .chat-composer textarea {
   flex: 1;
@@ -744,7 +744,7 @@
   color: var(--muted);
   font-size: 12.5px;
   border-top: 1px solid var(--line);
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 
 /* ---------- Responsive: single-pane on mobile ---------- */

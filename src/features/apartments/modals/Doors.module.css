@@ -23,7 +23,7 @@
   height: 34px;
   border-radius: 9px;
   border: 1px solid var(--line-2);
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   color: var(--ink-2);
 }
@@ -91,12 +91,12 @@
   color: var(--teal-ink);
 }
 .day .cnt.zero {
-  background: #eef0f6;
+  background: var(--fill);
   color: var(--muted);
 }
 .day.hi {
   border-color: var(--teal);
-  background: #f6fefe;
+  background: var(--teal-tint);
 }
 .list {
   display: none;

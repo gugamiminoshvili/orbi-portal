@@ -13,7 +13,7 @@
   background: var(--card);
   border-radius: var(--r);
   box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(228, 231, 240, .7);
+  border: 1px solid var(--card-line);
   padding: var(--s8) var(--s7);
 }
 
@@ -28,13 +28,13 @@
   height: 44px;
   border-radius: 12px;
   flex: none;
-  background: linear-gradient(135deg, var(--teal), #28a862);
+  background: linear-gradient(135deg, var(--teal), var(--teal-400));
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   font-size: 20px;
-  box-shadow: 0 6px 16px rgba(26, 138, 78, .4);
+  box-shadow: 0 6px 16px var(--tint-teal-glow);
 }
 .brand b {
   display: block;

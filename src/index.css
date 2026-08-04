@@ -7,15 +7,13 @@
    (--bg, --ink, --sidebar, ...), so swapping the theme is a matter of
    which block below is active, with zero component changes.
 
-   - `:root, [data-theme="light"]` — the LIGHT theme (today's only
-     theme, and the default when no theme has been set yet, e.g.
-     before theme.js's setTheme() has run once).
-   - `[data-theme="dark"]` — scaffolding only. Deliberately EMPTY: the
-     owner will supply the real dark palette later. The contract is
-     that when dark values land, every custom property declared in
-     the light block below gets a matching re-declaration here with
-     the same name — no renames, no additions/removals of names that
-     components depend on.
+   - `:root, [data-theme="light"]` — the LIGHT theme, and the default
+     when no theme has been set yet (e.g. before theme.js's setTheme()
+     has run once).
+   - `[data-theme="dark"]` — the DARK theme. Every property declared in
+     the light block is re-declared there under the same name; nothing
+     is added or removed, so a component never has to know which theme
+     is live.
    ============================================================ */
 :root,
 [data-theme='light'] {
@@ -25,11 +23,29 @@
   --teal-soft:#DCF3E5;     /* chip / badge background */
   --teal-line:#BFE3CD;     /* border on a teal-soft surface */
   --teal-ghost:#E9F6EF;    /* watermark tint (guide section numbers) */
-  --teal-ink:#0E6B3B;
+  --teal-ink:#0E6B3B;      /* teal as FOREGROUND (text/icon) — never as a fill */
+  --teal-400:#28a862;      /* lighter partner in the logo/CTA gradient */
+  --teal-soft-hover:#b6f2ef;
+  --teal-tint:#f4fcf7;     /* near-white teal wash (selected rows, info panels) */
+
+  /* Text/icons that sit ON a filled accent (--teal, --warn, --neg, --violet).
+     A single token because the fills all take the same treatment: in light
+     that is white, in dark it flips to near-black against brighter fills. */
+  --on-accent:#ffffff;
+  --tint-on-accent:rgba(255, 255, 255, .5); /* the dim half of a spinner ring drawn on an accent fill */
+
+  /* Toast: a deliberately inverted surface in BOTH themes, so it reads as an
+     overlay rather than as another card. It used to borrow --sidebar, which
+     stopped working when the rail turned white in P3-6 (white on white). */
+  --toast-bg:#1b1b2c;
+  --toast-ink:#ffffff;
 
   /* Surfaces */
   --bg:#EEF1F4;
   --card:#ffffff;
+  --surface-2:#fafbfe;     /* inset panel inside a card (composer, footers) */
+  --fill:#eef0f6;          /* neutral chip, track, icon tile */
+  --fill-2:#dfe3f2;        /* image placeholder (stronger than --fill) */
   /* Sidebar surface tokens live with the rest of the sidebar roles below. */
 
   /* Text */
@@ -38,11 +54,13 @@
   --muted:#7E8299;
   --line:#eceef4;
   --line-2:#e4e7f0;
+  --card-line:rgba(228, 231, 240, .7); /* card hairline (softer than --line-2) */
   --row-on:#f4faf7;        /* selected row band (multi-pay table) */
 
   /* Semantic (replace meaningless colored stripes) */
   --pos:#1A8A4E;  --pos-bg:#DCF3E5;  --pos-ink:#0E6B3B;   /* paid / active / positive */
   --warn:#FFA800; --warn-bg:#FFF4DE; --warn-line:#FFE1A8; --warn-ink:#b57400;  /* pause / pending / warning */
+  --warn-600:#e89800;
   --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
   --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
   --violet:#7C5CFC; --violet-bg:#ECE8FE; --violet-ink:#5B3FD1; /* maintenance accent (dashboard legend) */
@@ -51,6 +69,25 @@
   --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
   --shadow-lg:0 18px 50px rgba(20,24,60,.18);
   --ring:0 0 0 3px rgba(26,138,78,.28);
+  --overlay:rgba(17, 20, 45, .5);       /* modal scrim */
+  --overlay-soft:rgba(17, 20, 45, .4);  /* mobile sidebar scrim */
+
+  /* Tints used inside a shadow/border shorthand, where only the COLOUR is
+     theme-dependent and the geometry belongs to the component. In light
+     they are the accent's own hue at low alpha (a coloured glow under a
+     coloured button); in dark a glow reads as haze, so they become plain
+     black and the borders keep the hue instead. */
+  --tint-teal-glow:rgba(26, 138, 78, .30);
+  --tint-warn-glow:rgba(255, 168, 0, .28);
+  --tint-drop:rgba(20, 24, 60, .12);
+  --tint-line-teal:rgba(26, 138, 78, 0.18);
+  --tint-line-warn:rgba(255, 168, 0, 0.22);
+  --tint-line-info:rgba(54, 153, 255, 0.22);
+  --tint-ink-teal:rgba(14, 107, 59, 0.12);        /* chip button on a teal-soft field */
+  --tint-ink-teal-strong:rgba(14, 107, 59, 0.24);
+
+  --skeleton-a:#eef0f6;
+  --skeleton-b:#e4e7f0;
 
   /* Header surface polish (P3-6): the sticky header's tinted glass
      backdrop and hairline border, split out as vars (not raw rgba()
@@ -77,14 +114,109 @@
   --sidebar-name:#1b1b2c;       /* user name (header menu reuse) */
   --sidebar-avatar-bg:#2a2a52;
   --sidebar-line:#eceef4;       /* brand/footer separators */
+  --sidebar-disabled:#b9bdcc;   /* "coming soon" nav item */
+  --sidebar-disabled-ic:#c6cad6;
 }
 
-/* Dark theme (scaffolding only — NOT implemented in this task).
-   Intentionally empty: see the contract note above. theme.js already
-   toggles document.documentElement.dataset.theme = 'dark', so once
-   values land here the app switches with no other code changes. */
+/* Dark theme. Same names, re-valued — see the contract note above.
+   Two rules shape it, and they are why the values are not simply the
+   light ones inverted:
+
+   1. Surfaces get LIGHTER as they come forward (--bg → --card →
+      --surface-2 → --fill), the opposite of light mode, because on a
+      dark page elevation reads as light, not as shadow.
+   2. The brand green splits in two. As a FILL it brightens to #2FB86A
+      so it doesn't sink into the page, which in turn flips --on-accent
+      to near-black (7.4:1) — white on a bright green would fail. As a
+      FOREGROUND it is --teal-ink #6FE0A2 (10.7:1 on --card).
+
+   Measured on --card #171A22: --ink 14.6:1, --ink-2 9.7:1, --muted
+   5.5:1, --teal 6.8:1 — all AA or better. The four accent ink/bg pairs
+   land between 7.7:1 and 9.3:1. */
 [data-theme='dark'] {
+  /* Brand + accent */
+  --teal:#2FB86A;
+  --teal-600:#3ECF7C;      /* hover brightens in dark rather than darkening */
+  --teal-soft:#143226;
+  --teal-line:#1E4A36;
+  --teal-ghost:#12241C;
+  --teal-ink:#6FE0A2;
+  --teal-400:#57D98D;
+  --teal-soft-hover:#1B412F;
+  --teal-tint:#12241C;
+  --on-accent:#08130D;
+  --tint-on-accent:rgba(8, 19, 13, .35);
+  --toast-bg:#2E3342;
+  --toast-ink:#F0F2F8;
+
+  /* Surfaces */
+  --bg:#0E1015;
+  --card:#171A22;
+  --surface-2:#1D212B;
+  --fill:#252A36;
+  --fill-2:#2B3040;
+
+  /* Text */
+  --ink:#E9EBF2;
+  --ink-2:#BCC1D0;
+  --muted:#8B90A3;
+  --line:#242835;
+  --line-2:#2E3342;
+  --card-line:rgba(46, 51, 66, .9);
+  --row-on:#152A20;
+
+  /* Semantic — the fills keep their light-mode hue (a brand red stays the
+     brand red); only the tinted backgrounds and the ink invert. */
+  --pos:#2FB86A;  --pos-bg:#143226;  --pos-ink:#6FE0A2;
+  --warn:#FFA800; --warn-bg:#33270F; --warn-line:#5A441A; --warn-ink:#FFC55C;
+  --warn-600:#FFB93A;
+  --neg:#F1416C;  --neg-bg:#33161F;  --neg-ink:#FF8FAB;
+  --info:#3699FF; --info-bg:#132436; --info-ink:#7BC0FF;
+  --violet:#7C5CFC; --violet-bg:#1F1A38; --violet-ink:#B7A5FF;
+
+  /* Depth */
+  --shadow:0 4px 24px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.65);
+  --ring:0 0 0 3px rgba(47,184,106,.35);
+  --overlay:rgba(4, 6, 12, .66);
+  --overlay-soft:rgba(4, 6, 12, .55);
+
+  --tint-teal-glow:rgba(0, 0, 0, .45);
+  --tint-warn-glow:rgba(0, 0, 0, .45);
+  --tint-drop:rgba(0, 0, 0, .5);
+  --tint-line-teal:rgba(47, 184, 106, 0.28);
+  --tint-line-warn:rgba(255, 168, 0, 0.28);
+  --tint-line-info:rgba(54, 153, 255, 0.28);
+  --tint-ink-teal:rgba(111, 224, 162, 0.16);
+  --tint-ink-teal-strong:rgba(111, 224, 162, 0.28);
+
+  --skeleton-a:#1D212B;
+  --skeleton-b:#252A36;
+
+  --header-bg:rgba(14, 16, 21, .82);
+  --header-line:rgba(255, 255, 255, .08);
+
+  /* Sidebar — one step darker than --bg so the rail still reads as a
+     separate plane once the page behind it is dark too. */
+  --sidebar:#12141C;
+  --sidebar-2:#12141C;
+  --sidebar-hover:#1B1F29;
+  --sidebar-active:var(--teal-soft);
+  --sidebar-ink:#C3C8D8;
+  --sidebar-ink-strong:#F0F2F8;
+  --sidebar-muted:#8B90A3;
+  --sidebar-group:#8B90A3;
+  --sidebar-name:#F0F2F8;
+  --sidebar-avatar-bg:#2A2E44;
+  --sidebar-line:#242835;
+  --sidebar-disabled:#5A5F70;
+  --sidebar-disabled-ic:#4C5060;
 }
+
+/* The browser's own widgets (form controls, scrollbars, the canvas behind
+   a rubber-band scroll) read this, not our tokens. */
+:root { color-scheme: light }
+[data-theme='dark'] { color-scheme: dark }
 
 /* ============================================================
    STRUCTURAL TOKENS

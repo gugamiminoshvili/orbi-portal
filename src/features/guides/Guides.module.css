@@ -172,7 +172,7 @@
   margin-top: 1px;
   border-radius: 6px;
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
   display: grid;
   place-items: center;
 }
@@ -243,7 +243,7 @@
   height: 28px;
   border-radius: 9px;
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 13px;
   font-weight: 800;
   margin-bottom: 10px;
@@ -271,7 +271,7 @@
 .split div {
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   padding: 0 8px;
   text-align: center;
@@ -348,7 +348,7 @@
   padding: 20px 22px;
   border-radius: var(--r);
   background: var(--teal);
-  color: #fff;
+  color: var(--on-accent);
 }
 .banner svg {
   flex: none;

@@ -32,9 +32,9 @@
   border-radius: 16px;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   flex: none;
-  box-shadow: 0 8px 18px rgba(20, 24, 60, .14);
+  box-shadow: 0 8px 18px var(--tint-drop);
 }
 .head-title {
   display: flex;
@@ -89,12 +89,12 @@
   overflow: hidden;
 }
 .ov-meta .cell {
-  background: #fff;
+  background: var(--card);
   padding: 13px 15px;
   min-width: 0;
 }
 .cell {
-  background: #fff;
+  background: var(--card);
   padding: 14px 16px;
 }
 .k {
@@ -136,6 +136,8 @@
   border: 1px solid var(--line-2);
   border-radius: 12px;
   padding: 9px;
+  /* Literally white, not --card: the padding is the QR's quiet zone, and a
+     scanner needs it light in either theme. */
   background: #fff;
   cursor: pointer;
   transition: var(--t);
@@ -289,7 +291,7 @@
   grid-template-columns: repeat(2, 1fr);
 }
 .svc-grid .cell {
-  background: #fff;
+  background: var(--card);
   padding: 14px 16px;
 }
 .svc-grid .k {
@@ -321,7 +323,7 @@
   margin-bottom: 16px;
 }
 .sub-panel .cell {
-  background: #fff;
+  background: var(--card);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -386,7 +388,7 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   color: var(--warn-ink);
   display: grid;
   place-items: center;

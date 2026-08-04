@@ -1,14 +1,12 @@
-// Theme persistence for the (future) dark-mode toggle — P3-6 scaffolding
-// only. Nothing in the UI calls setTheme() yet; the owner wires up a
-// visible toggle once real dark values land in index.css's
-// `[data-theme="dark"]` block. Until then the app always renders the
-// light theme, since getTheme()/setTheme() both default to 'light' and
-// index.css's `:root, [data-theme="light"]` selector covers the
-// no-attribute-yet case too.
+// Theme storage. setTheme() stamps document.documentElement.dataset.theme,
+// which is what index.css's `[data-theme="light"]` / `[data-theme="dark"]`
+// selectors key off of, and persists the choice to localStorage so it
+// survives a reload. Unset means light — index.css's
+// `:root, [data-theme="light"]` selector covers the no-attribute case too.
 //
-// setTheme() stamps document.documentElement.dataset.theme, which is what
-// index.css's `[data-theme="light"]` / `[data-theme="dark"]` selectors key
-// off of, and persists the choice to localStorage so it survives a reload.
+// Three things read STORAGE_KEY and must stay in step: this module, the
+// pre-paint boot script in index.html, and ThemeContext (which owns the
+// live value and is what the account menu's toggle actually calls).
 
 const STORAGE_KEY = 'orbi-theme'
 const THEMES = ['light', 'dark']

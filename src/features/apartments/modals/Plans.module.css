@@ -74,7 +74,7 @@
 }
 .current {
   border-color: var(--teal);
-  background: #f4fcf7;
+  background: var(--teal-tint);
   box-shadow: 0 0 0 1px var(--teal) inset;
 }
 .curBadge {

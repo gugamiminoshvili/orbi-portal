@@ -69,7 +69,7 @@
 }
 .thumb {
   aspect-ratio: 16 / 9;
-  background: #dfe3f2;
+  background: var(--fill-2);
   position: relative;
   overflow: hidden;
   border-radius: 12px 12px 0 0;
@@ -157,7 +157,7 @@
   padding: 0 12px;
   border-radius: 11px;
   border: 1px solid var(--line-2);
-  background: #fff;
+  background: var(--card);
   color: var(--ink-2);
   font-weight: 600;
   font-size: 13.5px;
@@ -171,8 +171,8 @@
 .pager button.on {
   background: var(--teal);
   border-color: var(--teal);
-  color: #fff;
-  box-shadow: 0 6px 14px rgba(26, 138, 78, .3);
+  color: var(--on-accent);
+  box-shadow: 0 6px 14px var(--tint-teal-glow);
 }
 .pager button:disabled {
   opacity: .4;
@@ -214,7 +214,7 @@
   border-radius: var(--r);
   overflow: hidden;
   margin-bottom: 26px;
-  background: #dfe3f2;
+  background: var(--fill-2);
 }
 .detail-hero img {
   width: 100%;
@@ -257,7 +257,7 @@
 }
 .attach:hover {
   border-color: var(--teal);
-  background: #f9fefe;
+  background: var(--teal-tint);
 }
 .attach .ico {
   width: 40px;

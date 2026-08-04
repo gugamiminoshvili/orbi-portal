@@ -188,7 +188,7 @@ export default function InternetCard({ apt, onReload }) {
           <Button
             variant="ghost"
             size="sm"
-            style={{ color: 'var(--warn-ink)', borderColor: '#ffe1a8' }}
+            style={{ color: 'var(--warn-ink)', borderColor: 'var(--warn-line)' }}
             onClick={openPause}
           >
             <Icon name="pause" /> {t('apartments:pause')}
@@ -211,7 +211,7 @@ export default function InternetCard({ apt, onReload }) {
   }
 
   return (
-    <ServiceShell icon="wifi" iconBg="#ece7ff" iconColor="#6b4bff" name={t('apartments:internetName')} sub={sub} right={right}>
+    <ServiceShell icon="wifi" iconBg="var(--violet-bg)" iconColor="var(--violet-ink)" name={t('apartments:internetName')} sub={sub} right={right}>
       {body}
     </ServiceShell>
   )

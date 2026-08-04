@@ -1,4 +1,4 @@
-/* Ported from reference/orbi-portal-redesign.html lines 115-142 (header/crumbs/icon-btn); search + inline lang switch removed (owner request) — language now lives in LangMenu */
+/* Ported from reference/orbi-portal-redesign.html lines 115-142 (header/crumbs/icon-btn); search and the inline lang switch removed (owner request) — language now lives in the account menu */
 .header {
   height: var(--header-h);
   position: sticky;
@@ -54,10 +54,12 @@
   flex: 1;
 }
 
+/* Round, matching the account pill beside it — the header's controls read as
+   one family of pills rather than a squircle next to a capsule. */
 .icon-btn {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: 50%;
   background: var(--card);
   border: 1px solid var(--line-2);
   display: grid;
@@ -71,15 +73,21 @@
   color: var(--teal);
   border-color: var(--teal);
 }
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+/* Unread marker. Sits above the bell's right shoulder, ringed in the button's
+   own surface so it reads as detached from the glyph. */
 .icon-btn .dot {
   position: absolute;
-  top: 9px;
-  right: 10px;
-  width: 8px;
-  height: 8px;
+  top: 8px;
+  right: 9px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--neg);
-  border: 2px solid #fff;
+  border: 2px solid var(--card);
 }
 
 /* Ported from reference lines 689, 691 (mobile: show burger, hide search) */

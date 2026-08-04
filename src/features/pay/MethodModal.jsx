@@ -207,7 +207,7 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
                 style={{
                   display: 'flex', alignItems: 'center', gap: 14, width: '100%',
                   border: `1.5px solid ${selected ? 'var(--teal)' : 'var(--line-2)'}`,
-                  background: selected ? '#f3fdfc' : '#fff',
+                  background: selected ? 'var(--teal-tint)' : 'var(--card)',
                   opacity: overMax ? 0.55 : 1,
                   borderRadius: 12, padding: '14px 16px', cursor: overMax ? 'default' : 'pointer', textAlign: 'left',
                 }}
@@ -257,12 +257,14 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
                           style={{
                             display: 'flex', alignItems: 'center', gap: 12, width: '100%',
                             border: `1.5px solid ${bSelected ? 'var(--teal)' : 'var(--line-2)'}`,
-                            background: bSelected ? '#f3fdfc' : '#fff',
+                            background: bSelected ? 'var(--teal-tint)' : 'var(--card)',
                             borderRadius: 10, padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
                           }}
                         >
                           <span
                             style={{
+                              // The tile sits on the bank's own brand colour, which is fixed
+                              // in both themes — so the label is literally white, not --on-accent.
                               width: 30, height: 30, borderRadius: 8, background: b.color, color: '#fff',
                               fontSize: 11, fontWeight: 700, display: 'grid', placeItems: 'center', flex: 'none',
                             }}
