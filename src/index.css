@@ -20,20 +20,29 @@
   /* Brand + accent.
      The owner supplied the palette as three base colours, each with a 40%
      and a 10% variant (2026-08-04):
-       green #008E49 · red #E23737 · amber #FFA800
+       green #00663C · red #E23737 · amber #FFA800
      The percentages are the base over white, which is exactly the two roles
      the system already had: 10% is the tinted badge/panel background, 40% is
-     the border that sits on it. Anything darker than the base (--*-600,
-     --*-ink) is the base shaded toward black, so the hue never drifts. */
-  --teal:#008E49;          /* ORBI brand green (primary accent) */
-  --teal-600:#00723A;      /* hover — base at 80% */
-  --teal-soft:#E6F4ED;     /* chip / badge background — base at 10% */
-  --teal-line:#99D2B6;     /* border on a teal-soft surface — base at 40% */
-  --teal-ghost:#EFF7F2;    /* watermark tint (guide section numbers) */
-  --teal-ink:#006A37;      /* teal as FOREGROUND (text/icon) — never as a fill */
-  --teal-400:#14A85C;      /* lighter partner in the logo/CTA gradient */
-  --teal-soft-hover:#CCE8DB; /* base at 20% */
-  --teal-tint:#F4FAF7;     /* near-white green wash (selected rows, info panels) */
+     the border that sits on it. Anything darker than the base (--*-600) is
+     the base shaded toward black, so the hue never drifts. Every green below
+     is on hue 155°, the base's own.
+
+     The green was #008E49 for one commit before the owner replaced it with
+     the deeper #00663C. That also fixed a contrast problem: white on #008E49
+     was 4.23:1, borderline for a button label; on #00663C it is 7.08:1. */
+  --teal:#00663C;          /* ORBI brand green (primary accent) */
+  --teal-600:#004F2F;      /* hover — base shaded toward black */
+  --teal-soft:#E6F0EC;     /* chip / badge background — base at 10% */
+  --teal-line:#99C2B1;     /* border on a teal-soft surface — base at 40% */
+  --teal-ghost:#F0F6F3;    /* watermark tint (guide section numbers) — base at 6% */
+  /* Teal as FOREGROUND (text/icon), never as a fill. Same value as the base
+     here — at 7.1:1 on white and 6.1:1 on --teal-soft it needs no darkening —
+     but it stays a separate token because the two roles diverge in dark mode,
+     where the fill brightens and the ink brightens further. */
+  --teal-ink:#00663C;
+  --teal-400:#008E49;      /* lighter partner in the logo/CTA gradient */
+  --teal-soft-hover:#CCE0D8; /* base at 20% */
+  --teal-tint:#F4F9F7;     /* near-white green wash (selected rows, info panels) */
 
   /* Text/icons that sit ON a filled accent (--teal, --warn, --neg, --violet).
      A single token because the fills all take the same treatment: in light
@@ -62,16 +71,17 @@
   --line:#eceef4;
   --line-2:#e4e7f0;
   --card-line:rgba(228, 231, 240, .7); /* card hairline (softer than --line-2) */
-  --row-on:#F4FAF7;        /* selected row band (multi-pay table) */
+  --row-on:#F4F9F7;        /* selected row band (multi-pay table) */
 
   /* Semantic. Green/amber/red are the owner's three brand colours; --*-bg is
      the 10% variant, --*-line the 40%, --*-ink a shade dark enough to read on
-     the 10% (green 5.9:1, amber 4.6:1, red 5.4:1).
+     the 10% (green 6.1:1, amber 4.6:1, red 5.4:1 — the green needs no shading
+     at all, see --teal-ink).
      --info and --violet are NOT in that palette — they carry two meanings the
      three colours can't (a neutral notice, and Maintenance vs Utilities in
      the dashboard legend, which must not both be green). Flagged for the
      owner rather than forced into the brand set. */
-  --pos:#008E49;  --pos-bg:#E6F4ED;  --pos-ink:#006A37;   /* paid / active / positive */
+  --pos:#00663C;  --pos-bg:#E6F0EC;  --pos-ink:#00663C;   /* paid / active / positive */
   --warn:#FFA800; --warn-bg:#FFF6E6; --warn-line:#FFDC99; --warn-ink:#996500;  /* pause / pending / warning */
   --warn-600:#D98F00;
   --neg:#E23737;  --neg-bg:#FCEBEB;  --neg-line:#F3AFAF; --neg-ink:#B52C2C;   /* overdue / negative balance */
@@ -81,7 +91,7 @@
   /* Depth (colored — shadow/ring tints follow the theme) */
   --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
   --shadow-lg:0 18px 50px rgba(20,24,60,.18);
-  --ring:0 0 0 3px rgba(0,142,73,.28);
+  --ring:0 0 0 3px rgba(0,102,60,.28);
   --overlay:rgba(17, 20, 45, .5);       /* modal scrim */
   --overlay-soft:rgba(17, 20, 45, .4);  /* mobile sidebar scrim */
 
@@ -90,14 +100,14 @@
      they are the accent's own hue at low alpha (a coloured glow under a
      coloured button); in dark a glow reads as haze, so they become plain
      black and the borders keep the hue instead. */
-  --tint-teal-glow:rgba(0, 142, 73, .30);
+  --tint-teal-glow:rgba(0, 102, 60, .30);
   --tint-warn-glow:rgba(255, 168, 0, .28);
   --tint-drop:rgba(20, 24, 60, .12);
-  --tint-line-teal:rgba(0, 142, 73, 0.18);
+  --tint-line-teal:rgba(0, 102, 60, 0.18);
   --tint-line-warn:rgba(255, 168, 0, 0.22);
   --tint-line-info:rgba(54, 153, 255, 0.22);
-  --tint-ink-teal:rgba(0, 106, 55, 0.12);        /* chip button on a teal-soft field */
-  --tint-ink-teal-strong:rgba(0, 106, 55, 0.24);
+  --tint-ink-teal:rgba(0, 102, 60, 0.12);        /* chip button on a teal-soft field */
+  --tint-ink-teal-strong:rgba(0, 102, 60, 0.24);
 
   --skeleton-a:#eef0f6;
   --skeleton-b:#e4e7f0;
@@ -138,29 +148,30 @@
    1. Surfaces get LIGHTER as they come forward (--bg → --card →
       --surface-2 → --fill), the opposite of light mode, because on a
       dark page elevation reads as light, not as shadow.
-   2. The brand green splits in two. As a FILL it brightens to #0FBF69
-      so it doesn't sink into the page, which in turn flips --on-accent
-      to near-black (7.8:1) — white on a bright green would fail. As a
-      FOREGROUND it is --teal-ink #4FD98E (9.7:1 on --card).
+   2. The brand green splits in two, because #00663C on a dark page is
+      nearly invisible. As a FILL it brightens to #00C272 — same hue
+      155°, just light enough to carry weight — which in turn flips
+      --on-accent to near-black (8.1:1); white on a bright green would
+      fail. As a FOREGROUND it is --teal-ink #5AD8A4 (9.8:1 on --card).
 
    The owner's 40%/10% variants are white mixes, so they don't transfer:
    here the same three base colours are mixed into --card instead (10% -> 18%,
    40% -> 34%), which is the same idea against a dark ground.
 
    Measured on --card #171A22: --ink 14.6:1, --ink-2 9.7:1, --muted
-   5.5:1, --teal 7.2:1 — all AA or better. The accent ink/bg pairs land
-   between 6.5:1 and 8.1:1. */
+   5.5:1, --teal 7.4:1 — all AA or better. The accent ink/bg pairs land
+   between 6.5:1 and 8.7:1. */
 [data-theme='dark'] {
   /* Brand + accent */
-  --teal:#0FBF69;
-  --teal-600:#2FD07E;      /* hover brightens in dark rather than darkening */
-  --teal-soft:#132F29;
-  --teal-line:#0F412F;
-  --teal-ghost:#142827;
-  --teal-ink:#4FD98E;
-  --teal-400:#45D184;
-  --teal-soft-hover:#11382C;
-  --teal-tint:#142827;
+  --teal:#00C272;
+  --teal-600:#33D68F;      /* hover brightens in dark rather than darkening */
+  --teal-soft:#132827;
+  --teal-line:#0F342B;
+  --teal-ghost:#142325;
+  --teal-ink:#5AD8A4;
+  --teal-400:#3ADF9B;
+  --teal-soft-hover:#112E29;
+  --teal-tint:#142325;
   --on-accent:#08130D;
   --tint-on-accent:rgba(8, 19, 13, .35);
   --toast-bg:#2E3342;
@@ -180,12 +191,12 @@
   --line:#242835;
   --line-2:#2E3342;
   --card-line:rgba(46, 51, 66, .9);
-  --row-on:#142827;
+  --row-on:#142325;
 
   /* Semantic — red and amber keep their exact brand value as fills (a brand
      red stays the brand red, and amber is already bright); only green has to
      brighten, and only the tinted backgrounds and the ink invert. */
-  --pos:#0FBF69;  --pos-bg:#132F29;  --pos-ink:#4FD98E;
+  --pos:#00C272;  --pos-bg:#132827;  --pos-ink:#5AD8A4;
   --warn:#FFA800; --warn-bg:#41341C; --warn-line:#664A16; --warn-ink:#FFC24D;
   --warn-600:#FFBB33;
   --neg:#E23737;  --neg-bg:#3C1F26;  --neg-line:#5C2429; --neg-ink:#FF8A8A;
@@ -195,18 +206,18 @@
   /* Depth */
   --shadow:0 4px 24px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
   --shadow-lg:0 18px 50px rgba(0,0,0,.65);
-  --ring:0 0 0 3px rgba(15,191,105,.35);
+  --ring:0 0 0 3px rgba(0,194,114,.35);
   --overlay:rgba(4, 6, 12, .66);
   --overlay-soft:rgba(4, 6, 12, .55);
 
   --tint-teal-glow:rgba(0, 0, 0, .45);
   --tint-warn-glow:rgba(0, 0, 0, .45);
   --tint-drop:rgba(0, 0, 0, .5);
-  --tint-line-teal:rgba(15, 191, 105, 0.28);
+  --tint-line-teal:rgba(0, 194, 114, 0.28);
   --tint-line-warn:rgba(255, 168, 0, 0.28);
   --tint-line-info:rgba(54, 153, 255, 0.28);
-  --tint-ink-teal:rgba(79, 217, 142, 0.16);
-  --tint-ink-teal-strong:rgba(79, 217, 142, 0.28);
+  --tint-ink-teal:rgba(90, 216, 164, 0.16);
+  --tint-ink-teal-strong:rgba(90, 216, 164, 0.28);
 
   --skeleton-a:#1D212B;
   --skeleton-b:#252A36;

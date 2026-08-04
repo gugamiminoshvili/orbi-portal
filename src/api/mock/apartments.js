@@ -7,15 +7,15 @@ export const APTS = [
   { id: 'A5', project: 'Orbi Sea Towers', code: 'OST.A.17.1702', block: 'A', number: '1702', name: 'OST.A.17.1702', building: 'Orbi Sea Towers, Block A', addr: 'Khimshiashvili St 17, Batumi', type: '1 Bedroom', area: 45, floor: 17, status: 'active', balance: 320.00, nextDue: '-', rent: 1250, occupancy: 'Owner use', seed: 1 },
 ]
 
-// Stable colour per block/project for the building icon tiles. Shades of the
-// brand green #008E49 (owner palette, 2026-08-04) so each block reads as a
-// different building without leaving the brand. Raw hex rather than tokens:
-// these are gradient STOPS whose only job is to differ from each other, and
-// they sit under white glyphs in both themes.
+// Stable colour per block/project for the building icon tiles. Steps along the
+// brand green's own hue, 155° (owner palette, 2026-08-04), so each block reads
+// as a different building without leaving the brand. Raw hex rather than
+// tokens: these are gradient STOPS whose only job is to differ from each
+// other, and they sit under white glyphs in both themes.
 export const BLOCK_COLORS = {
-  'Orbi City|A': ['#008E49', '#14A85C'],
-  'Orbi City|B': ['#00693C', '#008E49'],
-  'Orbi Sea Towers|A': ['#00794A', '#00A85C'],
+  'Orbi City|A': ['#00663C', '#008F54'],
+  'Orbi City|B': ['#004C2D', '#00663C'],
+  'Orbi Sea Towers|A': ['#005C36', '#00804A'],
   '_default': ['#3F7A5A', '#5A9B78'],
 }
 export function blockGrad(a) {
