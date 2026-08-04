@@ -103,13 +103,10 @@
     padding: 0 14px;
     gap: 10px;
   }
-  .icon-btn.hide-sm {
-    display: none;
-  }
-  /* A phone header has ~95px left for the trail once the burger, language,
-     bell and account cluster have taken their space — the full path ran
-     underneath them. Keep only the current page, ellipsised; the burger and
-     the page's own back link cover navigating up. */
+  /* A phone header has ~150px left for the trail once the burger, bell and
+     account cluster have taken their space — the full path ran underneath
+     them. Keep only the current page, ellipsised; the burger and the page's
+     own back link cover navigating up. */
   .crumbs {
     font-size: 12px;
     overflow: hidden;

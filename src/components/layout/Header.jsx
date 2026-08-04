@@ -14,14 +14,12 @@ export default function Header({ crumbs, onBurger }) {
       </button>
       <Breadcrumbs items={crumbs} />
       <div className={styles.spacer} />
-      {/* Language moved into UserMenu (owner call 2026-08-04) — the header
-          keeps only the two notice controls and the account cluster. */}
+      {/* Owner calls 2026-08-04: language moved into UserMenu, and the help
+          "?" button is gone — the sidebar's own Help & guides footer covers
+          it. The header is the bell plus the account cluster. */}
       <button className={styles['icon-btn']} aria-label={t('common:ariaNotifications')}>
         <span className={styles.dot} />
         <Icon name="bell" />
-      </button>
-      <button className={`${styles['icon-btn']} ${styles['hide-sm']}`} aria-label={t('common:ariaHelp')}>
-        <Icon name="help" />
       </button>
       <UserMenu />
     </header>
