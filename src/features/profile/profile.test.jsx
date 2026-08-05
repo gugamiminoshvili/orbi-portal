@@ -94,7 +94,46 @@ describe('profile page', () => {
     fireEvent.change(screen.getByLabelText('Repeat new password'), { target: { value: 'abc' } })
     fireEvent.click(screen.getByRole('button', { name: 'Update password' }))
 
-    expect(await screen.findByText('Use at least 6 characters.')).toBeInTheDocument()
+    expect(await screen.findByText('Use at least 8 characters.')).toBeInTheDocument()
+  })
+
+  test('the password rules tick as the new password satisfies them', async () => {
+    renderApp(['/profile?tab=security'])
+    await screen.findByLabelText('New password')
+
+    const rule = (name) => screen.getByText(name).closest('li')
+    const LENGTH = 'At least 8 characters (required)'
+    // Nothing typed yet, so nothing is met.
+    expect(rule(LENGTH)).toHaveTextContent('not met yet')
+    expect(rule('Uppercase Latin letters (A-Z)')).toHaveTextContent('not met yet')
+
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'abcdefgh' } })
+    expect(rule(LENGTH)).toHaveTextContent('— met')
+    expect(rule('Lowercase Latin letters (a-z)')).toHaveTextContent('— met')
+    expect(rule('Numbers (0-9)')).toHaveTextContent('not met yet')
+
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'Abcdefg1' } })
+    for (const name of [LENGTH, 'Numbers (0-9)', 'Lowercase Latin letters (a-z)', 'Uppercase Latin letters (A-Z)']) {
+      expect(rule(name)).toHaveTextContent('— met')
+    }
+  })
+
+  test('only the length rule blocks submission; the character classes do not', async () => {
+    renderApp(['/profile?tab=security'])
+
+    fireEvent.change(await screen.findByLabelText('Current password'), { target: { value: 'oldpass1' } })
+    // 8 lowercase letters: length is met, the other three rules are not.
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'abcdefgh' } })
+    fireEvent.change(screen.getByLabelText('Repeat new password'), { target: { value: 'abcdefgh' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Update password' }))
+
+    await waitFor(() => expect(screen.getByLabelText('Current password')).toHaveValue(''))
+  })
+
+  test('the rule list is the new-password field\'s description', async () => {
+    renderApp(['/profile?tab=security'])
+    const field = await screen.findByLabelText('New password')
+    expect(field).toHaveAccessibleDescription(/Password requirements/)
   })
 
   test('mismatched repeat password is reported on blur, before any submit', async () => {

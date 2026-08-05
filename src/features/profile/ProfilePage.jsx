@@ -25,7 +25,19 @@ function initials(fullname) {
     .toUpperCase()
 }
 
-const MIN_PASSWORD = 6
+const MIN_PASSWORD = 8
+
+// The password policy the owner supplied (2026-08-04). Only the length is
+// marked required and is the only rule validate() blocks on; the three
+// character classes are shown live so the user can see what makes the
+// password stronger, without locking them out of something the backend
+// would have accepted.
+const PASSWORD_RULES = [
+  { key: 'length', test: (v) => v.length >= MIN_PASSWORD },
+  { key: 'number', test: (v) => /[0-9]/.test(v) },
+  { key: 'lower', test: (v) => /[a-z]/.test(v) },
+  { key: 'upper', test: (v) => /[A-Z]/.test(v) },
+]
 
 export default function ProfilePage() {
   const { t } = useTranslation()
@@ -218,7 +230,12 @@ function SecurityPane() {
         onChange={setNext}
         error={errors.next}
         autoComplete="new-password"
+        describedBy="password-rules"
       />
+      {/* Directly under the field it describes, and live, so the user sees a
+          rule turn green as they satisfy it rather than finding out on
+          submit. */}
+      <PasswordRules value={next} />
       <PasswordField
         id="repeat-password"
         label={t('profile:repeatPassword')}
@@ -237,7 +254,34 @@ function SecurityPane() {
   )
 }
 
-function PasswordField({ id, label, value, onChange, onBlur, error, autoComplete }) {
+// The rule list. Each row states whether it is met in text as well as by the
+// tick, because colour alone can't carry that — and the whole block is the
+// new-password field's accessible description, so a screen reader reaches it
+// from the field instead of having to hunt for it.
+function PasswordRules({ value }) {
+  const { t } = useTranslation()
+  return (
+    <div id="password-rules" className={styles.rules}>
+      <div className={styles['rules-title']}>{t('profile:rulesTitle')}</div>
+      <ul>
+        {PASSWORD_RULES.map((rule) => {
+          const met = rule.test(value)
+          return (
+            <li key={rule.key} className={met ? styles.met : ''}>
+              <span className={styles.mark} aria-hidden="true">
+                {met && <Icon name="check" size={11} />}
+              </span>
+              <span>{t(`profile:rules.${rule.key}`, { min: MIN_PASSWORD })}</span>
+              <span className="sr-only">{t(met ? 'profile:ruleMet' : 'profile:ruleUnmet')}</span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function PasswordField({ id, label, value, onChange, onBlur, error, autoComplete, describedBy }) {
   const [shown, setShown] = useState(false)
   const { t } = useTranslation()
   return (
@@ -253,6 +297,7 @@ function PasswordField({ id, label, value, onChange, onBlur, error, autoComplete
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           aria-invalid={error ? 'true' : undefined}
+          aria-describedby={describedBy}
         />
         <button
           type="button"

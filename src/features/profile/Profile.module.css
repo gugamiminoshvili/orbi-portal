@@ -219,6 +219,61 @@
   font-size: 13px;
   line-height: 1.5;
 }
+/* Password rules. Sits between the New password field and Repeat, so the
+   negative margin pulls it up against the field it belongs to instead of
+   floating in the form's own 16px rhythm. */
+.rules {
+  margin-top: calc(var(--s4) * -1 + 2px);
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.rules-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.rules ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.rules li {
+  display: flex;
+  /* Not center: on a phone the longest rule wraps to two lines, and a centred
+     tick would then float between them instead of marking the first. */
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  transition: color var(--t);
+}
+.rules li.met {
+  color: var(--teal-ink);
+}
+/* Empty ring until the rule is met, then the tick sits inside it — the box
+   is the same size either way so the rows never shift as you type. */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;   /* optically centres the ring against a single 19px line */
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-2);
+  color: var(--on-accent);
+  transition: var(--t);
+}
+.met .mark {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
 .field label {
   display: block;
   font-size: 12px;

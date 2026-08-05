@@ -487,7 +487,16 @@
     "newPassword": "New password",
     "repeatPassword": "Repeat new password",
     "updatePassword": "Update password",
-    "passwordHint": "Use at least {{min}} characters. You will stay signed in on this device.",
+    "passwordHint": "You will stay signed in on this device.",
+    "rulesTitle": "Password requirements",
+    "rules": {
+      "length": "At least {{min}} characters (required)",
+      "number": "Numbers (0-9)",
+      "lower": "Lowercase Latin letters (a-z)",
+      "upper": "Uppercase Latin letters (A-Z)"
+    },
+    "ruleMet": "— met",
+    "ruleUnmet": "— not met yet",
     "passwordChanged": "Password changed successfully.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
