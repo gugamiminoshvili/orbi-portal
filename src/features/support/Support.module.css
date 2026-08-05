@@ -653,6 +653,94 @@
   color: var(--muted);
 }
 
+/* ---------- Attachment chips ----------
+   One chip shape, two uses: files picked on the new-ticket form but not
+   uploaded yet (.pending-files, each with a remove ✕), and files already
+   stored on a message (.msg-files, each a download button). */
+.pending-files,
+.msg-files {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--t);
+}
+li.file-chip {
+  cursor: default;
+}
+button.file-chip:hover:not(:disabled) {
+  border-color: var(--teal);
+  color: var(--teal-ink);
+}
+button.file-chip:disabled {
+  opacity: .6;
+  cursor: progress;
+}
+.file-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.file-chip svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+/* The name is the only part allowed to shrink — the size and the icons stay
+   legible however long the filename is. */
+.fc-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fc-size {
+  color: var(--muted);
+  flex: none;
+}
+.fc-x {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: none;
+  border-radius: 50%;
+  background: var(--fill);
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+.fc-x:hover {
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+}
+
+/* Inside a chat bubble the chip sits on a tinted ground, so it needs its own
+   surface rather than --card, which would disappear against the incoming
+   bubble in light mode and glare in dark. */
+.bubble .file-chip {
+  background: var(--surface-2);
+  border-color: var(--card-line);
+}
+
 .spin {
   width: 14px;
   height: 14px;

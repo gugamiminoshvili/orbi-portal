@@ -3,9 +3,10 @@ import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
-import { USE_MOCK } from '../../api/client'
 import { getTicket, sendMessage, uploadTicketFile } from '../../api/endpoints/support'
 import { TSTATUS, topicById } from '../../api/mock/tickets'
+import { ATTACHMENT_ACCEPT, partitionFiles } from '../../utils/attachments'
+import { AttachmentList } from './Attachments'
 import Icon from '../../components/ui/Icon'
 import Button from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
@@ -26,6 +27,7 @@ export default function TicketChatPane() {
   const { data: ticket, loading, setData } = useAsync(() => getTicket(ticketId), [ticketId])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const bodyRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -68,27 +70,39 @@ export default function TicketChatPane() {
     }
   }
 
-  // Mock mode keeps the existing toast-only stub (no real upload endpoint to
-  // exercise). Real mode opens a hidden file input and, once a file is
-  // picked, uploads it via POST /mobileApi/tickets/file/ (uploadTicketFile).
   function handleAttach() {
-    if (USE_MOCK) {
-      toast(t('support:attachToast'))
-      return
-    }
     fileInputRef.current?.click()
   }
 
+  // Uploads via POST /mobileApi/tickets/file/, then re-reads the ticket so the
+  // file appears in the thread. The endpoint returns only a stored path, and
+  // takes no message id, so where the file lands is the server's call — the
+  // re-fetch is what makes the result visible instead of a bare toast.
   async function handleFileChange(e) {
-    const file = e.target.files?.[0]
+    const picked = Array.from(e.target.files || [])
     e.target.value = '' // allow re-selecting the same file next time
-    if (!file) return
-    try {
-      await uploadTicketFile(ticket.id, file)
-      toast(t('support:attachSuccessToast'))
-    } catch {
-      toast(t('support:attachErrorToast'))
+    const { accepted, errors } = partitionFiles(picked, t)
+    if (errors.length) toast(errors[0])
+    if (accepted.length === 0) return
+
+    setUploading(true)
+    let failed = 0
+    for (const file of accepted) {
+      try {
+        await uploadTicketFile(ticket.id, file)
+      } catch {
+        failed += 1
+      }
     }
+    try {
+      setData(await getTicket(ticket.id))
+    } catch {
+      // The upload itself already succeeded; a failed refresh only means the
+      // thread is stale until the next visit, so don't report it as a failure.
+    }
+    setUploading(false)
+    bumpTicketsRefresh()
+    toast(failed > 0 ? t('support:attachSomeFailed', { count: failed }) : t('support:attachSuccessToast'))
   }
 
   let lastDate = null
@@ -142,6 +156,7 @@ export default function TicketChatPane() {
                 <div className={styles.bubble}>
                   {!m.me && <div className={styles.who}>{m.who || t('support:orbiSupport')}</div>}
                   {m.text}
+                  <AttachmentList files={m.files} />
                   <div className={styles.time}>{m.time}</div>
                 </div>
               </div>
@@ -161,22 +176,23 @@ export default function TicketChatPane() {
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          {!USE_MOCK && (
-            <input
-              ref={fileInputRef}
-              type="file"
-              hidden
-              onChange={handleFileChange}
-            />
-          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ATTACHMENT_ACCEPT}
+            hidden
+            onChange={handleFileChange}
+          />
           <button
             type="button"
             className={`${buttonStyles.btn} ${buttonStyles['btn-ghost']} ${buttonStyles['btn-sm']}`}
             onClick={handleAttach}
+            disabled={uploading}
             aria-label={t('support:attach')}
             title={t('support:attach')}
           >
-            <Icon name="clip" />
+            {uploading ? <span className={styles.spin} /> : <Icon name="clip" />}
           </button>
           <Button onClick={handleSend} disabled={sending} aria-label={t('support:send')}>
             <Icon name="send" />

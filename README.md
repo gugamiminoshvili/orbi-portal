@@ -381,6 +381,18 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     `electricityBalanceGEL`, `InternetTVBalanceGEL`), which sign means the
     resident owes money.
 
+18. **Ticket attachments: allowed types, size limit, and where a file lands
+    in the thread.** `POST /mobileApi/tickets/file/` is documented as
+    rejecting with `FILE_TYPE_NOT_ALLOWED` but never says which types, and
+    documents no size limit. `src/utils/attachments.js` enforces PDF/JPG/PNG
+    and 5 MB — the promise the UI has been printing since the prototype, not
+    anything the backend confirmed. Both are single constants there; widen
+    them once the real policy is known. Two smaller unknowns: the endpoint
+    takes `ticketId` and no message id, so which message the file attaches to
+    is the server's choice (both callers re-fetch the ticket and render
+    whatever `files[]` comes back, rather than guessing); and `file` is
+    singular in the docs, so multiple files are sent as one request each.
+
 To wire up more of a real backend once these are answered:
 
 1. Set `VITE_API_BASE` (+ `VITE_USE_PROXY` in dev) and `VITE_USE_MOCK=false`.

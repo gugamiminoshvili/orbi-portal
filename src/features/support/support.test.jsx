@@ -54,3 +54,81 @@ test('send message appends bubble', async () => {
   fireEvent.click(screen.getByRole('button', { name: /Send/ }))
   expect(await screen.findByText('any update?')).toBeInTheDocument()
 })
+
+// ---------- Attachments ----------
+// POST /tickets/file/ takes a ticketId, so the new-ticket form can only hold
+// files until createTicket() returns one. The mock endpoint appends them to
+// the ticket's last message, which is what makes them visible in the thread.
+
+function pickFiles(input, files) {
+  Object.defineProperty(input, 'files', { value: files, configurable: true })
+  fireEvent.change(input)
+}
+
+function fakeFile(name, type, size = 100) {
+  const f = new File(['x'], name, { type })
+  Object.defineProperty(f, 'size', { value: size })
+  return f
+}
+
+test('files picked on the new-ticket form show as removable chips', async () => {
+  const { container } = renderApp(['/support/new'])
+  await screen.findByText('Select topic')
+  const input = container.querySelector('input[type="file"]')
+
+  pickFiles(input, [fakeFile('lease.pdf', 'application/pdf', 2048)])
+
+  expect(await screen.findByText('lease.pdf')).toBeInTheDocument()
+  expect(screen.getByText('2 KB')).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Remove lease.pdf' }))
+  expect(screen.queryByText('lease.pdf')).not.toBeInTheDocument()
+})
+
+test('a rejected file is reported and never queued', async () => {
+  const { container } = renderApp(['/support/new'])
+  await screen.findByText('Select topic')
+  const input = container.querySelector('input[type="file"]')
+
+  // One allowed file alongside one that isn't: the good one still queues.
+  pickFiles(input, [fakeFile('notes.txt', 'text/plain'), fakeFile('ok.png', 'image/png')])
+
+  expect(await screen.findByText('Only PDF, JPG and PNG files can be attached.')).toBeInTheDocument()
+  expect(screen.getByText('ok.png')).toBeInTheDocument()
+  expect(screen.queryByText('notes.txt')).not.toBeInTheDocument()
+})
+
+test('submitting uploads the queued files and they appear in the thread', async () => {
+  const { container } = renderApp(['/support/new'])
+  fireEvent.click(await screen.findByText('Select topic'))
+  const dialog = await screen.findByRole('dialog')
+  fireEvent.click(within(dialog).getByText('Other Request'))
+  fireEvent.change(screen.getByPlaceholderText(/Describe your issue/), { target: { value: 'See attached' } })
+  pickFiles(container.querySelector('input[type="file"]'), [fakeFile('lease.pdf', 'application/pdf')])
+
+  fireEvent.click(screen.getByRole('button', { name: /Submit/ }))
+
+  // Landed in the chat, with the file rendered on the message.
+  expect(await screen.findByText('See attached')).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: /lease\.pdf/ })).toBeInTheDocument()
+})
+
+test('attaching from the chat composer adds the file to the thread', async () => {
+  const { container } = renderApp(['/support/t/101245'])
+  await screen.findByPlaceholderText(/Write a message/)
+
+  pickFiles(container.querySelector('input[type="file"]'), [fakeFile('meter.png', 'image/png')])
+
+  expect(await screen.findByRole('button', { name: /meter\.png/ })).toBeInTheDocument()
+})
+
+test('a stored file with no bytes behind it says so instead of downloading', async () => {
+  const { container } = renderApp(['/support/t/101245'])
+  await screen.findByPlaceholderText(/Write a message/)
+  pickFiles(container.querySelector('input[type="file"]'), [fakeFile('receipt.png', 'image/png')])
+
+  fireEvent.click(await screen.findByRole('button', { name: /receipt\.png/ }))
+
+  // Mock mode holds the file's metadata but not its content.
+  expect(await screen.findByText('This demo has no file to download.')).toBeInTheDocument()
+})

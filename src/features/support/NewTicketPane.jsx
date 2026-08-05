@@ -4,10 +4,18 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '../../context/ToastContext'
 import { useModal } from '../../context/ModalContext'
 import { useAsync } from '../../hooks/useAsync'
-import { createTicket } from '../../api/endpoints/support'
+import { createTicket, uploadTicketFile } from '../../api/endpoints/support'
 import { listApartments } from '../../api/endpoints/apartments'
 import { SUPPORT_TOPICS, topicById } from '../../api/mock/tickets'
 import { blockGrad } from '../../api/mock/apartments'
+import {
+  ATTACHMENT_ACCEPT,
+  ATTACHMENT_TYPE_LABEL,
+  MAX_ATTACHMENT_BYTES,
+  formatBytes,
+  partitionFiles,
+} from '../../utils/attachments'
+import { PendingAttachments } from './Attachments'
 import Icon from '../../components/ui/Icon'
 import Button from '../../components/ui/Button'
 import { SearchField } from '../../components/ui/Field'
@@ -76,7 +84,11 @@ export default function NewTicketPane() {
   const [aptOpen, setAptOpen] = useState(false)
   const [aptQuery, setAptQuery] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  // Held locally until the ticket exists: POST /tickets/file/ needs a
+  // ticketId, and on this form there isn't one yet.
+  const [files, setFiles] = useState([])
   const comboRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     function onDocClick(e) {
@@ -104,14 +116,44 @@ export default function NewTicketPane() {
     if (!canSubmit || submitting) return
     setSubmitting(true)
     const ticket = await createTicket({ topic, apts: selectedApts, text: text.trim() })
+
+    // Create first, then upload — one request per file, since the endpoint
+    // takes a single `file`. A failed upload doesn't undo the ticket: the
+    // message is already filed, so the honest outcome is "ticket created, N
+    // attachments didn't make it" rather than losing the whole submission.
+    let failed = 0
+    for (const file of files) {
+      try {
+        await uploadTicketFile(ticket.id, file)
+      } catch {
+        failed += 1
+      }
+    }
+
     setSubmitting(false)
     bumpTicketsRefresh()
-    toast(t('support:createdToast', { id: ticket.id }))
+    toast(
+      failed > 0
+        ? t('support:attachSomeFailed', { count: failed })
+        : t('support:createdToast', { id: ticket.id })
+    )
     navigate(`/support/t/${ticket.id}`)
   }
 
   function handleAttach() {
-    toast(t('support:attachToast'))
+    fileInputRef.current?.click()
+  }
+
+  function handleFilesPicked(e) {
+    const picked = Array.from(e.target.files || [])
+    e.target.value = '' // so re-picking the same file fires change again
+    const { accepted, errors } = partitionFiles(picked, t)
+    if (errors.length) toast(errors[0])
+    if (accepted.length) setFiles((prev) => [...prev, ...accepted])
+  }
+
+  function removeFile(index) {
+    setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
   return (
@@ -252,6 +294,14 @@ export default function NewTicketPane() {
           </div>
 
           <div className={styles['sup-attach-row']}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ATTACHMENT_ACCEPT}
+              hidden
+              onChange={handleFilesPicked}
+            />
             <button
               type="button"
               className={`${buttonStyles.btn} ${buttonStyles['btn-ghost']} ${buttonStyles['btn-sm']}`}
@@ -259,8 +309,14 @@ export default function NewTicketPane() {
             >
               <Icon name="clip" /> {t('support:attachFiles')}
             </button>
-            <span className={styles.hint}>{t('support:attachHint')}</span>
+            <span className={styles.hint}>
+              {t('support:attachHint', {
+                types: ATTACHMENT_TYPE_LABEL,
+                max: formatBytes(MAX_ATTACHMENT_BYTES),
+              })}
+            </span>
           </div>
+          <PendingAttachments files={files} onRemove={removeFile} />
         </div>
       </div>
 

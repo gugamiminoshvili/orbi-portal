@@ -127,17 +127,49 @@ export async function sendMessage(id, text) {
   return getTicket(id)
 }
 
-// New in I6 for the support attach button (TicketChatPane real mode).
-// Mock branch returns a fake stored-file path so the function is safe to
-// call under either mode; the mock UI path never actually calls it (it
-// keeps its existing toast-only stub).
+// POST /mobileApi/tickets/file/ — multipart `file` + `ticketId`.
+//
+// The endpoint takes a ticket id and no message id, so the doc doesn't say
+// which message in the thread the file lands on. Both callers therefore
+// re-fetch the ticket afterwards and render whatever `files[]` the messages
+// come back with, rather than guessing a placement locally.
+//
+// The mock branch appends to the ticket's last message so the demo shows the
+// whole loop (upload -> chip -> thread), instead of a toast that claims
+// nothing happened. `id` is negative to keep mock ids from ever colliding
+// with a real ticket_file id.
+let mockFileSeq = 0
 export async function uploadTicketFile(ticketId, file) {
   if (USE_MOCK) {
     await delay()
-    return `mock/ticket_file/${Date.now()}/`
+    mockFileSeq += 1
+    const ticket = TICKETS.find((x) => x.id === Number(ticketId))
+    const stored = {
+      id: -mockFileSeq,
+      name: file?.name,
+      size: file?.size,
+      type: file?.type,
+      url: `mock/ticket_file/${mockFileSeq}/`,
+    }
+    const last = ticket?.msgs?.[ticket.msgs.length - 1]
+    if (last) last.files = [...(last.files || []), stored]
+    return stored.url
   }
   const form = new FormData()
   form.append('file', file)
   form.append('ticketId', String(ticketId))
   return httpMultipart('/mobileApi/tickets/file/', { method: 'POST', body: form })
+}
+
+// GET /mobileApi/ticket_file/{id}/ — the stored file's bytes. Needs the
+// Bearer header, so it can't be a plain <a href>: the caller turns the blob
+// into an object URL and clicks it. Mock mode has no bytes to serve and
+// returns null, which the caller reports rather than downloading a
+// fabricated file.
+export async function downloadTicketFile(fileId) {
+  if (USE_MOCK) {
+    await delay()
+    return null
+  }
+  return http(`/mobileApi/ticket_file/${fileId}/`, { blob: true })
 }
