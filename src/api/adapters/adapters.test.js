@@ -561,7 +561,10 @@ describe('adaptCommunals', () => {
   test('reads the top-level aggregated sums (not a recomputed per-apartment sum)', () => {
     const { utilities, maintenance } = adaptCommunals(communals)
     expect(utilities).toEqual({ electricitySum: 71.38, internetSum: 50, currency: 'GEL' })
-    expect(maintenance).toEqual({ sum: 657.71, debtSum: -637.12, currency: 'USD' })
+    // Renamed by meaning, not by the backend's field names: balance_sum
+    // (the positive split) is what is owed, debt_sum (the negative split) is
+    // what has been paid ahead. See adaptCommunals + utils/balance.js.
+    expect(maintenance).toEqual({ owed: 657.71, advance: -637.12, currency: 'USD' })
   })
 
   test('merges electricity/water/internettv/flatBalance detail by apartment code', () => {
@@ -612,7 +615,7 @@ describe('adaptCommunals', () => {
   test('empty/missing dto yields empty sums and an empty apartment list', () => {
     expect(adaptCommunals({})).toEqual({
       utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
-      maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+      maintenance: { owed: 0, advance: 0, currency: 'USD' },
       byApartment: [],
     })
     expect(adaptCommunals().byApartment).toEqual([])

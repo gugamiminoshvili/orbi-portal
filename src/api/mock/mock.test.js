@@ -49,14 +49,15 @@ test('mockCommunals derives byApartment from the real mock APTS/SERVICES', () =>
   // GEL-denominated SERVICES numbers (see mockCommunals' comment); reporting
   // USD would make the multi-pay flow double-convert them.
   expect(maintenance.currency).toBe('GEL')
-  // sums are the positive/negative split of the per-apartment balances
-  expect(maintenance.debtSum).toBeLessThanOrEqual(0)
-  expect(maintenance.sum).toBeGreaterThanOrEqual(0)
+  // The positive/negative split of the per-apartment balances: positives are
+  // owed, negatives are paid ahead (utils/balance.js).
+  expect(maintenance.owed).toBeGreaterThanOrEqual(0)
+  expect(maintenance.advance).toBeLessThanOrEqual(0)
 })
 test('mockContractsSummary mirrors the live crm-less account', () => {
   expect(mockContractsSummary()).toEqual({ empty: true })
 })
-test('mockUnpaidInvoices lists one row per negative-balance mock service', () => {
+test('mockUnpaidInvoices lists one row per owed (positive-balance) mock service', () => {
   const { count, invoices } = mockUnpaidInvoices()
   expect(count).toBe(invoices.length)
   expect(invoices.every((inv) => inv.debtAmount > 0)).toBe(true)

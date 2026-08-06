@@ -69,8 +69,10 @@ export function mockCommunals() {
       currency: 'GEL',
     },
     maintenance: {
-      sum: sumPositive(byApartment.map((a) => a.maintenance)),
-      debtSum: sumNegative(byApartment.map((a) => a.maintenance)),
+      // Same split the live aggregates carry, named by meaning (see
+      // adaptCommunals): positives are owed, negatives are paid ahead.
+      owed: sumPositive(byApartment.map((a) => a.maintenance)),
+      advance: sumNegative(byApartment.map((a) => a.maintenance)),
       // 'GEL', NOT the live payload's 'USD': the mock balances above are the
       // SERVICES numbers every other mock screen renders with ₾ (the detail
       // page's "Pay ₾120.00" is -maintenance.balance verbatim). Reporting
@@ -92,7 +94,7 @@ export function mockContractsSummary() {
   return { empty: true }
 }
 
-// One unpaid-invoice-shaped row per mock apartment service with a negative
+// One unpaid-invoice-shaped row per mock apartment service with a positive
 // (owed) balance — the closest mock analog to the live `/payment/` list
 // (CustomerInvoiceSerializer rows keyed by epcode/service/flat).
 export function mockUnpaidInvoices() {
@@ -100,21 +102,21 @@ export function mockUnpaidInvoices() {
   let id = 1000
   for (const a of APTS) {
     const s = SERVICES[a.id]
-    if (s.maintenance.balance < 0) {
+    if (s.maintenance.balance > 0) {
       invoices.push({
         id: id++,
         epcode: a.apCode,
-        debtAmount: -s.maintenance.balance,
+        debtAmount: s.maintenance.balance,
         service: 'maintenance',
         flat: a.id,
         createdAt: '-',
       })
     }
-    if (s.electricity.balance < 0) {
+    if (s.electricity.balance > 0) {
       invoices.push({
         id: id++,
         epcode: a.apCode,
-        debtAmount: -s.electricity.balance,
+        debtAmount: s.electricity.balance,
         service: 'electricity',
         flat: a.id,
         createdAt: '-',

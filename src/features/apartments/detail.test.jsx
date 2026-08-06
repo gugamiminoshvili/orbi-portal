@@ -116,3 +116,36 @@ test('Electricity Pay link lands on step 3 of the multi-pay flow with A1 presele
   const row = screen.getByText('OCT.A.30.3026').closest('tr')
   expect(within(row).getByRole('checkbox')).toBeChecked()
 })
+
+// ---------- Sign convention (owner ruling 2026-08-06) ----------
+// Positive = the resident owes, negative = paid ahead. The colour and the
+// Pay button have to agree; a green figure beside a Pay button, or a red one
+// on an advance, is the failure this pair of tests exists to catch.
+// Queries scope to the card's own header button, since several service cards
+// show a "Balance" metric and more than one of them can read 0.00.
+
+test('a debt is red and offers a Pay button for that exact amount', async () => {
+  renderApp(['/apartments/A1']) // A1 maintenance balance is +120 (owed)
+  const card = await screen.findByRole('button', { name: /Maintenance/ })
+
+  expect(within(card).getByText('120.00 \u20be').className).toMatch(/neg/)
+  expect(within(card).getByText('120.00 \u20be').className).not.toMatch(/pos/)
+
+  fireEvent.click(card)
+  // Pays the balance itself, not its negation.
+  // \s* because fmt() joins amount and symbol with a non-breaking space.
+  expect(screen.getByRole('link', { name: /Pay 120\.00\s*\u20be/ })).toBeInTheDocument()
+})
+
+test('an advance is green and offers no Pay button', async () => {
+  renderApp(['/apartments/A5']) // A5 maintenance balance is -40 (paid ahead)
+  const card = await screen.findByRole('button', { name: /Maintenance/ })
+
+  // Nothing is due, so the header metric reads 0 - and reads green.
+  expect(within(card).getByText('0.00 \u20be').className).toMatch(/pos/)
+
+  fireEvent.click(card)
+  // The real balance stays visible in the panel, signed and green.
+  expect(screen.getByText('-40.00 \u20be').className).toMatch(/pos/)
+  expect(screen.queryByRole('link', { name: /^Pay / })).not.toBeInTheDocument()
+})

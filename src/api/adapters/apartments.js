@@ -11,9 +11,11 @@
 //    their *GEL variants are read below; MAINTENANCE is billed in the
 //    contract currency (live: USD) and is read from the un-converted
 //    `apartmentBalance` + `apartmentBalanceCurrency` (owner call 2026-07-30).
-//    The live sign convention matches the v1 mock exactly: negative = owed
-//    (live apartmentBalance -637.12 / InternetTVBalanceGEL -69.13 are debts),
-//    so values pass through un-negated.
+//    Balances pass through un-negated; what a sign MEANS is decided once, in
+//    utils/balance.js (positive = owed, owner ruling 2026-08-06). Note the
+//    live sample's apartmentBalance -637.12 / InternetTVBalanceGEL -69.13
+//    are therefore advances, not debts — the reading this code held until
+//    that ruling was the opposite one (README §17).
 //  - Each flat embeds its internet subscription as `orbinet_agreement`
 //    (empty {} when there is no plan) — services.internet is synthesized
 //    from it via adapters/internet.js's adaptAgreement.
@@ -61,7 +63,7 @@ export function flatId(apartment) {
 // Balances may arrive as numbers (live) or strings (doc examples). Parse
 // defensively: a missing or non-numeric value becomes 0 rather than NaN,
 // since balances flow straight into fmt() (utils/format.js) and arithmetic
-// (`neg = balance < 0`, PayPage's `-apt.balance`) that must not see NaN.
+// (utils/balance.js's owes()/amountOwed()) that must not see NaN.
 function num(value) {
   const n = Number(value)
   return Number.isNaN(n) ? 0 : n
@@ -103,9 +105,9 @@ export function adaptProperty(dto = {}) {
 //    treated as Active. FLAG: this is an inference, not a status field.
 //  - services.internet comes from the embedded orbinet_agreement
 //    (adaptAgreement) plus the flat's own InternetTVBalanceGEL for
-//    `balance` — negative-when-owed on the live payload, same convention
-//    InternetCard's `neg = s.balance < 0` / `fmt(-s.balance)` already
-//    expect, so no sign flip.
+//    `balance` — passed through unchanged. Which sign means "owed" is a
+//    single app-wide rule (utils/balance.js: positive = owed), so no
+//    adapter does a sign flip of its own.
 function adaptServicesFromProperty(dto = {}) {
   const displayServices = Array.isArray(dto.display_services) ? dto.display_services : []
   return {

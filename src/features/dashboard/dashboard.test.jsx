@@ -20,7 +20,7 @@ import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from '
 
 const COMMUNALS = {
   utilities: { electricitySum: 71.38, internetSum: 50, currency: 'GEL' },
-  maintenance: { sum: 657.71, debtSum: -637.12, currency: 'USD' },
+  maintenance: { owed: 657.71, advance: -637.12, currency: 'USD' },
   byApartment: [],
 }
 const RATES = { rates: [{ pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 }], source: 'NBG' }
@@ -51,22 +51,25 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
 
-    // maintenance debt = abs(debtSum), not the credit-only `sum` field —
-    // rendered in the Maintenance stat tile (which uses fmt's inline symbol).
-    expect(screen.getAllByText('637.12 $').length).toBeGreaterThan(0)
+    // The debt is `owed` — the POSITIVE split of the per-apartment balances
+    // (utils/balance.js); `advance` is what residents have paid ahead.
+    // Rendered in the Maintenance stat tile (which uses fmt's inline symbol).
+    expect(screen.getAllByText('657.71 $').length).toBeGreaterThan(0)
     // utilities = electricitySum + internetSum = 121.38 — same tile treatment.
     expect(screen.getAllByText('121.38 ₾').length).toBeGreaterThan(0)
     // The debt card splits the symbol into its own element, so the number is
     // its own text node — twice each: the headline figure and the legend line.
-    expect(screen.getAllByText('637.12')).toHaveLength(2)
+    expect(screen.getAllByText('657.71')).toHaveLength(2)
     expect(screen.getAllByText('121.38')).toHaveLength(2)
     // Each headline carries the balance it stands for, for assistive tech.
-    expect(screen.getByText('Maintenance Debt: 637.12 $')).toBeInTheDocument()
+    expect(screen.getByText('Maintenance Debt: 657.71 $')).toBeInTheDocument()
     expect(screen.getByText('Utilities Debt: 121.38 ₾')).toBeInTheDocument()
     // No merged cross-currency total (owner request 2026-07-21): the two
-    // currencies stay on their own lines, nothing shows the old 683.21 $.
-    expect(screen.queryByText('683.21 $')).not.toBeInTheDocument()
-    expect(screen.queryByText('683.21')).not.toBeInTheDocument()
+    // currencies stay on their own lines, nothing sums them.
+    expect(screen.queryByText('779.09 $')).not.toBeInTheDocument()
+    expect(screen.queryByText('779.09')).not.toBeInTheDocument()
+    // ...and the advance total is not the headline.
+    expect(screen.queryByText('637.12 $')).not.toBeInTheDocument()
     expect(screen.queryByText('Total')).not.toBeInTheDocument()
 
     expect(screen.getByText('USD / GEL')).toBeInTheDocument()
@@ -83,14 +86,14 @@ describe('DashboardPage', () => {
     // fixture's exact numbers.
     getCommunals.mockResolvedValue({
       utilities: { electricitySum: 71.38, internetSum: 50, currency: 'GEL' },
-      maintenance: { sum: 100, debtSum: -300, currency: 'GEL' },
+      maintenance: { owed: 300, advance: -100, currency: 'GEL' },
       byApartment: [],
     })
     renderApp(['/dashboard'])
 
     await screen.findByRole('heading', { name: 'Dashboard' })
 
-    // maintenance debt = abs(-300) = 300, shown in ₾ (not $).
+    // maintenance debt = owed 300, shown in ₾ (not $).
     expect(screen.getAllByText('300.00 ₾').length).toBeGreaterThan(0)
     expect(screen.getByText('Maintenance Debt: 300.00 ₾')).toBeInTheDocument()
     // utilities = 71.38 + 50 = 121.38 — same as the USD-branch fixture.
@@ -104,9 +107,9 @@ describe('DashboardPage', () => {
   test('hides the exchange-rates card when rates are unavailable', async () => {
     getRates.mockResolvedValue(null)
     renderApp(['/dashboard'])
-
     await screen.findByRole('heading', { name: 'Dashboard' })
-    expect(screen.getAllByText('637.12 $').length).toBeGreaterThan(0)
+
+    expect(screen.getAllByText('657.71 $').length).toBeGreaterThan(0)
     expect(screen.getAllByText('121.38 ₾').length).toBeGreaterThan(0)
     expect(screen.queryByText('Exchange rates')).not.toBeInTheDocument()
   })

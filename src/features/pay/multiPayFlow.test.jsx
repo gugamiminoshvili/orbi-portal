@@ -9,8 +9,8 @@ import { AppRoutes } from '../../routes'
 // Stub the data layer (same vi.mock-the-endpoints-module pattern as
 // dashboard.test.jsx) so the complex/utility grouping and owed amounts are
 // deterministic. Two complexes: "Orbi City" (2 apartments, one owing on all
-// 3 utilities, one all credit) and "Orbi Sea Towers" (1 apartment, owing
-// electricity only) — see payFlowData.js's owedFor for the owed = -balance
+// 3 utilities, one all in advance) and "Orbi Sea Towers" (1 apartment, owing
+// electricity only). Positive = owed (utils/balance.js) — see owedFor's
 // sign convention this fixture leans on.
 vi.mock('../../api/endpoints/dashboard', () => ({
   getCommunals: vi.fn(),
@@ -43,21 +43,21 @@ const COMMUNALS = {
   // currency 'USD' (the LIVE shape) — owedFor's conditional conversion path
   // is exercised here; the GEL-native mock path is covered by detail.test.jsx
   // (real mock module end-to-end) and payFlowData.test.js.
-  maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+  maintenance: { owed: 0, advance: 0, currency: 'USD' },
   byApartment: [
     {
       code: 'OCT.A.30.3026',
       epcode: 'EP1',
-      electricity: -50, // owed 50
+      electricity: 50, // owed 50
       waterIndication: '-',
-      internet: { balance: -10, balanceWithPenalty: -10, cost: 5, penalty: 0 }, // owed 10
-      maintenance: -40, // USD, owed 40 -> 80 GEL at rate 2
+      internet: { balance: 10, balanceWithPenalty: 10, cost: 5, penalty: 0 }, // owed 10
+      maintenance: 40, // USD, owed 40 -> 80 GEL at rate 2
       displayServices: [],
     },
     {
       code: 'OCT.A.14.1408',
       epcode: 'EP2',
-      electricity: 20, // credit
+      electricity: -20, // in advance
       waterIndication: '-',
       internet: { balance: 0, balanceWithPenalty: 0, cost: 5, penalty: 0 }, // zero
       maintenance: 0, // zero
@@ -66,7 +66,7 @@ const COMMUNALS = {
     {
       code: 'OST.A.08.0803',
       epcode: 'EP3',
-      electricity: -5, // owed 5
+      electricity: 5, // owed 5
       waterIndication: '-',
       internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 },
       maintenance: 0,
@@ -151,12 +151,12 @@ describe('MultiPayFlow — step 3 table', () => {
     await screen.findByText('OCT.A.30.3026')
   }
 
-  test('credit rows show the amount with a minus sign and are disabled', async () => {
+  test('rows in advance show the amount with a minus sign and are disabled', async () => {
     await openOrbiCityElectricity()
 
-    const creditRow = screen.getByText('OCT.A.14.1408').closest('tr')
-    expect(within(creditRow).getByText('-20.00 ₾')).toBeInTheDocument()
-    expect(within(creditRow).getByRole('checkbox')).toBeDisabled()
+    const advanceRow = screen.getByText('OCT.A.14.1408').closest('tr')
+    expect(within(advanceRow).getByText('-20.00 ₾')).toBeInTheDocument()
+    expect(within(advanceRow).getByRole('checkbox')).toBeDisabled()
 
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
     expect(within(debtRow).getByText('50.00 ₾')).toBeInTheDocument()
@@ -209,10 +209,10 @@ describe('MultiPayFlow — step 3 table', () => {
     ])
     getCommunals.mockResolvedValue({
       utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
-      maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+      maintenance: { owed: 0, advance: 0, currency: 'USD' },
       byApartment: [
-        { code: 'OCM.A.01.0101', epcode: 'MEP1', electricity: -50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
-        { code: 'OCM.A.02.0202', epcode: 'MEP2', electricity: -30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCM.A.01.0101', epcode: 'MEP1', electricity: 50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCM.A.02.0202', epcode: 'MEP2', electricity: 30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
       ],
     })
 
@@ -344,10 +344,10 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     ])
     getCommunals.mockResolvedValue({
       utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
-      maintenance: { sum: 0, debtSum: 0, currency: 'USD' },
+      maintenance: { owed: 0, advance: 0, currency: 'USD' },
       byApartment: [
-        { code: 'OCB.A.01.0101', epcode: 'XEP1', electricity: -50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
-        { code: 'OCB.A.02.0202', epcode: 'XEP2', electricity: -30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.01.0101', epcode: 'XEP1', electricity: 50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCB.A.02.0202', epcode: 'XEP2', electricity: 30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
         { code: 'OCB.A.03.0303', epcode: 'XEP3', electricity: -20, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
       ],
     })

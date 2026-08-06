@@ -7,6 +7,7 @@ import { resumeInternet } from '../../../api/endpoints/apartments'
 import { flatId } from '../../../api/adapters/apartments'
 import { planById } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
+import { amountOwed, balanceTone, owes } from '../../../utils/balance'
 import Icon from '../../../components/ui/Icon'
 import Button from '../../../components/ui/Button'
 import buttonStyles from '../../../components/ui/Button.module.css'
@@ -28,7 +29,11 @@ export default function InternetCard({ apt, onReload }) {
   const toast = useToast()
   const { openModal } = useModal()
   const s = apt.services.internet
-  const neg = s.balance < 0
+  // Positive balance = owed — see utils/balance.js. Internet used to be
+  // documented as the exception to the sign rule; the 2026-08-06 ruling
+  // says there is no exception.
+  const due = owes(s.balance)
+  const tone = balanceTone(s.balance)
   const active = s.status === 'Active'
   const paused = s.status === 'Paused'
   const pl = planById(s.planId)
@@ -59,7 +64,7 @@ export default function InternetCard({ apt, onReload }) {
   const right = (
     <Metric label={active || paused ? t('apartments:balance') : t('apartments:monthly')}>
       {active || paused ? (
-        <span className={`${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(neg ? s.balance : 0)}</span>
+        <span className={`${styles.money} ${styles[tone]}`}>{fmt(amountOwed(s.balance))}</span>
       ) : (
         <span style={{ fontSize: 13, color: 'var(--muted)' }}>{t('apartments:inactive')}</span>
       )}
@@ -171,10 +176,10 @@ export default function InternetCard({ apt, onReload }) {
           </div>
         )}
 
-        {neg && (
+        {due && (
           <div className={styles['neg-strip']}>
             <span style={{ fontWeight: 600, color: 'var(--neg-ink)' }}>{t('apartments:outstandingBalance')}</span>
-            <span className={`${styles.money} ${styles.neg}`}>{fmt(-s.balance)}</span>
+            <span className={`${styles.money} ${styles.neg}`}>{fmt(s.balance)}</span>
           </div>
         )}
 
@@ -196,13 +201,13 @@ export default function InternetCard({ apt, onReload }) {
           <Button variant="ghost" size="sm" onClick={() => toast(t('apartments:subscriptionDownloaded'))}>
             <Icon name="dl" /> {t('common:download')}
           </Button>
-          {neg && (
+          {due && (
             <Link
               to={`/pay/${apt.id}`}
               state={{ apartmentCode: apt.code, utility: 'internettv' }}
               className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
             >
-              {t('apartments:payAmount', { amount: fmt(-s.balance) })}
+              {t('apartments:payAmount', { amount: fmt(s.balance) })}
             </Link>
           )}
         </div>

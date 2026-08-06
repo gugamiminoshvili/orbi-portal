@@ -98,7 +98,7 @@ src/
   i18n/
     index.js             # i18next setup
     locales/             # en.json / ka.json / ru.json, one namespaced tree each
-  utils/                 # format.js (fmt), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images), envFile.js (pure .env line parser, used by scripts/live-smoke.mjs)
+  utils/                 # format.js (fmt), balance.js (THE sign convention), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images), envFile.js (pure .env line parser, used by scripts/live-smoke.mjs)
   test/                  # vitest setup + smoke test
 scripts/
   live-smoke.mjs         # manual, opt-in live-backend check — `bun run smoke` (see "Backend integration")
@@ -363,23 +363,26 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     to GEL (as `payFlowData.js`'s `owedFor` does today, FLAGged) or the raw
     USD figure — no live sample of a submitted multi-pay body exists to
     check against.
-17. **Sign convention on balances — BLOCKING a UI change (raised 2026-07-30).**
-    Everything the app does today assumes **negative = owed**: the dashboard
-    renders `abs(flatBalance.debt_sum)` as "Maintenance Debt",
-    `payFlowData.js`'s `owedFor` returns `-balance` and only lets
-    negative-balance rows be selected for payment, and `.money.neg` paints
-    them red. The live account matches that naming — one flat at
-    `apartmentBalance` −637.12, three at +148.13/+346.50/+163.08, with
-    `debt_sum` = the sum of the negatives and `balance_sum` = the sum of the
-    positives. The owner reports the opposite for maintenance and
-    electricity (negative = the resident is **in advance**, internet being
-    the one exception where negative really is a debt). Both can't hold. If
-    the owner's reading is right this is not a colour tweak: the dashboard
-    figure, which rows the multi-pay flow offers to charge, and the red/green
-    treatment all invert. Needs the backend team to state, per field
-    (`flatBalance.debt_sum`/`balance_sum`, `apartmentBalance`,
-    `electricityBalanceGEL`, `InternetTVBalanceGEL`), which sign means the
-    resident owes money.
+17. **Sign convention on balances — ANSWERED (2026-08-06), implemented.**
+    The owner's ruling: **a positive balance is what the resident owes; a
+    negative balance is money paid ahead (an advance)**, for every service,
+    with no exceptions. The app previously assumed the opposite. The rule now
+    lives in one module, `src/utils/balance.js` — nothing else compares a
+    balance against 0 — and drives the colour (`balanceTone`), the Pay
+    buttons (`owes`/`amountOwed`) and the multi-pay flow's `owedFor`, which
+    no longer negates.
+
+    Two consequences worth carrying forward:
+    - **The backend's own field names read inverted.** On `flatBalance`,
+      `debt_sum` holds the sum of the NEGATIVE balances (the advances) and
+      `balance_sum` the POSITIVE ones (the debt) — confirmed against the live
+      account: one flat at −637.12 and three at +148.13/+346.50/+163.08.
+      `adaptCommunals` therefore renames them by meaning, to
+      `maintenance.owed` / `maintenance.advance`. **FLAG:** if those fields
+      turn out to mean what they say rather than what they contain, those two
+      adapter lines swap and the dashboard headline swaps with them.
+    - The mock fixtures were sign-flipped to match, so the demo agrees with
+      the rule. A5 is deliberately left in advance, as the green case.
 
 18. **Ticket attachments — types/limit ANSWERED (2026-08-06), two items
     open.** The backend team supplied `AllowedFileTypes` (18 extensions:

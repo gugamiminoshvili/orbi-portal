@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
 import { fmt } from '../../../utils/format'
+import { amountOwed, balanceTone, owes } from '../../../utils/balance'
 import Icon from '../../../components/ui/Icon'
 import Button from '../../../components/ui/Button'
 import buttonStyles from '../../../components/ui/Button.module.css'
@@ -18,7 +19,9 @@ export default function ElectricityCard({ apt }) {
   const { t } = useTranslation()
   const { openModal } = useModal()
   const s = apt.services.electricity
-  const neg = s.balance < 0
+  // Positive balance = owed — see utils/balance.js.
+  const due = owes(s.balance)
+  const moneyTone = balanceTone(s.balance)
   const tone = STATUS_TONE[s.status] || 'muted'
   const statusLabel = STATUS_KEY[s.status] ? t(`apartments:${STATUS_KEY[s.status]}`) : s.status
 
@@ -31,7 +34,7 @@ export default function ElectricityCard({ apt }) {
       sub={t('apartments:electricitySub')}
       right={
         <Metric label={t('apartments:balance')}>
-          <span className={`${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(neg ? s.balance : 0)}</span>
+          <span className={`${styles.money} ${styles[moneyTone]}`}>{fmt(amountOwed(s.balance))}</span>
         </Metric>
       }
     >
@@ -48,7 +51,7 @@ export default function ElectricityCard({ apt }) {
         </div>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:balance')}</div>
-          <div className={`${styles.v} ${styles.money} ${neg ? styles.neg : styles.pos}`}>{fmt(s.balance)}</div>
+          <div className={`${styles.v} ${styles.money} ${styles[moneyTone]}`}>{fmt(s.balance)}</div>
         </div>
         <div className={styles.cell}>
           <div className={styles.k}>{t('apartments:lastUpdate')}</div>
@@ -63,13 +66,13 @@ export default function ElectricityCard({ apt }) {
         >
           <Icon name="doc" /> {t('apartments:electricityReports')}
         </Button>
-        {neg && (
+        {due && (
           <Link
             to={`/pay/${apt.id}`}
             state={{ apartmentCode: apt.code, utility: 'electricity' }}
             className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
           >
-            {t('apartments:payAmount', { amount: fmt(-s.balance) })}
+            {t('apartments:payAmount', { amount: fmt(s.balance) })}
           </Link>
         )}
       </div>

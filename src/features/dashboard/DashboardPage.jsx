@@ -49,10 +49,12 @@ export default function DashboardPage() {
 
   const { communals, rates, contracts, unpaid } = data
 
-  // "Debt" is what's actually owed — flatBalance.debt_sum, the negative-only
-  // split — not maintenance.sum, which adaptCommunals documents as the
-  // POSITIVE/credit-only split of the same per-apartment balances.
-  const maintenanceDebt = Math.abs(communals.maintenance.debtSum)
+  // Positive balances are what's owed (utils/balance.js), so the headline is
+  // maintenance.owed — adaptCommunals already renames the two flatBalance
+  // aggregates by meaning, since the backend's own names read inverted under
+  // this convention. Clamped at 0: a portfolio that is net in advance should
+  // show nothing owed, not a negative "debt".
+  const maintenanceDebt = Math.max(0, communals.maintenance.owed)
   const utilitiesTotal = communals.utilities.electricitySum + communals.utilities.internetSum
 
   // Currency-conditional (same pattern as payFlowData.owedFor): LIVE

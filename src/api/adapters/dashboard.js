@@ -81,9 +81,20 @@ export function adaptCommunals(dto = {}) {
       internetSum: num(communal.internet_debt_sum),
       currency: communal.currency || 'GEL',
     },
+    // The two flatBalance aggregates are renamed by MEANING here, because
+    // the backend's names read inverted under the owner's sign convention
+    // (positive = owed — see utils/balance.js). `balance_sum` is the sum of
+    // the POSITIVE per-apartment balances, i.e. the debt; `debt_sum` is the
+    // sum of the NEGATIVE ones, i.e. what residents have paid ahead. Live
+    // sample: one flat at -637.12 and three at +148.13/+346.50/+163.08, with
+    // debt_sum = the negatives and balance_sum = the positives.
+    // FLAG (README §17): if the field names turn out to mean what they say
+    // rather than what they contain, these two lines swap — and the
+    // dashboard's headline "Maintenance" figure swaps with them. Nothing
+    // else keys off either name.
     maintenance: {
-      sum: num(flatBalance.balance_sum),
-      debtSum: num(flatBalance.debt_sum),
+      owed: num(flatBalance.balance_sum),
+      advance: num(flatBalance.debt_sum),
       currency: flatBalance.currency || 'USD',
     },
     byApartment,

@@ -3,17 +3,16 @@
 // React-free so the complex/utility grouping and owed-amount math can be
 // unit tested without rendering anything (see payFlowData.test.js).
 //
-// Sign convention (CRITICAL — see adaptCommunals/adaptProperty comments in
-// api/adapters/dashboard.js and apartments.js): a NEGATIVE balance means the
-// apartment OWES that amount; a positive (or zero) balance is a credit.
-// Every screen in this flow needs the opposite framing — "how much does the
-// resident need to pay" — so `owedFor` returns `-balance`:
-//   - balance -50 (owed 50)  -> owed  50 (positive, selectable, shown red)
-//   - balance +30 (credit)   -> owed -30 (negative, disabled, shown "-30.00")
-//   - balance 0              -> owed   0 (disabled, shown "0.00")
-// This single sign flip is what makes the credit/zero rows in the step-3
-// table naturally render with a leading minus via utils/format.js's fmt()
-// (fmt(n) prepends '-' only when n<0) without any extra per-row branching.
+// Sign convention: see utils/balance.js. A POSITIVE balance is what the
+// resident owes, so "how much does this row need to pay" is the balance
+// itself — `owedFor` no longer flips it (owner ruling 2026-08-06; it used to
+// return `-balance` under the opposite convention):
+//   - balance +50 (owed 50)   -> owed  50 (positive, selectable, shown red)
+//   - balance -30 (advance)   -> owed -30 (negative, disabled, shown "-30.00")
+//   - balance 0               -> owed   0 (disabled, shown "0.00")
+// Credit/zero rows therefore still render with a leading minus via
+// utils/format.js's fmt() (which prepends '-' only when n<0), with no extra
+// per-row branching.
 export const UTILITIES = ['maintenance', 'electricity', 'internettv']
 
 // LIVE maintenance arrives in USD (flatBalance.apartmentBalance, per
@@ -35,16 +34,16 @@ export const UTILITIES = ['maintenance', 'electricity', 'internettv']
 // the whole flow — FLAG, untested against a real "rate missing" scenario.
 export function owedFor(row, utility, usdRate, maintenanceCurrency = 'USD') {
   if (utility === 'maintenance') {
-    const owed = -row.maintenance
+    const owed = row.maintenance
     if (maintenanceCurrency === 'USD' && usdRate != null) return owed * usdRate
     return owed
   }
-  if (utility === 'electricity') return -row.electricity
+  if (utility === 'electricity') return row.electricity
   // internettv: `balanceWithPenalty` (live `balance_with_penalty`, captured
   // by adaptCommunals) is the collectable amount — base balance plus any
   // late penalty; falls back to the plain balance for rows shaped before
   // the field existed.
-  return -(row.internet.balanceWithPenalty ?? row.internet.balance)
+  return row.internet.balanceWithPenalty ?? row.internet.balance
 }
 
 // Joins communals' per-apartment detail (keyed by apartment `code`) to
