@@ -58,9 +58,10 @@ export default function MultiPayFlow() {
   // both forward `{apartmentCode, utility}` as router state. Once the flow
   // data has loaded, jump straight to step 3 with that apartment's complex +
   // utility preset, pre-checking the row itself only when it's actually
-  // owed for that utility (a credit/zero row can't be selected — see
-  // ApartmentsStep). Runs once per mount (preselectApplied), not on every
-  // data refetch/back-navigation.
+  // owed for that utility. Deliberately NOT defaultSelections(): the user
+  // pressed Pay on ONE apartment, so checking the complex's other debtors
+  // for them would quietly inflate what they're about to pay. Runs once per
+  // mount (preselectApplied), not on every data refetch/back-navigation.
   useEffect(() => {
     if (preselectApplied || !data || !location.state?.apartmentCode) return
     const { apartmentCode, utility: preUtility } = location.state
@@ -109,9 +110,23 @@ export default function MultiPayFlow() {
     setComplexProject(project)
     setStep(2)
   }
+  // Entering step 3 pre-checks every apartment that actually owes something
+  // for this utility, at its full outstanding amount (owner call 2026-08-06)
+  // — clearing a row is one click, and the common case is "pay what's due".
+  // Rows with nothing outstanding stay unchecked: they can still be paid into
+  // as an advance, but only deliberately.
+  function defaultSelections(apartments, u) {
+    const next = {}
+    for (const row of apartments) {
+      const owed = owedFor(row, u, usdRate, maintenanceCurrency)
+      if (owed > 0) next[row.epcode] = round2(owed)
+    }
+    return next
+  }
+
   function goToApartmentsStep(u) {
     setUtility(u)
-    setSelections({})
+    setSelections(defaultSelections(activeComplex.apartments, u))
     setStep(3)
   }
 
