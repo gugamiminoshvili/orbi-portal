@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import '../../i18n'
 import { ToastProvider } from '../../context/ToastContext'
@@ -115,21 +115,51 @@ test('submitting uploads the queued files and they appear in the thread', async 
   expect(await screen.findByRole('button', { name: /lease\.pdf/ })).toBeInTheDocument()
 })
 
-test('attaching from the chat composer adds the file to the thread', async () => {
+test('a file picked in the chat is queued, not sent, until Send is pressed', async () => {
   const { container } = renderApp(['/support/t/101245'])
   await screen.findByPlaceholderText(/Write a message/)
 
   pickFiles(container.querySelector('input[type="file"]'), [fakeFile('meter.png', 'image/png')])
 
-  expect(await screen.findByRole('button', { name: /meter\.png/ })).toBeInTheDocument()
+  // Queued: a removable chip in the composer, and nothing in the thread yet.
+  expect(await screen.findByRole('button', { name: 'Remove meter.png' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Download/ })).not.toBeInTheDocument()
+
+  // Send is enabled by the attachment alone — a file with no message is a
+  // legitimate reply.
+  const send = screen.getByRole('button', { name: 'Send' })
+  expect(send).toBeEnabled()
+  fireEvent.click(send)
+
+  // Once the upload lands it leaves the composer...
+  await waitFor(() =>
+    expect(screen.queryByRole('button', { name: 'Remove meter.png' })).not.toBeInTheDocument()
+  )
+  // ...and appears in the thread as a downloadable chip.
+  expect(screen.getByRole('button', { name: /meter\.png/ })).toBeInTheDocument()
+})
+
+test('a queued file can be dropped before it is ever sent', async () => {
+  const { container } = renderApp(['/support/t/101245'])
+  await screen.findByPlaceholderText(/Write a message/)
+
+  pickFiles(container.querySelector('input[type="file"]'), [fakeFile('wrong.png', 'image/png')])
+  fireEvent.click(await screen.findByRole('button', { name: 'Remove wrong.png' }))
+
+  expect(screen.queryByText('wrong.png')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled()
 })
 
 test('a stored file with no bytes behind it says so instead of downloading', async () => {
   const { container } = renderApp(['/support/t/101245'])
   await screen.findByPlaceholderText(/Write a message/)
   pickFiles(container.querySelector('input[type="file"]'), [fakeFile('receipt.png', 'image/png')])
+  fireEvent.click(await screen.findByRole('button', { name: 'Send' }))
+  await waitFor(() =>
+    expect(screen.queryByRole('button', { name: 'Remove receipt.png' })).not.toBeInTheDocument()
+  )
 
-  fireEvent.click(await screen.findByRole('button', { name: /receipt\.png/ }))
+  fireEvent.click(screen.getByRole('button', { name: /receipt\.png/ }))
 
   // Mock mode holds the file's metadata but not its content.
   expect(await screen.findByText('This demo has no file to download.')).toBeInTheDocument()

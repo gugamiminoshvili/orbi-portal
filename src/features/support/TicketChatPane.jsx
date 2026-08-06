@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext'
 import { getTicket, sendMessage, uploadTicketFile } from '../../api/endpoints/support'
 import { TSTATUS, topicById } from '../../api/mock/tickets'
 import { ATTACHMENT_ACCEPT, partitionFiles } from '../../utils/attachments'
-import { AttachmentList } from './Attachments'
+import { AttachmentList, PendingAttachments } from './Attachments'
 import Icon from '../../components/ui/Icon'
 import { Badge } from '../../components/ui/Badge'
 import Skeleton from '../../components/ui/Skeleton'
@@ -24,7 +24,10 @@ export default function TicketChatPane() {
   const { data: ticket, loading, setData } = useAsync(() => getTicket(ticketId), [ticketId])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  // Picked but not sent yet: an attachment goes up with the message,
+  // not the moment it is chosen (owner call 2026-08-06), so the user can
+  // see what they attached and drop it again first.
+  const [pending, setPending] = useState([])
   const bodyRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -44,15 +47,30 @@ export default function TicketChatPane() {
   const st = TSTATUS[ticket.status]
   const ticketApts = ticket.apts || []
 
+  // One send handles both halves: the message (if any) and the queued
+  // attachments. Files go after the message so they land on the thread in the
+  // order they were composed.
   async function handleSend() {
     const value = text.trim()
-    if (!value || sending) return
+    if ((!value && pending.length === 0) || sending) return
     setSending(true)
+    let failed = 0
     try {
-      const updated = await sendMessage(ticket.id, value)
+      if (value) await sendMessage(ticket.id, value)
+      for (const file of pending) {
+        try {
+          await uploadTicketFile(ticket.id, file)
+        } catch {
+          failed += 1
+        }
+      }
       setText('')
-      setData(updated)
+      setPending([])
+      // Re-read rather than trusting sendMessage's return: it doesn't know
+      // about the uploads, and the server decides where a file lands.
+      setData(await getTicket(ticket.id))
       bumpTicketsRefresh()
+      if (failed > 0) toast(t('support:attachSomeFailed', { count: failed }))
     } catch {
       toast(t('common:requestFailed'))
     } finally {
@@ -71,35 +89,17 @@ export default function TicketChatPane() {
     fileInputRef.current?.click()
   }
 
-  // Uploads via POST /mobileApi/tickets/file/, then re-reads the ticket so the
-  // file appears in the thread. The endpoint returns only a stored path, and
-  // takes no message id, so where the file lands is the server's call — the
-  // re-fetch is what makes the result visible instead of a bare toast.
-  async function handleFileChange(e) {
+  // Queues the picked files; the upload itself happens in handleSend.
+  function handleFileChange(e) {
     const picked = Array.from(e.target.files || [])
     e.target.value = '' // allow re-selecting the same file next time
     const { accepted, errors } = partitionFiles(picked, t)
     if (errors.length) toast(errors[0])
-    if (accepted.length === 0) return
+    if (accepted.length) setPending((prev) => [...prev, ...accepted])
+  }
 
-    setUploading(true)
-    let failed = 0
-    for (const file of accepted) {
-      try {
-        await uploadTicketFile(ticket.id, file)
-      } catch {
-        failed += 1
-      }
-    }
-    try {
-      setData(await getTicket(ticket.id))
-    } catch {
-      // The upload itself already succeeded; a failed refresh only means the
-      // thread is stale until the next visit, so don't report it as a failure.
-    }
-    setUploading(false)
-    bumpTicketsRefresh()
-    toast(failed > 0 ? t('support:attachSomeFailed', { count: failed }) : t('support:attachSuccessToast'))
+  function removePending(index) {
+    setPending((prev) => prev.filter((_, i) => i !== index))
   }
 
   let lastDate = null
@@ -181,6 +181,9 @@ export default function TicketChatPane() {
         <div className={styles['chat-closed']}>{t(`support:closedNotice.${ticket.status}`)}</div>
       ) : (
         <div className={styles['chat-composer']}>
+          {/* Queued attachments sit above the field, so what is about to be
+              sent is visible before Send is pressed. */}
+          <PendingAttachments files={pending} onRemove={removePending} />
           {/* The border and focus ring live on this box, not on the textarea —
               so the field and its two buttons read as one control. */}
           <div className={styles['composer-box']}>
@@ -211,24 +214,23 @@ export default function TicketChatPane() {
               type="button"
               className={styles['composer-act']}
               onClick={handleAttach}
-              disabled={uploading}
+              disabled={sending}
               aria-label={t('support:attach')}
               title={t('support:attach')}
             >
-              {uploading ? <span className={styles.spin} /> : <Icon name="clip" />}
+              <Icon name="clip" />
             </button>
             <button
               type="button"
               className={`${styles['composer-act']} ${styles['composer-send']}`}
               onClick={handleSend}
-              disabled={sending || !text.trim()}
+              disabled={sending || (!text.trim() && pending.length === 0)}
               aria-label={t('support:send')}
               title={t('support:send')}
             >
               <Icon name="send" />
             </button>
           </div>
-          <p className={styles['composer-hint']}>{t('support:composerHint')}</p>
         </div>
       )}
     </>
