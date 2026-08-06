@@ -291,6 +291,7 @@
     "tableOutstandingHeader": "დავალიანება",
     "tableAmountHeader": "თანხა",
     "selectionFooter": "არჩეულია {{n}} / {{m}} · სულ {{total}}",
+    "advanceNote": "აპარტამენტს, რომელსაც დავალიანება არ აქვს, თანხის გადახდა მაინც შეგიძლიათ — ის ანგარიშზე ავანსად აისახება.",
     "summaryTitle": "შეჯამება",
     "summaryComplex": "კომპლექსი",
     "summaryUtility": "სერვისი",

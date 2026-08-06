@@ -151,16 +151,45 @@ describe('MultiPayFlow — step 3 table', () => {
     await screen.findByText('OCT.A.30.3026')
   }
 
-  test('rows in advance show the amount with a minus sign and are disabled', async () => {
+  test('a row with nothing outstanding is still payable, defaulting to 0 rather than a negative', async () => {
     await openOrbiCityElectricity()
 
+    // -20 = already 20 in advance. It stays selectable (owner ruling
+    // 2026-08-06: paying ahead is allowed anywhere), but nothing is owed, so
+    // the default amount is 0 — never the negative balance.
     const advanceRow = screen.getByText('OCT.A.14.1408').closest('tr')
     expect(within(advanceRow).getByText('-20.00 ₾')).toBeInTheDocument()
-    expect(within(advanceRow).getByRole('checkbox')).toBeDisabled()
+    const advanceBox = within(advanceRow).getByRole('checkbox')
+    expect(advanceBox).not.toBeDisabled()
+
+    fireEvent.click(advanceBox)
+    expect(advanceBox).toBeChecked()
+    expect(within(advanceRow).getByRole('textbox')).toHaveValue('0.00')
+    // Nothing payable yet, so Pay Now stays shut until an amount is typed.
+    expect(screen.getByRole('button', { name: /Pay Now/ })).toBeDisabled()
+
+    fireEvent.change(within(advanceRow).getByRole('textbox'), { target: { value: '25' } })
+    expect(screen.getByText('1 of 2 selected · Total 25.00 ₾')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Pay Now/ })).not.toBeDisabled()
+  })
+
+  test('clicking anywhere on a row toggles it, except on the amount field itself', async () => {
+    await openOrbiCityElectricity()
 
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
-    expect(within(debtRow).getByText('50.00 ₾')).toBeInTheDocument()
-    expect(within(debtRow).getByRole('checkbox')).not.toBeDisabled()
+    const box = within(debtRow).getByRole('checkbox')
+
+    // The apartment code cell — nowhere near the 20px checkbox.
+    fireEvent.click(screen.getByText('OCT.A.30.3026'))
+    expect(box).toBeChecked()
+    fireEvent.click(screen.getByText('OCT.A.30.3026'))
+    expect(box).not.toBeChecked()
+
+    // Reaching for the amount input must not uncheck the row underneath it.
+    fireEvent.click(screen.getByText('OCT.A.30.3026'))
+    expect(box).toBeChecked()
+    fireEvent.click(within(debtRow).getByRole('textbox'))
+    expect(box).toBeChecked()
   })
 
   test('checking a row defaults the amount to the owed value, and editing it updates the payable total', async () => {
@@ -179,19 +208,18 @@ describe('MultiPayFlow — step 3 table', () => {
     expect(screen.getByText('30.00 ₾')).toBeInTheDocument()
   })
 
-  test('amount edits above the owed amount are capped at the owed amount', async () => {
+  test('an amount above what is owed is allowed — the excess is an advance', async () => {
     await openOrbiCityElectricity()
 
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
     fireEvent.click(within(debtRow).getByRole('checkbox'))
 
     const amountInput = within(debtRow).getByRole('textbox')
-    // owed is 50 — an attempted 999 clamps back to 50 (prepayment/overpay
-    // support is an open backend question, see ApartmentsStep's FLAG).
+    // owed is 50; 999 used to clamp back to 50. Overpaying is now deliberate.
     fireEvent.change(amountInput, { target: { value: '999' } })
 
-    expect(amountInput).toHaveValue('50')
-    expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
+    expect(amountInput).toHaveValue('999')
+    expect(screen.getByText('1 of 2 selected · Total 999.00 ₾')).toBeInTheDocument()
   })
 
   // Carried fix from the P3-5 review: switching roleFilter re-derives the

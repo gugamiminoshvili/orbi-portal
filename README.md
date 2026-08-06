@@ -349,11 +349,13 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     /mobileApi/payment/invoice/`'s `response_type` is a required param the
     doc names but never enumerates — `'pdf'` is assumed by analogy with
     `finance/`'s `response_format=pdf`.
-15. **Prepayment/overpayment policy on `payment/multi/`.** `ApartmentsStep`'s
-    editable per-apartment amount is capped at the outstanding balance
-    client-side (partial payment is allowed, paying more isn't) purely as a
-    safe default — whether the backend actually accepts an amount greater
-    than what's owed (prepayment/credit) is unconfirmed.
+15. **Prepayment/overpayment handling on `payment/multi/`.** The UI question is
+    settled: the owner ruled (2026-08-06) that any apartment can be paid into,
+    including one with nothing outstanding, and the amount is no longer capped
+    at the balance — the excess is an advance. What's still unconfirmed is the
+    BACKEND half: whether `payment/multi/` accepts an amount greater than the
+    outstanding balance and books the remainder as a credit, or rejects it.
+    Needs an answer before this goes live against real money.
 16. **`flatBalance` (USD maintenance) vs. `communal` (GEL utilities)
     reconciliation.** The live sample confirms maintenance genuinely arrives
     in USD while utilities are GEL — this task made the dashboard and

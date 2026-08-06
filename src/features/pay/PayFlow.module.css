@@ -125,13 +125,35 @@
   padding: 20px;
   text-align: left;
   cursor: pointer;
-  border: none;
-  background: none;
   width: 100%;
+  /* These three restate what .card already gives — they are here because the
+     element is a <button>, and the UA button styles otherwise win over the
+     composed .card class. The previous reset (`background:none; border:none`)
+     blanked the surface instead of replacing it, so the cards rendered
+     transparent and read as holes in the page background. */
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  color: inherit;
+  transition: border-color var(--t), box-shadow var(--t), transform var(--t);
+}
+.utility-card:hover {
+  border-color: var(--teal-line);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+.utility-card:focus-visible {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: var(--ring);
 }
 .utility-card:disabled {
   cursor: default;
   opacity: 0.6;
+}
+@media (prefers-reduced-motion: reduce) {
+  .utility-card:hover {
+    transform: none;
+  }
 }
 .utility-ic {
   width: 44px;
@@ -199,13 +221,42 @@ table.tbl td {
 table.tbl tbody tr:last-child td {
   border-bottom: none;
 }
-table.tbl tbody tr.credit {
-  color: var(--muted);
+/* Every row is payable now (a row with nothing outstanding can be paid as an
+   advance — owner ruling 2026-08-06), so the whole row is the hit target and
+   not just its 20px checkbox. The checkbox stays the keyboard/AT control; this
+   is a pointer convenience on top of it. */
+table.tbl tbody tr {
+  cursor: pointer;
+  transition: background var(--t);
+}
+table.tbl tbody tr:hover td {
+  background: var(--surface-2);
 }
 /* A checked row is banded so the eye can group "what am I paying for" without
-   re-reading every checkbox — the same read the reference recording gives. */
-table.tbl tbody tr.on td {
+   re-reading every checkbox — the same read the reference recording gives.
+   Placed after :hover so a checked row keeps its band while hovered. */
+table.tbl tbody tr.on td,
+table.tbl tbody tr.on:hover td {
   background: var(--row-on);
+}
+/* Outstanding column tone follows the sign convention (utils/balance.js):
+   a debt is red, an advance is green, nothing outstanding is just muted. */
+.owed-neg {
+  color: var(--neg-ink);
+  font-weight: 600;
+}
+.owed-pos {
+  color: var(--teal-ink);
+  font-weight: 600;
+}
+.owed-zero {
+  color: var(--muted);
+}
+.foot-note {
+  padding: 0 18px 14px;
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 /* ---------- Amount field ----------

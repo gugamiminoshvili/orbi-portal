@@ -291,6 +291,7 @@
     "tableOutstandingHeader": "Outstanding",
     "tableAmountHeader": "Amount",
     "selectionFooter": "{{n}} of {{m}} selected · Total {{total}}",
+    "advanceNote": "Apartments with nothing outstanding can be paid too — the amount is credited to the account as an advance.",
     "summaryTitle": "Summary",
     "summaryComplex": "Complex",
     "summaryUtility": "Utility",

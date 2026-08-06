@@ -5,6 +5,7 @@ import { fmt, fmtNum } from '../../utils/format'
 import { owedFor, round2, serviceTypeFor } from './payFlowData'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import Checkbox from '../../components/ui/Checkbox'
 import Icon from '../../components/ui/Icon'
 import { Seg } from '../../components/ui/Badge'
 import MethodModal from './MethodModal'
@@ -12,16 +13,22 @@ import styles from './PayFlow.module.css'
 
 const ROLE_OPTIONS = ['All', 'Owner']
 
+// Upper bound on a single row's amount. Not a business rule — the outstanding
+// amount no longer caps the field (see below) — just a guard against a
+// runaway typo becoming a real payment request.
+const MAX_ROW_AMOUNT = 999999.99
+
 // One row's payable amount: a caption inside the box, the figure under it.
 // While the field has focus it shows exactly what was typed; the moment it
 // loses focus the value is re-rendered grouped ("1,234.56"), which is why it
 // is a text input rather than type="number" — a number input refuses to
 // display the separators, and its spinners have no place in a payment table.
 //
-// `max` clamps to the outstanding amount: partial payments are allowed (the
-// design screenshots show editable amounts), paying MORE is not — FLAG:
-// whether /payment/multi/ accepts prepayment/overpayment is an open backend
-// question, and capping is the safe reading until it's answered.
+// The amount used to be capped at the row's outstanding balance. It isn't any
+// more: paying more than is owed — including on an apartment that owes nothing
+// at all — is deliberate, it credits the account as an advance (owner ruling
+// 2026-08-06). FLAG: /payment/multi/'s own handling of an overpayment is still
+// unconfirmed by the backend (design doc backend-Q #1).
 function AmountField({ label, value, max, disabled, onChange, ariaLabel }) {
   const [draft, setDraft] = useState(null) // non-null only while being edited
 
@@ -87,21 +94,19 @@ export default function ApartmentsStep({
   const [amounts, setAmounts] = useState({})
 
   // Per-row owed amount (see payFlowData's owedFor doc comment for the sign
-  // convention: positive = debt/selectable/red, <=0 = credit-or-zero,
-  // disabled, rendered with fmt()'s automatic leading '-').
+  // convention: positive = debt, negative = already in advance, 0 = settled).
+  // EVERY row is payable, including the last two: an apartment with nothing
+  // outstanding can still be paid into as an advance (owner ruling
+  // 2026-08-06). The sign only drives the colour and the default amount now.
   const rows = useMemo(
     () =>
       complex.apartments
         .filter((row) => roleFilter === 'All' || row.role === roleFilter)
-        .map((row) => {
-          const owed = owedFor(row, utility, usdRate, maintenanceCurrency)
-          return { ...row, owed, selectable: owed > 0 }
-        }),
+        .map((row) => ({ ...row, owed: owedFor(row, utility, usdRate, maintenanceCurrency) })),
     [complex.apartments, utility, usdRate, maintenanceCurrency, roleFilter]
   )
 
-  const selectableCount = rows.filter((r) => r.selectable).length
-  const selectedCount = rows.filter((r) => r.selectable && selections[r.epcode] != null).length
+  const selectedCount = rows.filter((r) => selections[r.epcode] != null).length
   const total = Object.values(selections).reduce((sum, v) => sum + (Number(v) || 0), 0)
 
   // Carried fix (P3-5 review, filter-vs-selections desync): switching
@@ -141,11 +146,20 @@ export default function ApartmentsStep({
       })
       return
     }
-    // Re-checking restores whatever was last typed here, falling back to the
-    // full outstanding amount the first time.
-    const amount = amounts[row.epcode] ?? round2(row.owed)
+    // Re-checking restores whatever was last typed here, falling back the
+    // first time to the full outstanding amount — or to 0 when there is
+    // nothing outstanding, since how much to pay ahead is the user's call.
+    const amount = amounts[row.epcode] ?? Math.max(0, round2(row.owed))
     setAmounts((a) => ({ ...a, [row.epcode]: amount }))
     onSelectionsChange((prev) => ({ ...prev, [row.epcode]: amount }))
+  }
+
+  // The whole row toggles, not just the checkbox. Clicks that landed on
+  // something with its own behaviour (the checkbox, the amount input) are
+  // left alone — otherwise focusing the field would uncheck the row.
+  function handleRowClick(e, row) {
+    if (e.target.closest('input, button, a, label')) return
+    toggleRow(row)
   }
 
   // AmountField has already parsed and clamped to [0, owed] — this just
@@ -190,32 +204,28 @@ export default function ApartmentsStep({
             <tbody>
               {rows.map((row) => {
                 const checked = selections[row.epcode] != null
+                const owedClass =
+                  row.owed > 0 ? styles['owed-neg'] : row.owed < 0 ? styles['owed-pos'] : styles['owed-zero']
                 return (
                   <tr
                     key={row.epcode}
-                    className={`${row.selectable ? '' : styles.credit} ${checked ? styles.on : ''}`}
+                    className={checked ? styles.on : ''}
+                    onClick={(e) => handleRowClick(e, row)}
                   >
                     <td>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         aria-label={row.code}
                         checked={checked}
-                        disabled={!row.selectable}
                         onChange={() => toggleRow(row)}
                       />
                     </td>
                     <td>{row.code}</td>
-                    <td
-                      className={styles.r}
-                      style={row.selectable ? { color: 'var(--neg-ink)', fontWeight: 600 } : undefined}
-                    >
-                      {fmt(row.owed, '₾')}
-                    </td>
+                    <td className={`${styles.r} ${owedClass}`}>{fmt(row.owed, '₾')}</td>
                     <td className={styles.r}>
                       <AmountField
                         label={t('pay:tableAmountHeader')}
                         value={checked ? selections[row.epcode] : (amounts[row.epcode] ?? 0)}
-                        max={round2(row.owed)}
+                        max={MAX_ROW_AMOUNT}
                         disabled={!checked}
                         onChange={(raw) => updateAmount(row, raw)}
                         ariaLabel={`${t('pay:tableAmountHeader')} ${row.code}`}
@@ -228,8 +238,11 @@ export default function ApartmentsStep({
           </table>
         </div>
         <div className={styles['tbl-foot']}>
-          {t('pay:selectionFooter', { n: selectedCount, m: selectableCount, total: fmt(total, '₾') })}
+          {t('pay:selectionFooter', { n: selectedCount, m: rows.length, total: fmt(total, '₾') })}
         </div>
+        {/* Says out loud what the table now allows, so a zero-balance row
+            doesn't read as a checkbox that does nothing. */}
+        <p className={styles['foot-note']}>{t('pay:advanceNote')}</p>
       </Card>
 
       <Card>

@@ -299,6 +299,7 @@
     "tableOutstandingHeader": "Задолженность",
     "tableAmountHeader": "Сумма",
     "selectionFooter": "Выбрано {{n}} из {{m}} · Итого {{total}}",
+    "advanceNote": "Квартиры без задолженности тоже можно оплатить — сумма зачисляется на счёт как аванс.",
     "summaryTitle": "Итог",
     "summaryComplex": "Комплекс",
     "summaryUtility": "Услуга",
