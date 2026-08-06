@@ -1,27 +1,61 @@
-// Client-side rules for ticket attachments.
+// Client-side rules for ticket attachments — a mirror of the backend's own
+// `AllowedFileTypes` / `MAX_FILE_SIZE` (supplied by the backend team
+// 2026-08-06), enforced here so the user finds out before the upload rather
+// than after `FILE_TYPE_NOT_ALLOWED` comes back.
 //
-// FLAG (README §18): the backend documents `POST /mobileApi/tickets/file/` as
-// rejecting with `FILE_TYPE_NOT_ALLOWED`, but never says WHICH types, and
-// documents no size limit at all. Both values below are the promise the UI
-// has been making since the prototype ("PDF, JPG, PNG · max 5MB"), enforced
-// here so the user finds out before the upload rather than after. They are
-// deliberately the conservative reading: anything the server would accept but
-// we reject is a smaller failure than the reverse. Confirm with the backend
-// and widen if needed — the two constants are the only place to change.
+// The server validates by EXTENSION, so this does too — matching on the
+// browser's MIME sniff would diverge the moment a picker reports
+// application/octet-stream (routine for files picked on a phone). The MIME
+// strings below exist only to fill <input accept>, which some Android
+// pickers honour instead of the extension.
+//
+// FLAG (README §18): the backend constant reads
+// `MAX_FILE_SIZE = 5 * 1024 * 1024  # 10 MB` — the value is 5 MiB and the
+// comment says 10 MB. This follows the value, which is the one the server
+// actually enforces; if 10 MB was the intent, this is the one line to change.
+
 export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
 
-// Matched against the browser's MIME sniff first, with an extension fallback
-// for the cases where a file picked from a phone arrives as
-// application/octet-stream.
-const ALLOWED_MIME = ['application/pdf', 'image/jpeg', 'image/png']
-const ALLOWED_EXT = ['pdf', 'jpg', 'jpeg', 'png']
+// One entry per allowed extension, in the backend's own order. `mime` is
+// best-effort — an extension with no reliable MIME (or one the browser won't
+// agree on) simply contributes its extension to `accept` and nothing else.
+const ALLOWED = [
+  { ext: 'png', mime: 'image/png' },
+  { ext: 'jpg', mime: 'image/jpeg' },
+  { ext: 'jpeg', mime: 'image/jpeg' },
+  { ext: 'heic', mime: 'image/heic' },
+  { ext: 'gif', mime: 'image/gif' },
+  { ext: 'tiff', mime: 'image/tiff' },
+  { ext: 'bmp', mime: 'image/bmp' },
+  { ext: 'mp4', mime: 'video/mp4' },
+  { ext: 'avi', mime: 'video/x-msvideo' },
+  { ext: 'mov', mime: 'video/quicktime' },
+  { ext: 'wmv', mime: 'video/x-ms-wmv' },
+  { ext: 'flv', mime: 'video/x-flv' },
+  { ext: 'mkv', mime: 'video/x-matroska' },
+  { ext: 'pdf', mime: 'application/pdf' },
+  { ext: 'doc', mime: 'application/msword' },
+  { ext: 'docx', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+  { ext: 'xls', mime: 'application/vnd.ms-excel' },
+  { ext: 'xlsx', mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+]
 
-// Fed to <input accept>. Both MIME types and extensions, because Safari and
-// some Android pickers honour only one or the other.
-export const ATTACHMENT_ACCEPT = [...ALLOWED_MIME, ...ALLOWED_EXT.map((e) => `.${e}`)].join(',')
+const ALLOWED_EXT = ALLOWED.map((a) => a.ext)
 
-// Shown in the hint beside the button, so the copy can't drift from the rule.
-export const ATTACHMENT_TYPE_LABEL = 'PDF, JPG, PNG'
+// Fed to <input accept>. Both forms, because Safari and some Android pickers
+// honour only one or the other. Long, but the user never reads it — it is
+// what greys out unsupported files in the OS picker, which is the first and
+// friendliest place to enforce the rule.
+export const ATTACHMENT_ACCEPT = [
+  ...new Set(ALLOWED.map((a) => a.mime).filter(Boolean)),
+  ...ALLOWED_EXT.map((e) => `.${e}`),
+].join(',')
+
+// Eighteen extensions is too many to print beside a button, so the visible
+// copy names the three families instead (see `support:attachTypes`) and the
+// exact list stays here + in `accept`. Exported for tests and for anywhere
+// that needs to state the list in full.
+export { ALLOWED_EXT }
 
 function extensionOf(name = '') {
   const i = name.lastIndexOf('.')
@@ -32,8 +66,7 @@ function extensionOf(name = '') {
 // caller turns that into a translated message, since this module has no i18n.
 export function checkAttachment(file) {
   if (!file) return 'type'
-  const okType = ALLOWED_MIME.includes(file.type) || ALLOWED_EXT.includes(extensionOf(file.name))
-  if (!okType) return 'type'
+  if (!ALLOWED_EXT.includes(extensionOf(file.name))) return 'type'
   if (file.size > MAX_ATTACHMENT_BYTES) return 'size'
   return null
 }
@@ -54,6 +87,7 @@ export function partitionFiles(fileList, t) {
         t(problem === 'size' ? 'support:attachSizeError' : 'support:attachTypeError', {
           name: file.name,
           max: formatBytes(MAX_ATTACHMENT_BYTES),
+          types: t('support:attachTypes'),
         })
       )
     }
@@ -61,11 +95,15 @@ export function partitionFiles(fileList, t) {
   return { accepted, errors }
 }
 
-// Binary units, matching how the API reports its own sizes ("1 Mb").
+// Binary units, matching how the API reports its own sizes ("1 Mb"). A whole
+// number of MB prints without a decimal, so the limit reads "5 MB" and not
+// "5.0 MB".
 export function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) return ''
   if (bytes < 1024) return `${bytes} B`
   const kb = bytes / 1024
   if (kb < 1024) return `${Math.round(kb)} KB`
-  return `${(kb / 1024).toFixed(kb / 1024 < 10 ? 1 : 0)} MB`
+  const mb = kb / 1024
+  if (Number.isInteger(mb)) return `${mb} MB`
+  return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`
 }

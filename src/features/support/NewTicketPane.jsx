@@ -10,7 +10,6 @@ import { SUPPORT_TOPICS, topicById } from '../../api/mock/tickets'
 import { blockGrad } from '../../api/mock/apartments'
 import {
   ATTACHMENT_ACCEPT,
-  ATTACHMENT_TYPE_LABEL,
   MAX_ATTACHMENT_BYTES,
   formatBytes,
   partitionFiles,
@@ -311,7 +310,7 @@ export default function NewTicketPane() {
             </button>
             <span className={styles.hint}>
               {t('support:attachHint', {
-                types: ATTACHMENT_TYPE_LABEL,
+                types: t('support:attachTypes'),
                 max: formatBytes(MAX_ATTACHMENT_BYTES),
               })}
             </span>

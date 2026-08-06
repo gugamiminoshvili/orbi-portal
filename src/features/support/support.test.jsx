@@ -93,7 +93,9 @@ test('a rejected file is reported and never queued', async () => {
   // One allowed file alongside one that isn't: the good one still queues.
   pickFiles(input, [fakeFile('notes.txt', 'text/plain'), fakeFile('ok.png', 'image/png')])
 
-  expect(await screen.findByText('Only PDF, JPG and PNG files can be attached.')).toBeInTheDocument()
+  expect(
+    await screen.findByText(/notes.txt is not a supported file type/)
+  ).toBeInTheDocument()
   expect(screen.getByText('ok.png')).toBeInTheDocument()
   expect(screen.queryByText('notes.txt')).not.toBeInTheDocument()
 })
