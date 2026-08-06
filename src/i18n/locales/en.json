@@ -378,6 +378,7 @@
     "submit": "Submit ticket",
     "createdToast": "Ticket #{{id}} created",
     "chatPlaceholder": "Write a message",
+    "composerHint": "Enter to send · Shift + Enter for a new line",
     "send": "Send",
     "attach": "Attach",
     "orbiSupport": "ORBI Support",

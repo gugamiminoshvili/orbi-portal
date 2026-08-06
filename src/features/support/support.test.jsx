@@ -134,3 +134,42 @@ test('a stored file with no bytes behind it says so instead of downloading', asy
   // Mock mode holds the file's metadata but not its content.
   expect(await screen.findByText('This demo has no file to download.')).toBeInTheDocument()
 })
+
+// ---------- Composer ----------
+
+test('the send button is disabled until there is something to send', async () => {
+  renderApp(['/support/t/101245'])
+  const send = await screen.findByRole('button', { name: 'Send' })
+  expect(send).toBeDisabled()
+
+  const input = screen.getByPlaceholderText(/Write a message/)
+  fireEvent.change(input, { target: { value: '   ' } })
+  expect(send).toBeDisabled() // whitespace is not a message
+
+  fireEvent.change(input, { target: { value: 'any update?' } })
+  expect(send).toBeEnabled()
+})
+
+test('the composer mirrors its text so the field can grow without JS', async () => {
+  renderApp(['/support/t/101245'])
+  const input = await screen.findByPlaceholderText(/Write a message/)
+  fireEvent.change(input, { target: { value: 'line one\nline two' } })
+
+  // The wrapper's data-value is what the CSS ::after renders to set the
+  // height; if it stops tracking the text, the field stops growing.
+  expect(input.parentElement).toHaveAttribute('data-value', 'line one\nline two')
+})
+
+test('a run of messages from the same side names the sender once', async () => {
+  renderApp(['/support/t/101245'])
+  const input = await screen.findByPlaceholderText(/Write a message/)
+
+  // 101245 opens with one message from the customer; adding a second makes a
+  // run of two, which should still render as a single turn.
+  fireEvent.change(input, { target: { value: 'still happening' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+
+  expect(await screen.findByText('still happening')).toBeInTheDocument()
+  // Both are the customer's, so the support name never appears.
+  expect(screen.queryByText('ORBI Support')).not.toBeInTheDocument()
+})

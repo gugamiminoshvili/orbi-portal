@@ -280,7 +280,10 @@ body{
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
-button{font-family:inherit}
+/* Form controls don't inherit the page font — a textarea in particular falls
+   back to the UA's monospace, which is why the chat composer's placeholder
+   was rendering in a different typeface from everything around it. */
+button,input,textarea,select{font-family:inherit}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 

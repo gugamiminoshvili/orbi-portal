@@ -392,6 +392,7 @@
     "submit": "Отправить тикет",
     "createdToast": "Тикет #{{id}} создан",
     "chatPlaceholder": "Напишите сообщение",
+    "composerHint": "Enter — отправить · Shift + Enter — новая строка",
     "send": "Отправить",
     "attach": "Прикрепить",
     "orbiSupport": "Поддержка ORBI",

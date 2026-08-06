@@ -8,11 +8,8 @@ import { TSTATUS, topicById } from '../../api/mock/tickets'
 import { ATTACHMENT_ACCEPT, partitionFiles } from '../../utils/attachments'
 import { AttachmentList } from './Attachments'
 import Icon from '../../components/ui/Icon'
-import Button from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import Skeleton from '../../components/ui/Skeleton'
-import buttonStyles from '../../components/ui/Button.module.css'
-import fieldStyles from '../../components/ui/Field.module.css'
 import EmptyPane from './EmptyPane'
 import styles from './Support.module.css'
 
@@ -145,6 +142,13 @@ export default function TicketChatPane() {
         {ticket.msgs.map((m, i) => {
           const showDay = m.date !== lastDate
           lastDate = m.date
+          // A run of messages from the same side on the same day reads as one
+          // turn: only the last of the run gets the tail corner, and only the
+          // first gets the avatar and the sender's name.
+          const prev = ticket.msgs[i - 1]
+          const next = ticket.msgs[i + 1]
+          const runStart = showDay || !prev || prev.me !== m.me
+          const runEnd = !next || next.me !== m.me || next.date !== m.date
           return (
             <div key={i}>
               {showDay && (
@@ -152,9 +156,18 @@ export default function TicketChatPane() {
                   <span>{m.date}</span>
                 </div>
               )}
-              <div className={`${styles.msg} ${m.me ? styles.me : styles.them}`}>
+              <div
+                className={`${styles.msg} ${m.me ? styles.me : styles.them} ${runEnd ? '' : styles.cont}`}
+              >
+                {!m.me && (
+                  <span className={styles['msg-avatar']} aria-hidden="true">
+                    <Icon name="chat" />
+                  </span>
+                )}
                 <div className={styles.bubble}>
-                  {!m.me && <div className={styles.who}>{m.who || t('support:orbiSupport')}</div>}
+                  {!m.me && runStart && (
+                    <div className={styles.who}>{m.who || t('support:orbiSupport')}</div>
+                  )}
                   {m.text}
                   <AttachmentList files={m.files} />
                   <div className={styles.time}>{m.time}</div>
@@ -168,35 +181,54 @@ export default function TicketChatPane() {
         <div className={styles['chat-closed']}>{t(`support:closedNotice.${ticket.status}`)}</div>
       ) : (
         <div className={styles['chat-composer']}>
-          <textarea
-            className={fieldStyles.input}
-            rows={1}
-            placeholder={t('support:chatPlaceholder')}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept={ATTACHMENT_ACCEPT}
-            hidden
-            onChange={handleFileChange}
-          />
-          <button
-            type="button"
-            className={`${buttonStyles.btn} ${buttonStyles['btn-ghost']} ${buttonStyles['btn-sm']}`}
-            onClick={handleAttach}
-            disabled={uploading}
-            aria-label={t('support:attach')}
-            title={t('support:attach')}
-          >
-            {uploading ? <span className={styles.spin} /> : <Icon name="clip" />}
-          </button>
-          <Button onClick={handleSend} disabled={sending} aria-label={t('support:send')}>
-            <Icon name="send" />
-          </Button>
+          {/* The border and focus ring live on this box, not on the textarea —
+              so the field and its two buttons read as one control. */}
+          <div className={styles['composer-box']}>
+            {/* Auto-grow with no JS: the wrapper is a 1x1 grid holding both
+                the textarea and an invisible ::after carrying the same text
+                (data-value). The ::after sets the row height, the textarea
+                stretches to it. Measuring scrollHeight instead was unreliable
+                — the textarea is a flex item, and its reported content height
+                lagged the value by a render. */}
+            <div className={styles['ta-grow']} data-value={text}>
+              <textarea
+                rows={1}
+                placeholder={t('support:chatPlaceholder')}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ATTACHMENT_ACCEPT}
+              hidden
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              className={styles['composer-act']}
+              onClick={handleAttach}
+              disabled={uploading}
+              aria-label={t('support:attach')}
+              title={t('support:attach')}
+            >
+              {uploading ? <span className={styles.spin} /> : <Icon name="clip" />}
+            </button>
+            <button
+              type="button"
+              className={`${styles['composer-act']} ${styles['composer-send']}`}
+              onClick={handleSend}
+              disabled={sending || !text.trim()}
+              aria-label={t('support:send')}
+              title={t('support:send')}
+            >
+              <Icon name="send" />
+            </button>
+          </div>
+          <p className={styles['composer-hint']}>{t('support:composerHint')}</p>
         </div>
       )}
     </>

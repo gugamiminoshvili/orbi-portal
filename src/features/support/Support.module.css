@@ -755,50 +755,115 @@ button.file-chip:disabled {
 }
 
 /* ---------- Chat thread ---------- */
+/* ---------- Chat thread ----------
+   The list is a bottom-anchored column: `margin-top:auto` on the first child
+   pushes a short thread down against the composer instead of leaving it
+   stranded at the top under a tall void. Doing it this way rather than with
+   `justify-content:flex-end` keeps the top of a LONG thread reachable — that
+   combination clips overflow in Firefox. */
+.sup-dbody {
+  display: flex;
+  flex-direction: column;
+}
+.sup-dbody > *:first-child {
+  margin-top: auto;
+}
+
 .chat-day {
   display: flex;
-  justify-content: center;
-  margin: 6px 0 16px;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 18px;
+}
+/* Hairlines either side of the chip, so the date reads as a divider rather
+   than a floating pill. */
+.chat-day::before,
+.chat-day::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 .chat-day span {
-  background: var(--fill);
   color: var(--muted);
   font-size: 11px;
   font-weight: 600;
-  border-radius: 999px;
-  padding: 4px 12px;
+  letter-spacing: .02em;
+  flex: none;
 }
+
 .msg {
   display: flex;
-  margin-bottom: 14px;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 .msg.me {
   justify-content: flex-end;
 }
+/* Support's avatar sits beside the bubble, bottom-aligned so it marks the
+   speaker's last line the way a chat client does. */
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--teal-soft);
+  /* The tint alone is nearly invisible on a white card — the hairline is what
+     makes the avatar read as a distinct object. */
+  border: 1px solid var(--teal-line);
+  color: var(--teal-ink);
+}
+.msg-avatar svg {
+  width: 15px;
+  height: 15px;
+}
+/* Consecutive messages from the same speaker keep the gap tight and drop the
+   repeated avatar/name — the run reads as one turn. */
+.msg.cont {
+  margin-bottom: 4px;
+}
+.msg.cont .msg-avatar {
+  visibility: hidden;
+}
+
 .msg .bubble {
-  max-width: 74%;
-  padding: 11px 14px;
-  border-radius: 15px;
+  /* Capped as well as proportional: on a wide desktop pane 74% is a very long
+     measure to read. */
+  max-width: min(74%, 520px);
+  padding: 10px 14px 8px;
+  border-radius: 16px;
   font-size: 13.5px;
-  line-height: 1.5;
+  line-height: 1.55;
   word-wrap: break-word;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 .msg.them .bubble {
   background: var(--surface-2);
+  border: 1px solid var(--line);
   color: var(--ink);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 6px;
 }
 .msg.me .bubble {
   background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
   color: var(--teal-ink);
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
+}
+/* Only the corner nearest the speaker is squared off, and only on the last
+   message of a run — mid-run bubbles stay fully rounded. */
+.msg.cont .bubble {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 .msg .who {
   font-size: 11px;
   font-weight: 700;
   color: var(--teal-ink);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .msg.them .who {
   color: var(--muted);
@@ -806,26 +871,127 @@ button.file-chip:disabled {
 .msg .time {
   font-size: 10px;
   color: var(--muted);
-  margin-top: 5px;
+  margin-top: 4px;
   text-align: right;
+  /* Slightly transparent rather than a lighter colour: it has to recede on
+     both bubble fills without needing a per-side token. */
+  opacity: .8;
 }
+
+/* ---------- Composer ----------
+   One bordered field that CONTAINS the textarea and both buttons, instead of
+   three separate controls sitting on a grey band. The whole thing takes the
+   focus ring via :focus-within, so it behaves like a single input. */
 .chat-composer {
   border-top: 1px solid var(--line);
-  padding: 12px 14px;
+  padding: 14px;
+  background: var(--card);
+}
+.composer-box {
   display: flex;
-  gap: 10px;
   align-items: flex-end;
+  gap: 6px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 20px;
   background: var(--surface-2);
+  transition: var(--t);
 }
-.chat-composer textarea {
+.composer-box:focus-within {
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+  background: var(--card);
+}
+/* Auto-grow, no JavaScript. The wrapper is a single grid cell containing
+   BOTH the textarea and a hidden ::after that mirrors the text via
+   data-value. The mirror is a normal block, so it sizes to its content and
+   sets the row height; the textarea is placed in the same cell and stretches
+   to match. Both must share every metric that affects wrapping — font,
+   padding, line-height, border — or the two will disagree by a line.
+   The trailing space in the content keeps a text ending in a newline from
+   collapsing the last row. */
+.ta-grow {
   flex: 1;
-  min-height: 44px;
+  min-width: 0;
+  display: grid;
   max-height: 120px;
+  overflow-y: auto;
+}
+.ta-grow::after {
+  content: attr(data-value) ' ';
+  visibility: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ta-grow > textarea,
+.ta-grow::after {
+  grid-area: 1 / 1 / 2 / 2;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 0;
+  border: none;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.45;
+  letter-spacing: inherit;
+}
+.ta-grow > textarea {
+  background: none;
+  color: var(--ink);
   resize: none;
+  overflow: hidden;
 }
-.chat-composer button {
+.ta-grow > textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+.composer-act {
+  width: 34px;
+  height: 34px;
   flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--t);
 }
+.composer-act:hover:not(:disabled) {
+  background: var(--fill);
+  color: var(--ink-2);
+}
+.composer-act:disabled {
+  opacity: .5;
+  cursor: default;
+}
+.composer-act:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.composer-send {
+  background: var(--teal);
+  color: var(--on-accent);
+}
+.composer-send:hover:not(:disabled) {
+  background: var(--teal-600);
+  color: var(--on-accent);
+}
+/* Nothing typed yet: the send button stays present but recedes, so the row
+   doesn't shift when the first character arrives. */
+.composer-send:disabled {
+  background: var(--line-2);
+  color: var(--muted);
+  opacity: 1;
+}
+.composer-hint {
+  margin: 8px 2px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
 .chat-closed {
   padding: 16px;
   text-align: center;
