@@ -9,12 +9,11 @@
 // strings below exist only to fill <input accept>, which some Android
 // pickers honour instead of the extension.
 //
-// FLAG (README §18): the backend constant reads
-// `MAX_FILE_SIZE = 5 * 1024 * 1024  # 10 MB` — the value is 5 MiB and the
-// comment says 10 MB. This follows the value, which is the one the server
-// actually enforces; if 10 MB was the intent, this is the one line to change.
-
-export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024
+// The ceiling was raised to 50 MB across the product (owner call 2026-08-07),
+// which also settled the earlier 5-MiB-value-vs-"10 MB"-comment contradiction
+// in the backend constant. It applies to both attachment paths: the files
+// picked while composing a new ticket, and the ones sent into an open one.
+export const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024
 
 // One entry per allowed extension, in the backend's own order. `mime` is
 // best-effort — an extension with no reliable MIME (or one the browser won't
@@ -96,8 +95,8 @@ export function partitionFiles(fileList, t) {
 }
 
 // Binary units, matching how the API reports its own sizes ("1 Mb"). A whole
-// number of MB prints without a decimal, so the limit reads "5 MB" and not
-// "5.0 MB".
+// number of MB prints without a decimal, so the limit reads "50 MB" and not
+// "50.0 MB".
 export function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) return ''
   if (bytes < 1024) return `${bytes} B`

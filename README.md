@@ -386,23 +386,22 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     - The mock fixtures were sign-flipped to match, so the demo agrees with
       the rule. A5 is deliberately left in advance, as the green case.
 
-18. **Ticket attachments — types/limit ANSWERED (2026-08-06), two items
-    open.** The backend team supplied `AllowedFileTypes` (18 extensions:
-    png/jpg/jpeg/heic/gif/tiff/bmp, mp4/avi/mov/wmv/flv/mkv,
+18. **Ticket attachments — types/limit ANSWERED (2026-08-06), size raised
+    2026-08-07.** The backend team supplied `AllowedFileTypes` (18
+    extensions: png/jpg/jpeg/heic/gif/tiff/bmp, mp4/avi/mov/wmv/flv/mkv,
     pdf/doc/docx/xls/xlsx) and `MAX_FILE_SIZE`.
     `src/utils/attachments.js` mirrors both, validating by **extension**
     because that is what the server does — matching the browser's MIME sniff
     would diverge the moment a picker reports `application/octet-stream`,
-    which is routine on phones. Still open:
-    - **The size constant contradicts its own comment:**
-      `MAX_FILE_SIZE = 5 * 1024 * 1024  # 10 MB`. The value is 5 MiB. We
-      follow the value (it is what the server enforces); confirm whether
-      10 MB was the intent.
-    - **Video is allowed but 5 MB makes it unusable.** A few seconds of
-      phone video clears that on its own, so mp4/mov/mkv will in practice
-      always be rejected — either by us or, worse, by the server after a
-      long upload. Worth raising as a product question, not just a config
-      one.
+    which is routine on phones.
+    - **The size limit is 50 MB** (owner call 2026-08-07), which also
+      retired the old `MAX_FILE_SIZE = 5 * 1024 * 1024  # 10 MB`
+      value-vs-comment contradiction, and the follow-on problem that a few
+      seconds of phone video cleared the old ceiling on its own — making the
+      allowed video formats unusable in practice. Both attachment paths (new
+      ticket, open ticket) read the single `MAX_ATTACHMENT_BYTES` constant.
+      **Confirm the server was raised to match**: if it still enforces 5 MiB,
+      the client now accepts files the upload will reject.
     - **Which message a file attaches to.** The endpoint takes `ticketId`
       and no message id, so placement is the server's choice; both callers
       re-fetch the ticket and render whatever `files[]` comes back rather

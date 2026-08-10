@@ -24,10 +24,10 @@ test('the list matches the backend AllowedFileTypes verbatim', () => {
   ])
 })
 
-test('the limit is the backend MAX_FILE_SIZE value', () => {
-  // The backend constant is `5 * 1024 * 1024` under a `# 10 MB` comment; the
-  // value is what the server enforces, so it is what we mirror (README §18).
-  expect(MAX_ATTACHMENT_BYTES).toBe(5 * 1024 * 1024)
+test('the limit is 50 MB', () => {
+  // Owner call 2026-08-07, product-wide. Both attachment paths read this one
+  // constant, so a new ticket and an open one can never disagree.
+  expect(MAX_ATTACHMENT_BYTES).toBe(50 * 1024 * 1024)
 })
 
 describe('checkAttachment', () => {
@@ -72,7 +72,7 @@ test('the accept attribute offers both MIME types and extensions', () => {
 test('formatBytes reports whole units', () => {
   expect(formatBytes(512)).toBe('512 B')
   expect(formatBytes(2048)).toBe('2 KB')
-  expect(formatBytes(MAX_ATTACHMENT_BYTES)).toBe('5 MB')
+  expect(formatBytes(MAX_ATTACHMENT_BYTES)).toBe('50 MB')
   expect(formatBytes(1.4 * 1024 * 1024)).toBe('1.4 MB')
   expect(formatBytes(undefined)).toBe('')
 })
