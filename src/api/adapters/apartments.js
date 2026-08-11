@@ -7,14 +7,19 @@
 //    element handed to adaptProperty here is one FLAT record.
 //  - A flat carries THREE variants of each money field (e.g. apartmentBalance
 //    in the contract currency, apartmentBalanceGEL, apartmentBalanceCurrency/
-//    apartmentCurrencyRate). The UI renders ₾ everywhere (utils/format.js's
-//    fmt), so the *GEL variants are the ones read below. The live sign
-//    convention matches the v1 mock exactly: negative = owed (live
-//    apartmentBalanceGEL -1677.73 / InternetTVBalanceGEL -95.13 are debts),
-//    so values pass through un-negated.
+//    apartmentCurrencyRate). Electricity and internet are GEL-native, so
+//    their *GEL variants are read below; MAINTENANCE is billed in the
+//    contract currency (live: USD) and is read from the un-converted
+//    `apartmentBalance` + `apartmentBalanceCurrency` (owner call 2026-07-30).
+//    Balances pass through un-negated; what a sign MEANS is decided once, in
+//    utils/balance.js (positive = owed, owner ruling 2026-08-06). Note the
+//    live sample's apartmentBalance -637.12 / InternetTVBalanceGEL -69.13
+//    are therefore advances, not debts — the reading this code held until
+//    that ruling was the opposite one (README §17).
 //  - Each flat embeds its internet subscription as `orbinet_agreement`
 //    (empty {} when there is no plan) — services.internet is synthesized
 //    from it via adapters/internet.js's adaptAgreement.
+import { symbolFor } from '../../utils/format.js'
 import { adaptAgreement } from './internet.js'
 
 // Live flats carry `ownership_status` ("owner" observed) plus
@@ -58,7 +63,7 @@ export function flatId(apartment) {
 // Balances may arrive as numbers (live) or strings (doc examples). Parse
 // defensively: a missing or non-numeric value becomes 0 rather than NaN,
 // since balances flow straight into fmt() (utils/format.js) and arithmetic
-// (`neg = balance < 0`, PayPage's `-apt.balance`) that must not see NaN.
+// (utils/balance.js's owes()/amountOwed()) that must not see NaN.
 function num(value) {
   const n = Number(value)
   return Number.isNaN(n) ? 0 : n
@@ -74,13 +79,13 @@ export function adaptProperty(dto = {}) {
     // `objectId` is kept alongside `id` — it's the id `/flat/{flat_id}/`
     // expects (live flat: id 748 vs objectId 9910; both present).
     objectId: dto.objectId ?? dto.id,
-    project: dto.complex ?? '—',
-    code: dto.apartmentName ?? '—',
-    block: dto.block ?? '—',
-    number: dto.room_number != null ? String(dto.room_number) : '—',
+    project: dto.complex ?? '-',
+    code: dto.apartmentName ?? '-',
+    block: dto.block ?? '-',
+    number: dto.room_number != null ? String(dto.room_number) : '-',
     floor: num(dto.floor),
     area: num(dto.square),
-    epcode: dto.epcode ?? '—',
+    epcode: dto.epcode ?? '-',
     balance: num(dto.apartmentBalanceGEL ?? dto.apartmentBalance),
     role: ROLE_BY_OWNERSHIP[dto.ownership_status] || roleFromCategory(dto.apartmentCategory) || 'Owner',
     services: adaptServicesFromProperty(dto),
@@ -90,36 +95,51 @@ export function adaptProperty(dto = {}) {
 // The flat record carries everything the 4 service accordions render except
 // a few date/tariff fields with no live source anywhere yet:
 //  - maintenance.tariff / maintenance.start, water.updated,
-//    electricity.updated — no source field on the live payload; numeric
-//    fields piped through fmt() get 0 (fmt(0) renders "₾0.00", never NaN),
-//    plain-text fields get the app's '—' placeholder.
+//    electricity.updated — no source field on the live payload. These are
+//    UNKNOWN, not zero, so the numeric ones are null and the card renders a
+//    '-' placeholder; a literal "0.00 $" monthly tariff read as a real
+//    (free) price.
 //  - electricity.status has no direct field either; `display_services`
 //    (live: ["electricity","water","orbinet","maintenance","doors"]) is the
 //    closest signal — a flat whose display_services lists electricity is
 //    treated as Active. FLAG: this is an inference, not a status field.
 //  - services.internet comes from the embedded orbinet_agreement
 //    (adaptAgreement) plus the flat's own InternetTVBalanceGEL for
-//    `balance` — negative-when-owed on the live payload, same convention
-//    InternetCard's `neg = s.balance < 0` / `fmt(-s.balance)` already
-//    expect, so no sign flip.
+//    `balance` — passed through unchanged. Which sign means "owed" is a
+//    single app-wide rule (utils/balance.js: positive = owed), so no
+//    adapter does a sign flip of its own.
 function adaptServicesFromProperty(dto = {}) {
   const displayServices = Array.isArray(dto.display_services) ? dto.display_services : []
   return {
-    maintenance: {
-      balance: num(dto.apartmentBalanceGEL ?? dto.apartmentBalance),
-      tariff: 0, // no source field on the live flat payload
-      start: '—', // no source field on the live flat payload
-    },
+    // Maintenance is billed in the CONTRACT currency (live: USD) — owner
+    // call 2026-07-30, so the card shows `apartmentBalance` + its
+    // `apartmentBalanceCurrency` rather than the pre-converted
+    // `apartmentBalanceGEL` the page used to render. A payload with only the
+    // GEL variant (mock, or a flat with no contract currency) falls back to
+    // it and stays in ₾.
+    maintenance: dto.apartmentBalance != null
+      ? {
+          balance: num(dto.apartmentBalance),
+          currency: symbolFor(dto.apartmentBalanceCurrency, '$'),
+          tariff: null, // no source field on the live flat payload
+          start: '-', // no source field on the live flat payload
+        }
+      : {
+          balance: num(dto.apartmentBalanceGEL),
+          currency: '₾',
+          tariff: null,
+          start: '-',
+        },
     water: {
-      counter: dto.waterCode ?? '—',
-      indication: dto.WaterIndication ?? '—',
-      updated: '—', // no source field on the live flat payload
+      counter: dto.waterCode ?? '-',
+      indication: dto.WaterIndication ?? '-',
+      updated: '-', // no source field on the live flat payload
     },
     electricity: {
-      counter: dto.electricityMeterNo ?? '—',
+      counter: dto.electricityMeterNo ?? '-',
       status: displayServices.includes('electricity') ? 'Active' : 'Inactive',
       balance: num(dto.electricityBalanceGEL ?? dto.electricityBalance),
-      updated: '—', // no source field on the live flat payload
+      updated: '-', // no source field on the live flat payload
     },
     internet: {
       ...adaptAgreement(dto.orbinet_agreement || {}),
@@ -140,18 +160,18 @@ function adaptServicesFromProperty(dto = {}) {
 export function adaptFlatDetail(dto = {}) {
   return {
     id: dto.id,
-    project: dto.complex ?? '—',
-    code: dto.apartmentName ?? '—',
-    block: dto.block ?? '—',
-    number: dto.number != null ? String(dto.number) : '—',
+    project: dto.complex ?? '-',
+    code: dto.apartmentName ?? '-',
+    block: dto.block ?? '-',
+    number: dto.number != null ? String(dto.number) : '-',
     floor: num(dto.floor),
     area: num(dto.square),
-    building: dto.complex ? (dto.block ? `${dto.complex}, Block ${dto.block}` : dto.complex) : '—',
-    cadastral: dto.cadastre ?? '—',
-    waterCode: dto.waterCode ?? '—',
+    building: dto.complex ? (dto.block ? `${dto.complex}, Block ${dto.block}` : dto.complex) : '-',
+    cadastral: dto.cadastre ?? '-',
+    waterCode: dto.waterCode ?? '-',
     // The doors/QR "ap code": epcode is the only code-like candidate on the
     // live payload (empty string on the captured sample -> placeholder).
-    apCode: dto.epcode || '—',
+    apCode: dto.epcode || '-',
     role: roleFromCategory(dto.apartmentCategory) || 'Owner',
   }
 }

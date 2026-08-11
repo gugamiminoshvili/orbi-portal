@@ -25,7 +25,7 @@ test('QR modal opens from the info card and download shows a toast', async () =>
   renderApp(['/apartments/A1'])
   fireEvent.click(await screen.findByRole('button', { name: /Show/ }))
   const modal = await screen.findByTestId('modal-box')
-  expect(within(modal).getByText(/Apartment QR —/)).toBeInTheDocument()
+  expect(within(modal).getByText(/Apartment QR -/)).toBeInTheDocument()
   fireEvent.click(within(modal).getByRole('button', { name: /Download QR/ }))
   expect(await screen.findByText('QR downloaded')).toBeInTheDocument()
 })

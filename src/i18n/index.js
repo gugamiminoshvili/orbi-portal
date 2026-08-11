@@ -8,6 +8,16 @@ import { patchUserLang } from '../api/auth'
 
 const STORAGE_KEY = 'orbi-lang'
 
+// The languages the switcher offers, in menu order. Flags are emoji rather
+// than image assets — no external requests, and they inherit the surrounding
+// type metrics. Lives here (not in the menu component) because the list is
+// the i18n configuration, not a detail of where it happens to be rendered.
+export const LANGS = [
+  { code: 'en', flag: '🇬🇧', label: 'English', short: 'EN' },
+  { code: 'ka', flag: '🇬🇪', label: 'ქართული', short: 'ქარ' },
+  { code: 'ru', flag: '🇷🇺', label: 'Русский', short: 'РУС' },
+]
+
 const storedLang = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
 
 i18n.use(initReactI18next).init({
@@ -18,7 +28,7 @@ i18n.use(initReactI18next).init({
   },
   lng: storedLang || 'en',
   fallbackLng: 'en',
-  ns: ['common', 'news', 'apartments', 'pay', 'support', 'auth'],
+  ns: ['common', 'news', 'apartments', 'pay', 'support', 'auth', 'dashboard', 'profile'],
   defaultNS: 'common',
   interpolation: {
     escapeValue: false,

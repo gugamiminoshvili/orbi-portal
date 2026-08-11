@@ -1,0 +1,314 @@
+import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useCrumbs } from '../../components/layout/AppShell'
+import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
+import { changePassword } from '../../api/auth'
+import { USE_MOCK } from '../../api/client'
+import { accountStatus, STATUS_TONE } from '../../utils/accountStatus'
+import { fmtDate } from '../../utils/format'
+import Card from '../../components/ui/Card'
+import Button from '../../components/ui/Button'
+import Icon from '../../components/ui/Icon'
+import { Seg } from '../../components/ui/Badge'
+import fieldStyles from '../../components/ui/Field.module.css'
+import styles from './Profile.module.css'
+
+function initials(fullname) {
+  return (fullname || '')
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+}
+
+const MIN_PASSWORD = 8
+
+// The password policy the owner supplied (2026-08-04). Only the length is
+// marked required and is the only rule validate() blocks on; the three
+// character classes are shown live so the user can see what makes the
+// password stronger, without locking them out of something the backend
+// would have accepted.
+const PASSWORD_RULES = [
+  { key: 'length', test: (v) => v.length >= MIN_PASSWORD },
+  { key: 'number', test: (v) => /[0-9]/.test(v) },
+  { key: 'lower', test: (v) => /[a-z]/.test(v) },
+  { key: 'upper', test: (v) => /[A-Z]/.test(v) },
+]
+
+export default function ProfilePage() {
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'security' ? 'security' : 'profile'
+  useCrumbs([{ label: t('profile:title') }])
+
+  const name = user?.fullname || user?.username || '-'
+  const status = accountStatus(user)
+
+  // Each detail row carries its own icon (Variant 2 layout) — the icon is
+  // decorative, the label is the accessible name.
+  const rows = [
+    { key: 'firstName', icon: 'user', value: user?.fName || user?.fNameEng },
+    { key: 'lastName', icon: 'user', value: user?.lName || user?.lNameEng },
+    { key: 'email', icon: 'mail', value: user?.mail },
+    { key: 'phone', icon: 'phone', value: user?.phone },
+    { key: 'personalId', icon: 'idcard', value: user?.personalId },
+    // Date only — the backend sends a full timestamp ("2015-04-16T00:00:00").
+    { key: 'regDate', icon: 'cal', value: fmtDate(user?.regDate) },
+  ]
+
+  return (
+    <div>
+      <div className={styles['page-head']}>
+        <h1>{t('profile:title')}</h1>
+      </div>
+
+      {/* Identity + key facts as a stat strip, mirroring the dashboard's
+          stat cards; the details/password pane sits underneath. */}
+      <div className={styles.strip}>
+        <Card className={styles['who-card']}>
+          <span className={styles.avatar}>{initials(name)}</span>
+          <div className={styles['who-body']}>
+            <div className={styles.name}>{name}</div>
+            {user?.mail && (
+              <a className={styles.mail} href={`mailto:${user.mail}`}>
+                {user.mail}
+              </a>
+            )}
+          </div>
+        </Card>
+
+        <Card className={styles.stat}>
+          <span className={`${styles['stat-ic']} ${styles[STATUS_TONE[status]]}`}>
+            <Icon name={status === 'valid' ? 'check' : 'warn'} />
+          </span>
+          <div className={styles['stat-body']}>
+            <div className={styles['stat-k']}>{t('profile:accountStatusShort')}</div>
+            <div className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
+              {t(`profile:status.${status}`)}
+            </div>
+          </div>
+        </Card>
+
+        <Card className={styles.stat}>
+          <span className={`${styles['stat-ic']} ${styles.indigo}`}>
+            <Icon name="user" />
+          </span>
+          <div className={styles['stat-body']}>
+            <div className={styles['stat-k']}>{t('profile:customerId')}</div>
+            <div className={styles['stat-v']}>{user?.id ?? '-'}</div>
+          </div>
+        </Card>
+      </div>
+
+      <Card className={styles['pane-card']}>
+        <Card.Head className={styles['pane-head']}>
+          <h3>{t('profile:accountDetails')}</h3>
+          <Seg
+            options={[
+              { value: 'profile', label: t('profile:tabProfile') },
+              { value: 'security', label: t('profile:tabSecurity') },
+            ]}
+            value={tab}
+            onChange={(v) => setParams(v === 'security' ? { tab: 'security' } : {}, { replace: true })}
+          />
+        </Card.Head>
+        <Card.Pad className={styles['pane-pad']}>
+          {tab === 'profile' ? <ProfileDetails rows={rows} /> : <SecurityPane />}
+        </Card.Pad>
+      </Card>
+    </div>
+  )
+}
+
+function ProfileDetails({ rows }) {
+  const { t } = useTranslation()
+  return (
+    <dl className={styles.rows}>
+      {rows.map(({ key, icon, value }) => (
+        <div key={key} className={styles.row}>
+          <span className={styles['row-ic']} aria-hidden="true">
+            <Icon name={icon} />
+          </span>
+          <dt>{t(`profile:fields.${key}`)}</dt>
+          <dd>{value || '-'}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+// Maps the documented passwordChange failure codes onto the field they belong
+// to; anything else falls back to a generic message.
+const ERROR_FIELD = {
+  CURRENT_PASSWORD_IS_WRONG: 'current',
+  NEW_PASSWORD_IS_THE_SAME: 'next',
+  PASSWORD_LENGTH_TOO_SHORT: 'next',
+}
+
+function SecurityPane() {
+  const { t } = useTranslation()
+  const toast = useToast()
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [repeat, setRepeat] = useState('')
+  const [errors, setErrors] = useState({})
+  const [repeatTouched, setRepeatTouched] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  // Submit stays disabled until all three fields have something in them —
+  // there is nothing to send otherwise, and the button shouldn't invite a
+  // click that can only fail.
+  const filled = Boolean(current && next && repeat)
+
+  // The mismatch is reported as soon as the repeat field has been left once,
+  // then live on every keystroke after that — waiting for submit made the
+  // user find out only after committing, and checking on every keystroke
+  // from the first character flags a match that is still being typed.
+  const mismatch = repeatTouched && Boolean(repeat) && repeat !== next
+  const repeatError = errors.repeat || (mismatch ? t('profile:errors.mismatch') : '')
+
+  function validate() {
+    const e = {}
+    if (!current) e.current = t('profile:errors.required')
+    if (next.length < MIN_PASSWORD) e.next = t('profile:errors.tooShort', { min: MIN_PASSWORD })
+    if (next && repeat !== next) e.repeat = t('profile:errors.mismatch')
+    return e
+  }
+
+  async function handleSubmit(ev) {
+    ev.preventDefault()
+    const found = validate()
+    setErrors(found)
+    if (Object.keys(found).length || busy) return
+
+    setBusy(true)
+    try {
+      if (USE_MOCK) {
+        // No password endpoint to exercise in mock mode — the form still
+        // validates and reports success so the flow is demoable.
+        await new Promise((r) => setTimeout(r, 300))
+      } else {
+        await changePassword({ currentPassword: current, newPassword: next })
+      }
+      setCurrent('')
+      setNext('')
+      setRepeat('')
+      setRepeatTouched(false)
+      toast(t('profile:passwordChanged'))
+    } catch (err) {
+      const field = ERROR_FIELD[err?.errorCode]
+      if (field) {
+        setErrors({ [field]: t(`profile:errors.${err.errorCode}`) })
+      } else {
+        toast(t('common:requestFailed'))
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      <p className={styles['form-hint']}>{t('profile:passwordHint', { min: MIN_PASSWORD })}</p>
+      <PasswordField
+        id="current-password"
+        label={t('profile:currentPassword')}
+        value={current}
+        onChange={setCurrent}
+        error={errors.current}
+        autoComplete="current-password"
+      />
+      <PasswordField
+        id="new-password"
+        label={t('profile:newPassword')}
+        value={next}
+        onChange={setNext}
+        error={errors.next}
+        autoComplete="new-password"
+        describedBy="password-rules"
+      />
+      {/* Directly under the field it describes, and live, so the user sees a
+          rule turn green as they satisfy it rather than finding out on
+          submit. */}
+      <PasswordRules value={next} />
+      <PasswordField
+        id="repeat-password"
+        label={t('profile:repeatPassword')}
+        value={repeat}
+        onChange={setRepeat}
+        onBlur={() => setRepeatTouched(true)}
+        error={repeatError}
+        autoComplete="new-password"
+      />
+      <div className={styles['form-foot']}>
+        <Button type="submit" disabled={busy || !filled}>
+          {t('profile:updatePassword')}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+// The rule list. Each row states whether it is met in text as well as by the
+// tick, because colour alone can't carry that — and the whole block is the
+// new-password field's accessible description, so a screen reader reaches it
+// from the field instead of having to hunt for it.
+function PasswordRules({ value }) {
+  const { t } = useTranslation()
+  return (
+    <div id="password-rules" className={styles.rules}>
+      <div className={styles['rules-title']}>{t('profile:rulesTitle')}</div>
+      <ul>
+        {PASSWORD_RULES.map((rule) => {
+          const met = rule.test(value)
+          return (
+            <li key={rule.key} className={met ? styles.met : ''}>
+              <span className={styles.mark} aria-hidden="true">
+                {met && <Icon name="check" size={11} />}
+              </span>
+              <span>{t(`profile:rules.${rule.key}`, { min: MIN_PASSWORD })}</span>
+              <span className="sr-only">{t(met ? 'profile:ruleMet' : 'profile:ruleUnmet')}</span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function PasswordField({ id, label, value, onChange, onBlur, error, autoComplete, describedBy }) {
+  const [shown, setShown] = useState(false)
+  const { t } = useTranslation()
+  return (
+    <div className={styles.field}>
+      <label htmlFor={id}>{label}</label>
+      <div className={styles['pw-wrap']}>
+        <input
+          id={id}
+          type={shown ? 'text' : 'password'}
+          className={`${fieldStyles.input} ${error ? styles.invalid : ''}`}
+          value={value}
+          autoComplete={autoComplete}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={describedBy}
+        />
+        <button
+          type="button"
+          className={styles['pw-toggle']}
+          aria-label={t(shown ? 'profile:hidePassword' : 'profile:showPassword')}
+          onClick={() => setShown((s) => !s)}
+        >
+          <Icon name={shown ? 'eye-off' : 'eye'} />
+        </button>
+      </div>
+      {error && <div className={styles.err}>{error}</div>}
+    </div>
+  )
+}

@@ -102,10 +102,10 @@
   color: inherit;
 }
 .sup-item:hover {
-  background: #f9fafd;
+  background: var(--surface-2);
 }
 .sup-item.on {
-  background: #f4fcf7;
+  background: var(--teal-tint);
   border-color: var(--teal);
 }
 .sup-item:focus-visible {
@@ -204,7 +204,7 @@
   height: 36px;
   border-radius: 10px;
   border: 1px solid var(--line-2);
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -227,7 +227,7 @@
   display: flex;
   gap: 10px;
   justify-content: space-between;
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 
 .sup-empty {
@@ -261,9 +261,10 @@
 
 /* ---------- Create form ---------- */
 .sup-create-body {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   padding: 20px;
 }
 .sup-form {
@@ -271,7 +272,11 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
+  /* No internal scroll: the describe textarea flexes to absorb slack, so the
+     form always fits its pane. Keeping overflow visible lets the apartment
+     dropdown float as its own popover above the fields instead of being
+     clipped into (and scrolling with) this container. */
+  overflow: visible;
 }
 .field {
   margin-bottom: 16px;
@@ -316,7 +321,7 @@
   bottom: 10px;
   font-size: 11px;
   color: var(--muted);
-  background: #fff;
+  background: var(--card);
   padding: 0 4px;
   pointer-events: none;
 }
@@ -349,7 +354,7 @@
   padding: 16px;
   border: 1.5px solid var(--line-2);
   border-radius: 14px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   transition: var(--t);
   font-family: inherit;
@@ -361,7 +366,7 @@
 }
 .topic-card.sel {
   border-color: var(--teal);
-  background: #f6fefe;
+  background: var(--teal-tint);
   box-shadow: 0 0 0 1px var(--teal) inset;
 }
 .tc-ic {
@@ -399,7 +404,7 @@
   border: 1.5px solid var(--line-2);
   border-radius: 12px;
   padding: 0 14px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   font-family: inherit;
   font-size: 13.5px;
@@ -417,19 +422,50 @@
   flex: none;
   display: inline-flex;
 }
-.combo.open .combo-btn {
+.combo.open .combo-btn,
+.combo.open .combo-control {
   border-color: var(--teal);
   box-shadow: var(--ring);
 }
 .combo.open .cb-chev {
   transform: rotate(180deg);
 }
+
+/* Multi-select control: chips live inside the input; grows with wrapping */
+.combo-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--card);
+  cursor: pointer;
+  transition: var(--t);
+}
+.combo-control:hover {
+  border-color: var(--teal);
+}
+.combo-ph {
+  flex: 1;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+.combo-chips {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 .combo-panel {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line-2);
   border-radius: 12px;
   box-shadow: var(--shadow-lg);
@@ -443,6 +479,9 @@
 .combo-opts {
   max-height: 240px;
   overflow-y: auto;
+  /* Keep wheel/touch scrolling inside the list — don't chain to the form
+     or page once the list hits its top/bottom. */
+  overscroll-behavior: contain;
   padding: 6px;
 }
 .combo-opt {
@@ -461,7 +500,7 @@
   transition: var(--t);
 }
 .combo-opt:hover {
-  background: #f4fcf7;
+  background: var(--teal-tint);
 }
 .combo-opt.sel {
   background: var(--teal-soft);
@@ -472,7 +511,7 @@
   border-radius: 9px;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   flex: none;
 }
 .co-ic svg {
@@ -480,6 +519,8 @@
   height: 18px;
 }
 .co-t {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
   font-size: 13px;
   color: var(--ink);
@@ -489,7 +530,7 @@
   color: var(--muted);
 }
 .combo-opt.general .co-ic {
-  background: #eef0f6;
+  background: var(--fill);
   color: var(--muted);
 }
 .combo-empty {
@@ -497,6 +538,107 @@
   text-align: center;
   color: var(--muted);
   font-size: 12.5px;
+}
+
+/* Multi-select check indicator on each apartment option */
+.opt-check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: var(--on-accent);
+}
+.opt-check.on {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.opt-check svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Collapsed topic-select row (opens the picker modal) */
+.topic-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--card);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: var(--t);
+}
+.topic-select:hover {
+  border-color: var(--teal);
+}
+.ts-ic {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ts-ic.empty {
+  background: var(--info-bg);
+  color: var(--info-ink);
+}
+.ts-ic svg {
+  width: 22px;
+  height: 22px;
+}
+.ts-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.ts-action {
+  flex: none;
+  color: var(--teal);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+/* Selected-apartment chips under the multi-select combo */
+.apt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 10px;
+  border-radius: var(--r-pill);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.apt-chip svg {
+  width: 14px;
+  height: 14px;
+}
+.apt-chip button {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: var(--tint-ink-teal);
+  color: var(--teal-ink);
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+.apt-chip button:hover {
+  background: var(--tint-ink-teal-strong);
 }
 
 .sup-attach-row {
@@ -511,12 +653,100 @@
   color: var(--muted);
 }
 
+/* ---------- Attachment chips ----------
+   One chip shape, two uses: files picked on the new-ticket form but not
+   uploaded yet (.pending-files, each with a remove ✕), and files already
+   stored on a message (.msg-files, each a download button). */
+.pending-files,
+.msg-files {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--t);
+}
+li.file-chip {
+  cursor: default;
+}
+button.file-chip:hover:not(:disabled) {
+  border-color: var(--teal);
+  color: var(--teal-ink);
+}
+button.file-chip:disabled {
+  opacity: .6;
+  cursor: progress;
+}
+.file-chip:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.file-chip svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+/* The name is the only part allowed to shrink — the size and the icons stay
+   legible however long the filename is. */
+.fc-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fc-size {
+  color: var(--muted);
+  flex: none;
+}
+.fc-x {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: none;
+  border-radius: 50%;
+  background: var(--fill);
+  color: var(--ink-2);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+.fc-x:hover {
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+}
+
+/* Inside a chat bubble the chip sits on a tinted ground, so it needs its own
+   surface rather than --card, which would disappear against the incoming
+   bubble in light mode and glare in dark. */
+.bubble .file-chip {
+  background: var(--surface-2);
+  border-color: var(--card-line);
+}
+
 .spin {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, .5);
-  border-top-color: #fff;
+  border: 2px solid var(--tint-on-accent);
+  border-top-color: var(--on-accent);
   display: inline-block;
   animation: sup-spin .7s linear infinite;
 }
@@ -525,50 +755,113 @@
 }
 
 /* ---------- Chat thread ---------- */
+/* ---------- Chat thread ----------
+   The list is a bottom-anchored column: `margin-top:auto` on the first child
+   pushes a short thread down against the composer instead of leaving it
+   stranded at the top under a tall void. Doing it this way rather than with
+   `justify-content:flex-end` keeps the top of a LONG thread reachable — that
+   combination clips overflow in Firefox. */
+.sup-dbody {
+  display: flex;
+  flex-direction: column;
+}
+.sup-dbody > *:first-child {
+  margin-top: auto;
+}
+
 .chat-day {
   display: flex;
-  justify-content: center;
-  margin: 6px 0 16px;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 18px;
+}
+/* Hairlines either side of the chip, so the date reads as a divider rather
+   than a floating pill. */
+.chat-day::before,
+.chat-day::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 .chat-day span {
-  background: #eef0f6;
   color: var(--muted);
   font-size: 11px;
   font-weight: 600;
-  border-radius: 999px;
-  padding: 4px 12px;
+  letter-spacing: .02em;
+  flex: none;
 }
+
 .msg {
   display: flex;
-  margin-bottom: 14px;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 .msg.me {
   justify-content: flex-end;
 }
+/* Support's avatar sits beside the bubble, bottom-aligned so it marks the
+   speaker's last line the way a chat client does. */
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.msg-avatar svg {
+  width: 15px;
+  height: 15px;
+}
+/* Consecutive messages from the same speaker keep the gap tight and drop the
+   repeated avatar/name — the run reads as one turn. */
+.msg.cont {
+  margin-bottom: 4px;
+}
+.msg.cont .msg-avatar {
+  visibility: hidden;
+}
+
 .msg .bubble {
-  max-width: 74%;
-  padding: 11px 14px;
-  border-radius: 15px;
+  /* Capped as well as proportional: on a wide desktop pane 74% is a very long
+     measure to read. */
+  max-width: min(74%, 520px);
+  padding: 10px 14px 8px;
+  border-radius: 16px;
   font-size: 13.5px;
-  line-height: 1.5;
+  line-height: 1.55;
   word-wrap: break-word;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
+/* One flat colour per side — no outline in a second tone (owner call
+   2026-08-06). `them` uses --fill rather than --surface-2 so a flat bubble
+   still separates from the card without a border doing the work. */
 .msg.them .bubble {
-  background: #f1f3f9;
+  background: var(--fill);
   color: var(--ink);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 6px;
 }
 .msg.me .bubble {
   background: var(--teal-soft);
   color: var(--teal-ink);
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 6px;
+}
+/* Only the corner nearest the speaker is squared off, and only on the last
+   message of a run — mid-run bubbles stay fully rounded. */
+.msg.cont .bubble {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 .msg .who {
   font-size: 11px;
   font-weight: 700;
   color: var(--teal-ink);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .msg.them .who {
   color: var(--muted);
@@ -576,25 +869,127 @@
 .msg .time {
   font-size: 10px;
   color: var(--muted);
-  margin-top: 5px;
+  margin-top: 4px;
   text-align: right;
+  /* Slightly transparent rather than a lighter colour: it has to recede on
+     both bubble fills without needing a per-side token. */
+  opacity: .8;
 }
+
+/* ---------- Composer ----------
+   One bordered field that CONTAINS the textarea and both buttons, instead of
+   three separate controls sitting on a grey band. The whole thing takes the
+   focus ring via :focus-within, so it behaves like a single input. */
 .chat-composer {
   border-top: 1px solid var(--line);
-  padding: 12px 14px;
+  padding: 14px;
+  background: var(--card);
+}
+.chat-composer .pending-files {
+  margin: 0 0 10px;
+}
+.composer-box {
   display: flex;
-  gap: 10px;
   align-items: flex-end;
-  background: #fafbfe;
+  gap: 6px;
+  /* Roomier than a single text row: the collapsed field is ~56px tall, which
+     reads as somewhere to write rather than a search box (owner call
+     2026-08-06). */
+  padding: 10px 10px 10px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 20px;
+  background: var(--surface-2);
+  transition: var(--t);
 }
-.chat-composer textarea {
+.composer-box:focus-within {
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+  background: var(--card);
+}
+/* Auto-grow, no JavaScript. The wrapper is a single grid cell containing
+   BOTH the textarea and a hidden ::after that mirrors the text via
+   data-value. The mirror is a normal block, so it sizes to its content and
+   sets the row height; the textarea is placed in the same cell and stretches
+   to match. Both must share every metric that affects wrapping — font,
+   padding, line-height, border — or the two will disagree by a line.
+   The trailing space in the content keeps a text ending in a newline from
+   collapsing the last row. */
+.ta-grow {
   flex: 1;
-  min-height: 44px;
-  max-height: 120px;
-  resize: none;
+  min-width: 0;
+  display: grid;
+  min-height: 34px;
+  max-height: 140px;
+  overflow-y: auto;
 }
-.chat-composer button {
+.ta-grow::after {
+  content: attr(data-value) ' ';
+  visibility: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ta-grow > textarea,
+.ta-grow::after {
+  grid-area: 1 / 1 / 2 / 2;
+  width: 100%;
+  min-width: 0;
+  padding: 6px 0;
+  border: none;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.45;
+  letter-spacing: inherit;
+}
+.ta-grow > textarea {
+  background: none;
+  color: var(--ink);
+  resize: none;
+  overflow: hidden;
+}
+.ta-grow > textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+.composer-act {
+  width: 34px;
+  height: 34px;
   flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--t);
+}
+.composer-act:hover:not(:disabled) {
+  background: var(--fill);
+  color: var(--ink-2);
+}
+.composer-act:disabled {
+  opacity: .5;
+  cursor: default;
+}
+.composer-act:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.composer-send {
+  background: var(--teal);
+  color: var(--on-accent);
+}
+.composer-send:hover:not(:disabled) {
+  background: var(--teal-600);
+  color: var(--on-accent);
+}
+/* Nothing typed yet: the send button stays present but recedes, so the row
+   doesn't shift when the first character arrives. */
+.composer-send:disabled {
+  background: var(--line-2);
+  color: var(--muted);
+  opacity: 1;
 }
 .chat-closed {
   padding: 16px;
@@ -602,7 +997,7 @@
   color: var(--muted);
   font-size: 12.5px;
   border-top: 1px solid var(--line);
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 
 /* ---------- Responsive: single-pane on mobile ---------- */

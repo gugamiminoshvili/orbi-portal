@@ -1,29 +1,35 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Icon from '../ui/Icon'
-import { useAuth } from '../../context/AuthContext'
 import styles from './Sidebar.module.css'
-
-function initials(fullname) {
-  return (fullname || '')
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
 
 const NAV = [
   { group: 'common:main', items: [
-    { key: 'dashboard', icon: 'home', label: 'common:dashboard', disabled: true },
+    { key: 'dashboard', icon: 'home', label: 'common:dashboard', to: '/dashboard' },
     { key: 'apartments', icon: 'building', label: 'common:myApartments', to: '/apartments' },
     { key: 'news', icon: 'doc', label: 'common:news', to: '/news' },
+    // Placeholder (P3-6): not built yet, same disabled/"coming soon" treatment.
+    { key: 'yourDevices', icon: 'door', label: 'common:yourDevices', disabled: true },
+    // TEMPORARILY HIDDEN (owner request, 2026-07-21): "Bookings and Visits"
+    // and the whole Finance group (Invoices/Payments/Reports) are removed
+    // until their forms are ready — service info, handover, additional
+    // services, and internal regulations go here later. Restore by
+    // uncommenting when the backing pages exist.
+    // { key: 'bookingsVisits', icon: 'cal', label: 'common:bookingsVisits', disabled: true },
   ] },
-  { group: 'common:finance', items: [
-    { key: 'invoices', icon: 'doc', label: 'common:invoices', disabled: true },
-    { key: 'payments', icon: 'swap', label: 'common:payments', disabled: true },
-    { key: 'reports', icon: 'doc', label: 'common:reports', disabled: true },
+  // { group: 'common:finance', items: [
+  //   { key: 'invoices', icon: 'doc', label: 'common:invoices', disabled: true },
+  //   { key: 'payments', icon: 'swap', label: 'common:payments', disabled: true },
+  //   { key: 'reports', icon: 'doc', label: 'common:reports', disabled: true },
+  // ] },
+  // The company's process rules, added at the owner's request (2026-07-30) as
+  // their own group rather than as one "Guides" index entry — four rules is a
+  // short, stable list, and one click beats two.
+  { group: 'common:guides', items: [
+    { key: 'guideHandover', icon: 'building', label: 'common:guideHandover', to: '/guides/handover' },
+    { key: 'guidePowerOfAttorney', icon: 'doc', label: 'common:guidePowerOfAttorney', to: '/guides/power-of-attorney' },
+    { key: 'guideService', icon: 'wrench', label: 'common:guideService', to: '/guides/service' },
+    { key: 'guideContactCentre', icon: 'chat', label: 'common:guideContactCentre', to: '/guides/contact-centre' },
   ] },
   { group: 'common:account', items: [
     { key: 'settings', icon: 'dots', label: 'common:settings', disabled: true },
@@ -33,13 +39,6 @@ const NAV = [
 
 export default function Sidebar({ open, onNavigate }) {
   const { t } = useTranslation()
-  const { user, mock, logout } = useAuth()
-  const navigate = useNavigate()
-
-  async function handleLogout() {
-    await logout()
-    navigate('/login')
-  }
 
   return (
     <aside
@@ -83,32 +82,14 @@ export default function Sidebar({ open, onNavigate }) {
           </div>
         ))}
       </nav>
+      {/* The identity/sign-out footer was removed: the header account menu
+          (UserMenu) is the single place the signed-in user is shown. The
+          rail's bottom slack now carries a route into Support instead. */}
       <div className={styles['side-foot']}>
-        {mock ? (
-          <>
-            <div className={styles.av}>GM</div>
-            <div className={styles.nm}>
-              Guga M.
-              <small>Owner · 5 units</small>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className={styles.av}>{initials(user?.fullname)}</div>
-            <div className={styles.nm}>
-              {user?.fullname}
-              <small>{t('common:owner')}</small>
-            </div>
-            <button
-              type="button"
-              className={styles.logoutBtn}
-              aria-label={t('common:logout')}
-              onClick={handleLogout}
-            >
-              <Icon name="logout" />
-            </button>
-          </>
-        )}
+        <NavLink to="/support" onClick={onNavigate} className={styles.help}>
+          <Icon name="help" />
+          {t('common:helpAndGuides')}
+        </NavLink>
       </div>
     </aside>
   )

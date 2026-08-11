@@ -2,25 +2,25 @@
 // Modeled for later use; v1 UI does not render these yet.
 export const INVOICES = {
   A1: [
-    { no: 'INV-2026-0612', date: 'Jun 1, 2026', desc: 'Management fee — June', amount: 120.00, status: 'overdue', due: 'Jun 25' },
-    { no: 'INV-2026-0598', date: 'Jun 1, 2026', desc: 'Utilities — June', amount: 60.00, status: 'overdue', due: 'Jun 25' },
-    { no: 'INV-2026-0571', date: 'May 1, 2026', desc: 'Management fee — May', amount: 120.00, status: 'paid', due: 'May 25' },
-    { no: 'INV-2026-0540', date: 'Apr 1, 2026', desc: 'Management fee — April', amount: 120.00, status: 'paid', due: 'Apr 25' },
+    { no: 'INV-2026-0612', date: 'Jun 1, 2026', desc: 'Management fee - June', amount: 120.00, status: 'overdue', due: 'Jun 25' },
+    { no: 'INV-2026-0598', date: 'Jun 1, 2026', desc: 'Utilities - June', amount: 60.00, status: 'overdue', due: 'Jun 25' },
+    { no: 'INV-2026-0571', date: 'May 1, 2026', desc: 'Management fee - May', amount: 120.00, status: 'paid', due: 'May 25' },
+    { no: 'INV-2026-0540', date: 'Apr 1, 2026', desc: 'Management fee - April', amount: 120.00, status: 'paid', due: 'Apr 25' },
   ],
   A2: [
-    { no: 'INV-2026-0613', date: 'Jun 1, 2026', desc: 'Management fee — June', amount: 95.00, status: 'pending', due: 'Jun 25' },
-    { no: 'INV-2026-0572', date: 'May 1, 2026', desc: 'Management fee — May', amount: 95.00, status: 'paid', due: 'May 25' },
+    { no: 'INV-2026-0613', date: 'Jun 1, 2026', desc: 'Management fee - June', amount: 95.00, status: 'pending', due: 'Jun 25' },
+    { no: 'INV-2026-0572', date: 'May 1, 2026', desc: 'Management fee - May', amount: 95.00, status: 'paid', due: 'May 25' },
   ],
   A3: [
-    { no: 'INV-2026-0620', date: 'Jun 1, 2026', desc: 'Management fee — June', amount: 95.00, status: 'overdue', due: 'Jun 25' },
-    { no: 'INV-2026-0581', date: 'May 1, 2026', desc: 'Management fee — May', amount: 95.00, status: 'paid', due: 'May 25' },
+    { no: 'INV-2026-0620', date: 'Jun 1, 2026', desc: 'Management fee - June', amount: 95.00, status: 'overdue', due: 'Jun 25' },
+    { no: 'INV-2026-0581', date: 'May 1, 2026', desc: 'Management fee - May', amount: 95.00, status: 'paid', due: 'May 25' },
   ],
   A4: [
-    { no: 'INV-2026-0410', date: 'Mar 1, 2026', desc: 'Management fee — March', amount: 140.00, status: 'paid', due: 'Mar 25' },
+    { no: 'INV-2026-0410', date: 'Mar 1, 2026', desc: 'Management fee - March', amount: 140.00, status: 'paid', due: 'Mar 25' },
   ],
   A5: [
-    { no: 'INV-2026-0615', date: 'Jun 1, 2026', desc: 'Management fee — June', amount: 90.00, status: 'paid', due: 'Jun 25' },
-    { no: 'INV-2026-0575', date: 'May 1, 2026', desc: 'Management fee — May', amount: 90.00, status: 'paid', due: 'May 25' },
+    { no: 'INV-2026-0615', date: 'Jun 1, 2026', desc: 'Management fee - June', amount: 90.00, status: 'paid', due: 'Jun 25' },
+    { no: 'INV-2026-0575', date: 'May 1, 2026', desc: 'Management fee - May', amount: 90.00, status: 'paid', due: 'May 25' },
   ],
 }
 

@@ -79,25 +79,64 @@ src/
     endpoints/          # one file per domain — the only layer that imports mock/ or calls http()
   components/
     layout/             # AppShell, Sidebar, Header, Breadcrumbs
-    ui/                  # design-system primitives (Button, Card, Badge, Field, Skeleton, EmptyState, Icon, ProgressRing, CopyButton)
-  context/               # ModalContext (focus-trapped dialog host) and ToastContext
+    ui/                  # design-system primitives (Button, Card, Badge, Field, Skeleton, EmptyState, Icon, ProgressRing, CopyButton, Switch)
+  context/               # ModalContext (focus-trapped dialog host), ToastContext, ThemeContext (light/dark)
   features/
     news/                # list, filters, detail, skeletons
     apartments/          # list, detail, service accordions (services/), modals (modals/)
-    pay/                 # 3-step payment flow (amount -> method -> confirm -> success)
+    dashboard/            # Phase 3: dual-currency debt card + rates/contracts/unpaid-invoices tiles
+    pay/                 # Phase 3: 3-step multi-apartment payment flow (complex -> utility ->
+                          # apartment table) + method-picker modal -> POST payment/multi/;
+                          # payFlowData.js holds the pure grouping/owed-amount helpers
     support/              # ticket list, chat pane, new-ticket pane
+    guides/               # the company's process rules (handover / power of attorney /
+                          # service / contact centre), rebuilt from the print posters in
+                          # ../orbi-instructions/posters/; content (ka/en/ru) lives in
+                          # guidesContent.js, one GuidePage renders every slug
   hooks/
     useAsync.js          # fetch-on-mount hook with a stale-response guard
   i18n/
     index.js             # i18next setup
     locales/             # en.json / ka.json / ru.json, one namespaced tree each
-  utils/                 # format.js (fmt), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images), envFile.js (pure .env line parser, used by scripts/live-smoke.mjs)
+  utils/                 # format.js (fmt), balance.js (THE sign convention), doorCount.js, placeholder.js (ph — local gradient data-URIs, no external images), envFile.js (pure .env line parser, used by scripts/live-smoke.mjs)
   test/                  # vitest setup + smoke test
 scripts/
   live-smoke.mjs         # manual, opt-in live-backend check — `bun run smoke` (see "Backend integration")
 reference/
   orbi-portal-redesign.html   # the design source of truth (do not delete)
 ```
+
+### Theming (light / dark)
+
+Every colour in the app is a custom property declared twice in `src/index.css`
+— once under `:root, [data-theme='light']` and once under `[data-theme='dark']`
+— and component CSS only ever writes `var(--name)`. **Adding a raw hex or
+`rgba()` to a module stylesheet breaks dark mode silently**, so add a token
+instead. The two deliberate exceptions are commented where they appear: the QR
+quiet zone and the bank tiles in the payment-method modal are literally white /
+literally the bank's brand colour in both themes.
+
+The values come from the owner's design-tool colour library, which names its
+entries by role (Dark text, Light icon, Background 2, Water, TV & Internet,
+Pending or ongoing, …). Each token in `index.css` carries a `library: <name>`
+note, or says how it was derived; the trailing comment lists the library
+colours the app has no role for yet, so nobody spends them by accident.
+
+Three roles are easy to confuse:
+
+- `--teal` is the brand green as a **fill**; text on it is `--on-accent`
+  (white in light, near-black in dark, because the dark fill is brighter).
+- `--teal-ink` is the brand green as a **foreground** — text, icons, links.
+  In light mode it happens to equal `--teal`; in dark it does not.
+- `--*-bg` / `--*-line` / `--*-ink` are the library's 10% tint, its 40%
+  border, and a shade dark enough to read on that tint. A tinted panel wants
+  all three, not a hand-picked hex.
+
+The active theme is stored in `localStorage` under `orbi-theme` and stamped on
+`<html data-theme>` by three places that must stay in step: the pre-paint
+inline script in `index.html` (so a reload never flashes the wrong palette),
+`src/utils/theme.js`, and `src/context/ThemeContext.jsx`. The user-facing
+toggle is the "Dark mode" row of the header account menu.
 
 ## Backend integration
 
@@ -164,14 +203,56 @@ It reads `VITE_API_BASE`/`VITE_TEST_USER`/`VITE_TEST_PASS` from
 (a small line parser, `src/utils/envFile.js` — no `dotenv` dependency), and
 refuses to run with a clear message if the base URL or credentials are
 missing. It then: (1) logs in — if the account has a pending device
-verification (`code:-2`), it prints `DEVICE_VERIFY_REQUIRED` and stops,
-since there's no interactive way to complete that from a script; (2) `GET
-properties/v2`; (3) `GET news` page 1; (4) `GET tickets` (+ `tickets/subject/`);
-(5) `GET internettv/tariff`. Each check prints OK/FAIL, the HTTP status, and
-the first item run through the same adapters the app uses
-(`src/api/adapters/*.js`), so a real payload's shape can be checked against
-the guessed DTO fields before it ever reaches the UI. Credentials and tokens
-are never printed — only whether they're present.
+verification (`code:-2`), tokens are still issued under `result` and the
+data endpoints work with them (confirmed live), so it prints a WARN and
+proceeds rather than stopping; (2) `GET properties/v2`; (3) `GET news` page
+1; (4) `GET tickets` (+ `tickets/subject/`); (5) `GET internettv/tariff`;
+(6) `GET dashboard/communals` (Phase 3 — prints the utility/maintenance sums);
+(7) `GET currency/rate` for today's date (Phase 3 — prints the first rate);
+(8) `GET payment` (Phase 3 — prints the unpaid-invoice count). Checks 6-8 are
+deliberately GET-only and never call `POST payment/multi/` (a real charge) —
+that stays off-limits without explicit owner consent obtained outside the
+script. Each check prints OK/FAIL, the HTTP status, and the first item run
+through the same adapters the app uses (`src/api/adapters/*.js`), so a real
+payload's shape can be checked against the guessed DTO fields before it ever
+reaches the UI. Credentials and tokens are never printed — only whether
+they're present.
+
+### Phase 3: Dashboard + multi-payment flow
+
+The sidebar's Dashboard item is now live (route `/dashboard`; `/` and
+unknown paths redirect there instead of to `/news`). It combines four reads
+— `GET dashboard/communals/` (utility + maintenance sums, plus per-apartment
+detail), `GET currency/rate/` (NBG USD/EUR/RUB rates, called once per
+currency with `?currency=<CODE>&date=<today>`), `GET finance/tournover/` +
+`GET finance/schedule/` (the Contracts tile — gracefully zero-states on
+either documented `CUSTOMER_HAS_NO_CRM(_)ID` spelling), and `GET payment/`
+(unpaid-invoice count) — into one skeleton-while-loading page. See
+`src/api/adapters/dashboard.js` and
+`docs/specs/2026-07-17-dashboard-multipay-design.md` for the DTO shapes.
+
+**Mixed currency:** live `communals` reports maintenance in USD
+(`flatBalance.currency`) and utilities in GEL; `DashboardPage.jsx` and
+`payFlowData.js`'s `owedFor`/`buildComplexes`/`utilityCardData` all branch on
+that `currency` field rather than assuming USD — when it's `'GEL'` (as mock
+mode's `mockCommunals` deliberately reports, since its balances are
+GEL-native SERVICES numbers) sums are combined as a plain add with no rate
+conversion and rendered in `₾`; only a genuinely-`'USD'` figure is run
+through the USD/GEL rate. This was carried over from the P3-3 review as a
+fix in this task — the dashboard previously hardcoded `$` and always divided
+utilities by the rate regardless of what currency maintenance actually
+reported.
+
+**Multi-payment flow** (`/pay`, replacing the old single-apartment pay page)
+is a 3-step wizard — complex → utility category → apartment checkbox table
+with a summary panel — ending in a method-picker modal (Bank Card, Apple
+Pay, Online Bank with a bank list, Crypto, Invoice/PDF) that calls `POST
+payment/multi/`. The old `/pay/:id` deep link still works, redirecting into
+the flow with the apartment + utility preselected. All of it runs fully off
+mock data (`payment/multi` mock returns a fake `{url}`, invoice download
+returns a fake `Blob`) — see `src/features/pay/` and `payFlowData.js`'s
+comments for the sign convention (`owedFor` flips balance sign so a positive
+number always means "owed").
 
 ### Open questions for the backend team
 
@@ -245,6 +326,87 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     could make the second call fail even on a correct code. `verifyCode()`
     tolerates either call failing (treats the pair as one unit, success if
     either succeeds) until this is verified live.
+12. **`payment/multi/` `services[]` schema + per-method flags/`vendor`
+    values.** The doc only names the flags (`vendor`, `as_invoice`,
+    `open_banking`, `direct_card`, `crypto`), not which method maps to which
+    combination or what `vendor` bank keys are valid — `src/api/endpoints/
+    pay.js`'s `multiPayFlags()` assumes Bank Card → `direct_card:true`,
+    Apple Pay → `direct_card:true, vendor:'applepay'`, Online Bank →
+    `open_banking:true, vendor:<bog|tbc|credo|liberty>`, Crypto →
+    `crypto:true`, Invoice → `as_invoice:true`. The response shape for
+    redirect methods is likewise assumed to be `{url}` (v1's `payService`
+    pattern), un-adapted since the doc gives no field names.
+13. **Payment-method fees/limits/bank list source of truth.** The 2.5%/0.6%
+    fee percentages, the ₾3,000/₾50,000/₾100,000 per-method caps, and the
+    four online-bank options (Bank of Georgia/TBC/Credo/Liberty) in
+    `src/features/pay/MethodModal.jsx` are all hardcoded from the owner's
+    screenshots, not read from any API — needs a real source (a config
+    endpoint? doc constants?) so they can't drift from what the payment
+    provider actually enforces.
+14. **Invoice flow: `as_invoice` response shape + `GET payment/invoice/`'s
+    `response_type` value.** `payMulti()`'s invoice branch assumes the
+    invoice id comes back as one of `invoiceId`/`invoice_id`/`id`; `GET
+    /mobileApi/payment/invoice/`'s `response_type` is a required param the
+    doc names but never enumerates — `'pdf'` is assumed by analogy with
+    `finance/`'s `response_format=pdf`.
+15. **Prepayment/overpayment handling on `payment/multi/`.** The UI question is
+    settled: the owner ruled (2026-08-06) that any apartment can be paid into,
+    including one with nothing outstanding, and the amount is no longer capped
+    at the balance — the excess is an advance. What's still unconfirmed is the
+    BACKEND half: whether `payment/multi/` accepts an amount greater than the
+    outstanding balance and books the remainder as a credit, or rejects it.
+    Needs an answer before this goes live against real money.
+16. **`flatBalance` (USD maintenance) vs. `communal` (GEL utilities)
+    reconciliation.** The live sample confirms maintenance genuinely arrives
+    in USD while utilities are GEL — this task made the dashboard and
+    multi-pay flow's math currency-conditional on each side's own `currency`
+    field rather than assuming USD, but it's still unconfirmed whether
+    `payment/multi/`'s body expects a maintenance amount already converted
+    to GEL (as `payFlowData.js`'s `owedFor` does today, FLAGged) or the raw
+    USD figure — no live sample of a submitted multi-pay body exists to
+    check against.
+17. **Sign convention on balances — ANSWERED (2026-08-06), implemented.**
+    The owner's ruling: **a positive balance is what the resident owes; a
+    negative balance is money paid ahead (an advance)**, for every service,
+    with no exceptions. The app previously assumed the opposite. The rule now
+    lives in one module, `src/utils/balance.js` — nothing else compares a
+    balance against 0 — and drives the colour (`balanceTone`), the Pay
+    buttons (`owes`/`amountOwed`) and the multi-pay flow's `owedFor`, which
+    no longer negates.
+
+    Two consequences worth carrying forward:
+    - **The backend's own field names read inverted.** On `flatBalance`,
+      `debt_sum` holds the sum of the NEGATIVE balances (the advances) and
+      `balance_sum` the POSITIVE ones (the debt) — confirmed against the live
+      account: one flat at −637.12 and three at +148.13/+346.50/+163.08.
+      `adaptCommunals` therefore renames them by meaning, to
+      `maintenance.owed` / `maintenance.advance`. **FLAG:** if those fields
+      turn out to mean what they say rather than what they contain, those two
+      adapter lines swap and the dashboard headline swaps with them.
+    - The mock fixtures were sign-flipped to match, so the demo agrees with
+      the rule. A5 is deliberately left in advance, as the green case.
+
+18. **Ticket attachments — types/limit ANSWERED (2026-08-06), size raised
+    2026-08-07.** The backend team supplied `AllowedFileTypes` (18
+    extensions: png/jpg/jpeg/heic/gif/tiff/bmp, mp4/avi/mov/wmv/flv/mkv,
+    pdf/doc/docx/xls/xlsx) and `MAX_FILE_SIZE`.
+    `src/utils/attachments.js` mirrors both, validating by **extension**
+    because that is what the server does — matching the browser's MIME sniff
+    would diverge the moment a picker reports `application/octet-stream`,
+    which is routine on phones.
+    - **The size limit is 50 MB** (owner call 2026-08-07), which also
+      retired the old `MAX_FILE_SIZE = 5 * 1024 * 1024  # 10 MB`
+      value-vs-comment contradiction, and the follow-on problem that a few
+      seconds of phone video cleared the old ceiling on its own — making the
+      allowed video formats unusable in practice. Both attachment paths (new
+      ticket, open ticket) read the single `MAX_ATTACHMENT_BYTES` constant.
+      **Confirm the server was raised to match**: if it still enforces 5 MiB,
+      the client now accepts files the upload will reject.
+    - **Which message a file attaches to.** The endpoint takes `ticketId`
+      and no message id, so placement is the server's choice; both callers
+      re-fetch the ticket and render whatever `files[]` comes back rather
+      than guessing. And `file` is singular, so multiple files go as one
+      request each.
 
 To wire up more of a real backend once these are answered:
 

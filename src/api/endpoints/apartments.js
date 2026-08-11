@@ -155,7 +155,7 @@ export async function getAgreement(flatId) {
     const svc = SERVICES[flatId]
     return svc
       ? svc.internet
-      : { provider: '—', planId: null, tariff: 0, renewal: '—', daysLeft: 0, cycleDays: 0, boost: null, status: null }
+      : { provider: '-', planId: null, tariff: 0, renewal: '-', daysLeft: 0, cycleDays: 0, boost: null, status: null }
   }
   const dto = await http(`/mobileApi/internettv/?flat=${flatId}`)
   return adaptMutationAgreement(dto)

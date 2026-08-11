@@ -31,6 +31,8 @@ export default function QrModal({ apartment }) {
             border: '1px solid var(--line-2)',
             borderRadius: 14,
             padding: 14,
+            // Literally white, not --card: the padding is the QR's quiet zone,
+            // and a scanner needs it light in either theme.
             background: '#fff',
           }}
           dangerouslySetInnerHTML={{ __html: qrSvg(apartment.apCode) }}

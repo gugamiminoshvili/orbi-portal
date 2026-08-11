@@ -5,7 +5,6 @@ import { useAsync } from '../../hooks/useAsync'
 import { listTickets } from '../../api/endpoints/support'
 import { USE_MOCK } from '../../api/client'
 import { SUP_FILTERS, TSTATUS, topicById } from '../../api/mock/tickets'
-import { APTS } from '../../api/mock/apartments'
 import { SearchField } from '../../components/ui/Field'
 import Icon from '../../components/ui/Icon'
 import { Badge } from '../../components/ui/Badge'
@@ -96,7 +95,7 @@ function TicketRow({ ticket, active, t }) {
   // (adaptTicket's statusLabel/statusTone — Task L1); mock tickets fall back
   // to the static TSTATUS mapping and translated filter labels.
   const st = TSTATUS[ticket.status]
-  const apt = ticket.apt ? APTS.find((a) => a.id === ticket.apt) : null
+  const ticketApts = ticket.apts || []
   return (
     <Link
       to={`/support/t/${ticket.id}`}
@@ -115,10 +114,11 @@ function TicketRow({ ticket, active, t }) {
         </div>
         <div className={styles['si-prev']}>{ticket.preview}</div>
         <div className={styles['si-meta']}>
-          {apt && (
+          {ticketApts.length > 0 && (
             <span className={styles['si-apt']}>
               <Icon name="pin" />
-              {apt.code}
+              {ticketApts[0].code}
+              {ticketApts.length > 1 && ` +${ticketApts.length - 1}`}
             </span>
           )}
           <span>#{ticket.id}</span>

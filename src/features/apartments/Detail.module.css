@@ -2,10 +2,14 @@
    308-326 (overview block / qr / copy), 329-352 (service accordion cards),
    387-397 (sub-panel / ring), 435-438 (warn-box) */
 
+/* No text-align here: inside .svc-grid a BALANCE cell is the only value that
+   carries .money, and a right-aligned number under a left-aligned label read
+   as a misalignment next to the other cells (owner call 2026-07-30). The
+   collapsed header keeps its right edge from .svc-metric, and .neg-strip
+   from its own flex layout. */
 .money {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  text-align: right;
   white-space: nowrap;
 }
 .money.pos {
@@ -28,9 +32,9 @@
   border-radius: 16px;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   flex: none;
-  box-shadow: 0 8px 18px rgba(20, 24, 60, .14);
+  box-shadow: 0 8px 18px var(--tint-drop);
 }
 .head-title {
   display: flex;
@@ -85,12 +89,12 @@
   overflow: hidden;
 }
 .ov-meta .cell {
-  background: #fff;
+  background: var(--card);
   padding: 13px 15px;
   min-width: 0;
 }
 .cell {
-  background: #fff;
+  background: var(--card);
   padding: 14px 16px;
 }
 .k {
@@ -113,12 +117,27 @@
   width: 128px;
   text-align: center;
 }
+/* Label + Show button. Its own element so the phone layout can put it beside
+   the code as a column instead of letting three flex children (code, label,
+   full-width button) fight over one row. */
+.qr-side {
+  min-width: 0;
+}
+.qr-show {
+  width: 100%;
+  /* Capped: beside the code on a wide tablet the column is ~1000px and an
+     unbounded button reads as a banner. */
+  max-width: 260px;
+  margin-top: 8px;
+}
 .qr {
   width: 108px;
   height: 108px;
   border: 1px solid var(--line-2);
   border-radius: 12px;
   padding: 9px;
+  /* Literally white, not --card: the padding is the QR's quiet zone, and a
+     scanner needs it light in either theme. */
   background: #fff;
   cursor: pointer;
   transition: var(--t);
@@ -182,7 +201,11 @@
   place-items: center;
   flex: none;
 }
+/* `1 1 auto`, not `1`: a zero flex-basis would let the title shrink below its
+   own text and hand the slack to the button beside it, wrapping "Doors
+   history" onto two lines. The sub-line's own ellipsis does the shrinking. */
 .svc-tt {
+  flex: 1 1 auto;
   min-width: 0;
 }
 .svc-name {
@@ -199,6 +222,7 @@
   margin-left: auto;
   text-align: right;
   padding-left: 12px;
+  flex: none;
 }
 .m-lab {
   font-size: 10.5px;
@@ -212,6 +236,9 @@
   font-size: 16px;
   font-variant-numeric: tabular-nums;
   margin-top: 1px;
+  /* A metric is one figure — "00428 m³" broke across two lines on a phone
+     and made the row twice as tall. The title beside it truncates instead. */
+  white-space: nowrap;
 }
 .svc-actions {
   display: flex;
@@ -253,8 +280,18 @@
   overflow: hidden;
   margin-bottom: 14px;
 }
+/* Electricity's four-up variant. A class rather than an inline style so the
+   responsive rules below can actually override it — an inline
+   grid-template-columns beat every media query and left the card's last
+   column clipped off the right edge of the phone layout. */
+.svc-grid.cols4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.svc-grid.cols2 {
+  grid-template-columns: repeat(2, 1fr);
+}
 .svc-grid .cell {
-  background: #fff;
+  background: var(--card);
   padding: 14px 16px;
 }
 .svc-grid .k {
@@ -286,7 +323,7 @@
   margin-bottom: 16px;
 }
 .sub-panel .cell {
-  background: #fff;
+  background: var(--card);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -332,7 +369,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border: 1px solid var(--neg-bg);
+  /* Same shape as .warn-box below: the 10% tint as the fill, the 40% as its
+     edge. It used to border in --neg-bg, i.e. no visible edge at all. */
+  border: 1px solid var(--neg-line);
   background: var(--neg-bg);
   border-radius: 10px;
   margin-bottom: 14px;
@@ -344,14 +383,14 @@
   gap: 16px;
   padding: 16px;
   background: var(--warn-bg);
-  border: 1px solid #ffe1a8;
+  border: 1px solid var(--warn-line);
   border-radius: 12px;
 }
 .wi {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   color: var(--warn-ink);
   display: grid;
   place-items: center;
@@ -369,13 +408,26 @@
   line-height: 1.5;
 }
 
-/* Ported from reference lines 692-700 (tablet breakpoint) */
+/* ---------- Responsive ----------
+   Three steps, deliberately at different widths:
+   - 880px is where AppShell drops the sidebar, so the info card stops being
+     "fields beside a QR" and becomes "fields, then QR". The content column
+     gets WIDER here, not narrower, so no grid needs to change with it.
+   - 700px is where a 3- or 4-up service grid squeezes cells under ~170px and
+     long values (a counter id, a date) break mid-token. The info grid halves
+     one step earlier, at 880: its cadastral cell carries a copy button beside
+     a 23-character number and needs more room than the rest.
+   - 520px is where even two of those columns stop fitting.
+   (Originally ported from reference lines 692-724, which had a single 620px
+   step and jumped straight from 4 columns to 1.) */
 @media (max-width: 880px) {
-  .ov-meta {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .ov-body {
-    flex-direction: column-reverse;
+    /* Not column-reverse: on a phone the card's own subject — the apartment
+       fields — should lead, with the QR after them. `stretch` because the
+       base rule's flex-start collapses each child to its content width once
+       the axis turns vertical, leaving the fields in a ~210px column. */
+    flex-direction: column;
+    align-items: stretch;
     gap: 18px;
   }
   .qr-corner {
@@ -388,16 +440,38 @@
   .qr-corner .qr {
     margin: 0;
   }
+  .qr-side {
+    flex: 1;
+  }
+  .ql {
+    margin-top: 0;
+  }
+  .ov-meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .sub-panel {
     grid-template-columns: 1fr;
   }
 }
 
-/* Ported from reference lines 703-724, 739 (small-phone breakpoint) */
-@media (max-width: 620px) {
-  .ov-meta {
+@media (max-width: 700px) {
+  /* The cadastral number is ~23 characters; in a half-width cell it broke
+     mid-number ("05.24.05.222.0 / 1.01.1519") once two columns get narrow
+     enough, so from here down it takes the whole row.
+     Nine cells across two columns always leaves one half empty — the last
+     field takes the full row too so that leftover lands nowhere. */
+  .ov-meta .cell.wide,
+  .ov-meta .cell:last-child {
+    grid-column: 1 / -1;
+  }
+  .svc-grid,
+  .svc-grid.cols4 {
     grid-template-columns: repeat(2, 1fr);
   }
+  /* .cols2 already fits here — it only collapses at the 520 step below. */
+}
+
+@media (max-width: 520px) {
   .ov-meta .cell {
     padding: 11px 13px;
   }
@@ -408,12 +482,26 @@
   .ov-meta .v {
     font-size: 12.5px;
   }
-  .svc-grid {
+  .svc-grid,
+  .svc-grid.cols4,
+  .svc-grid.cols2 {
     grid-template-columns: 1fr;
   }
   .svc-head {
     gap: 11px;
     padding: 14px;
+  }
+  /* The Doors card puts a whole button where the others put a short metric.
+     Below this width the two can't share a row without the title wrapping,
+     so that one card's action takes its own line. Scoped with :has() — a
+     blanket flex-wrap would drop every card's metric onto its own line too. */
+  .svc-head:has(.svc-actions) {
+    flex-wrap: wrap;
+  }
+  .svc-actions {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
   }
   .svc-ic {
     width: 40px;
@@ -428,13 +516,31 @@
     text-overflow: ellipsis;
     max-width: 46vw;
   }
+  /* The title wraps to two or three lines at this width (code + role badge +
+     address), so the icon aligns to the top of that block rather than to its
+     centre, and the code drops a size to buy a line back. */
+  .head {
+    align-items: flex-start;
+    gap: 12px;
+  }
   .head-icon {
     width: 52px;
     height: 52px;
     border-radius: 13px;
   }
-  .sub-panel {
-    grid-template-columns: 1fr;
+  .head-title {
+    font-size: 20px;
+    gap: 8px;
+  }
+  .svc-inner {
+    padding: 2px 14px 14px;
+  }
+  /* Share the row evenly instead of wrapping the Pay button onto its own
+     line the moment the labels grow (a translated "Download invoice" is
+     noticeably longer than the English). */
+  .svc-cta > * {
+    flex: 1 1 auto;
+    justify-content: center;
   }
   .sub-actions {
     display: grid;

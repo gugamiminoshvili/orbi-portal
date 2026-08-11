@@ -18,7 +18,22 @@ import { tokenStore } from '../api/tokenStore'
 import { USE_MOCK, onSessionExpired } from '../api/client'
 import { ToastContext } from './ToastContext'
 
-const MOCK_USER = { fullname: 'Guga M.' }
+// Mirrors the live /mobileApi/user/ key set (Task L1 capture) so the profile
+// page renders the same fields in both modes; `fullname` stays the composed
+// display name the sidebar/header read.
+const MOCK_USER = {
+  id: 23818,
+  username: 'guga',
+  fullname: 'Guga M.',
+  fName: 'Guga',
+  lName: 'M.',
+  mail: 'guga@example.com',
+  phone: '995 591 800 593',
+  personalId: 'FE682177',
+  regDate: '2024-03-18',
+  webAccess: true,
+  lang: 'en',
+}
 
 const MOCK_CONTEXT_VALUE = {
   user: MOCK_USER,

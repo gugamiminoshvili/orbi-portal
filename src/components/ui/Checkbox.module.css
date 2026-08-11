@@ -1,0 +1,53 @@
+/* Brand checkbox. `appearance:none` drops the OS control (which paints in the
+   platform accent — blue on macOS — and ignores the theme entirely) and
+   rebuilds it from the token palette, so it reads green in light AND dark. */
+.cb {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1.5px solid var(--line-2);
+  border-radius: 6px;
+  background: var(--card);
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), box-shadow var(--t);
+}
+/* The tick is a rotated corner of a box rather than an SVG — it scales with
+   the control and inherits --on-accent, so it stays legible on whatever the
+   checked fill is in the current theme. */
+.cb::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  margin-top: -2px;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  border-radius: 1px;
+  transform: rotate(45deg) scale(0.5);
+  opacity: 0;
+  transition: opacity var(--t), transform var(--t);
+}
+.cb:checked {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.cb:checked::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+.cb:hover:not(:disabled) {
+  border-color: var(--teal);
+}
+.cb:focus-visible {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: var(--ring);
+}
+.cb:disabled {
+  cursor: default;
+  opacity: 0.5;
+}

@@ -1,7 +1,8 @@
-import { listNews, getNews } from './news'
-import { listApartments, getApartment, changePackage, pauseInternet, resumeInternet } from './apartments'
-import { payService } from './pay'
-import { listTickets, createTicket, sendMessage } from './support'
+import { listNews } from './news'
+import { getApartment, changePackage, pauseInternet, resumeInternet } from './apartments'
+import { payMulti, downloadInvoice } from './pay'
+import { createTicket, sendMessage } from './support'
+import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from './dashboard'
 
 test('listNews resolves items', async () => {
   const items = await listNews()
@@ -23,15 +24,39 @@ test('pause/resume roundtrip', async () => {
   const r = await resumeInternet('A1')
   expect(r.status).toBe('Active')
 })
-test('payService returns ref and clears balance', async () => {
-  const res = await payService('A1', { amount: 180, method: 'card' })
-  expect(res.ref).toMatch(/^PAY-/)
-  const a = await getApartment('A1')
-  expect(a.balance).toBe(0)
-})
 test('create ticket + message', async () => {
   const t = await createTicket({ topic: 'other', apt: null, text: 'hello' })
   expect(t.status).toBe('active')
   const t2 = await sendMessage(t.id, 'more')
   expect(t2.msgs.length).toBe(2)
+})
+test('getCommunals resolves the mock dashboard shape', async () => {
+  const { utilities, maintenance, byApartment } = await getCommunals()
+  expect(utilities.currency).toBe('GEL')
+  // mock maintenance is GEL-native (see mockCommunals' currency comment) —
+  // live mode reports 'USD' and the multi-pay flow converts conditionally.
+  expect(maintenance.currency).toBe('GEL')
+  expect(byApartment.length).toBeGreaterThan(0)
+})
+test('getRates resolves the static mock NBG snapshot', async () => {
+  const { rates, source } = await getRates()
+  expect(source).toBe('NBG')
+  expect(rates.map((r) => r.pair)).toEqual(['USD/GEL', 'EUR/GEL', 'GBP/GEL'])
+})
+test('getContractsSummary resolves the mock crm-less zero-state', async () => {
+  expect(await getContractsSummary()).toEqual({ empty: true })
+})
+test('getUnpaidInvoices resolves a count + list derived from mock services', async () => {
+  const { count, invoices } = await getUnpaidInvoices()
+  expect(count).toBe(invoices.length)
+  expect(count).toBeGreaterThan(0)
+})
+test('payMulti (mock) returns a fake redirect url regardless of method', async () => {
+  const res = await payMulti({ services: [{ epcode: '60011519', amount: 100, serviceType: 'apartment' }], method: 'card' })
+  expect(res).toEqual({ url: 'https://example.test/pay' })
+})
+test('downloadInvoice (mock) resolves a placeholder Blob', async () => {
+  const blob = await downloadInvoice(19365)
+  expect(blob).toBeInstanceOf(Blob)
+  expect(blob.type).toBe('application/pdf')
 })

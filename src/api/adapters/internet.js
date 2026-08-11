@@ -39,7 +39,7 @@ function parseDate(value) {
 // src/api/mock/services.js (e.g. "19 Jul 2026"), which InternetCard/
 // ChangePackageModal/BoostModal render as-is (no further date parsing).
 function formatRenewal(d) {
-  if (!d) return '—'
+  if (!d) return '-'
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`
 }
 
@@ -63,7 +63,7 @@ const STATUS_MAP = { active: 'Active', paused: 'Paused' }
 function adaptPlanEntry(dto = {}) {
   return {
     id: dto.id,
-    name: dto.name ?? '—',
+    name: dto.name ?? '-',
     price: num(dto.price),
     mbps: num(dto.internet_speed),
     ch: num(dto.tv_channels),
@@ -78,10 +78,10 @@ function adaptPlanEntry(dto = {}) {
 function adaptBoostEntry(dto = {}) {
   return {
     id: dto.id,
-    name: dto.name ?? '—',
+    name: dto.name ?? '-',
     price: num(dto.price),
-    speed: dto.internet_speed != null && dto.internet_speed !== '' ? `+${dto.internet_speed} Mbps` : '—',
-    duration: '—', // FLAG: no duration_value/duration_unit (or equivalent) field on the live boost tariff shape
+    speed: dto.internet_speed != null && dto.internet_speed !== '' ? `+${dto.internet_speed} Mbps` : '-',
+    duration: '-', // FLAG: no duration_value/duration_unit (or equivalent) field on the live boost tariff shape
   }
 }
 
@@ -108,11 +108,11 @@ export function adaptAgreement(dto = {}) {
   const hasAgreement = dto && Object.keys(dto).length > 0
   if (!hasAgreement) {
     return {
-      provider: '—',
+      provider: '-',
       planId: null,
-      planName: '—',
+      planName: '-',
       tariff: 0,
-      renewal: '—',
+      renewal: '-',
       daysLeft: 0,
       cycleDays: 0,
       boost: null,
@@ -126,9 +126,9 @@ export function adaptAgreement(dto = {}) {
   const daysLeft = end ? Math.max(0, Math.ceil((end.getTime() - now.getTime()) / MS_PER_DAY)) : 0
   const cycleDays = start && end ? Math.max(0, Math.round((end.getTime() - start.getTime()) / MS_PER_DAY)) : 0
   return {
-    provider: '—', // FLAG: no ISP/provider-name field anywhere on orbinet_agreement
+    provider: '-', // FLAG: no ISP/provider-name field anywhere on orbinet_agreement
     planId: dto.net_tariff?.id ?? null,
-    planName: dto.net_tariff?.name ?? '—',
+    planName: dto.net_tariff?.name ?? '-',
     tariff: num(dto.cost_gel),
     renewal: formatRenewal(end),
     daysLeft,

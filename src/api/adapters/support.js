@@ -50,7 +50,7 @@ function parseServerDate(value) {
 
 function formatCreated(value) {
   const d = parseServerDate(value)
-  if (!d) return '—'
+  if (!d) return '-'
   const yyyy = d.getUTCFullYear()
   const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
   const dd = String(d.getUTCDate()).padStart(2, '0')
@@ -96,17 +96,19 @@ function topicFromSubject(subject = '', subjects = []) {
 //  - statusLabel: the backend's own localized status text (shown verbatim
 //    instead of a TSTATUS mapping the live vocabulary doesn't fit)
 //  - statusTone: badge tone — 'muted' once closed_at is set, 'pos' otherwise
-// No apartment/flat reference field exists on Ticket (confirmed live) — so
-// `apt` is always null (the v1 "general request" case).
+// The GET Ticket shape doesn't echo apartment/room association back (confirmed
+// live) — so `apts` is empty here. createTicket attaches the just-submitted
+// `apts` client-side so a newly created ticket still shows its rooms; fetched
+// historical tickets show none until the backend surfaces rooms on GET.
 export function adaptTicket(dto = {}, subjects = [], lang = 'en') {
   return {
     id: dto.id,
     topic: topicFromSubject(dto.subject, subjects),
-    apt: null,
+    apts: [],
     status: ticketStatus(dto),
     statusLabel: ticketStatusLabel(dto, lang),
     statusTone: dto.closed_at ? 'muted' : 'pos',
-    created: dto.created_at ? formatCreated(dto.created_at) : '—',
+    created: dto.created_at ? formatCreated(dto.created_at) : '-',
     preview: dto.last_msg ?? '',
     msgs: [],
   }
@@ -124,7 +126,7 @@ export function adaptTicketList(dto = {}, subjects = [], lang = 'en') {
 // src/api/mock/tickets.js's TICKETS already use (e.g. "09.07.2026" / "14:20").
 function msgDateTime(value) {
   const d = parseServerDate(value)
-  if (!d) return { date: '—', time: '—' }
+  if (!d) return { date: '-', time: '-' }
   const dd = String(d.getUTCDate()).padStart(2, '0')
   const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
   const yyyy = d.getUTCFullYear()
@@ -175,7 +177,7 @@ export function adaptSubjects(dto = [], lang = 'en') {
     const topic = topicById(id) || OTHER_TOPIC
     return {
       id,
-      label: s[lang] ?? s.en ?? '—',
+      label: s[lang] ?? s.en ?? '-',
       desc: topic.desc,
       icon: topic.icon,
       tintBg: topic.tintBg,

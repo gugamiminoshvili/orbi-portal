@@ -2,7 +2,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 20, 45, .5);
+  background: var(--overlay);
   backdrop-filter: blur(3px);
   z-index: 100;
   display: flex;
@@ -18,7 +18,7 @@
   pointer-events: auto;
 }
 .modal {
-  background: #fff;
+  background: var(--card);
   border-radius: 18px;
   width: 100%;
   max-width: 480px;
@@ -50,7 +50,7 @@
   height: 36px;
   border-radius: 10px;
   border: 1px solid var(--line-2);
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -76,7 +76,7 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 .modal-foot.split {
   justify-content: space-between;

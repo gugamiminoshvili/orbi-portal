@@ -30,7 +30,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(17, 20, 45, .4);
+  background: var(--overlay-soft);
   z-index: 55;
 }
 

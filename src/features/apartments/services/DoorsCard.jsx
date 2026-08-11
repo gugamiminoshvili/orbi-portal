@@ -20,7 +20,7 @@ export default function DoorsCard({ apt }) {
         className={styles['svc-head']}
         onClick={() => openModal(<DoorsCalendarModal apartment={apt} />, { size: 'lg' })}
       >
-        <div className={styles['svc-ic']} style={{ background: '#eef0f6', color: 'var(--ink-2)' }}>
+        <div className={styles['svc-ic']} style={{ background: 'var(--fill)', color: 'var(--ink-2)' }}>
           <Icon name="door" />
         </div>
         <div className={styles['svc-tt']}>

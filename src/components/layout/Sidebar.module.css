@@ -1,8 +1,12 @@
-/* Ported from reference/orbi-portal-redesign.html lines 77-109 (sidebar/brand/nav/side-foot) */
+/* Light "minimal" rail (owner-picked Variant B): white surface, muted icons,
+   and brand green reserved for the logo tile and the active row's pill.
+   Every colour comes from a --sidebar-* token declared in index.css, so a
+   dark theme swaps the rail without this file changing. */
 .sidebar {
   width: var(--shell-w);
-  background: linear-gradient(180deg, var(--sidebar), var(--sidebar-2));
-  color: #cdd0e6;
+  background: var(--sidebar);
+  border-right: 1px solid var(--sidebar-line);
+  color: var(--sidebar-ink);
   position: fixed;
   inset: 0 auto 0 0;
   display: flex;
@@ -15,139 +19,127 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 22px 22px 18px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--sidebar-line);
 }
 .brand .logo {
   width: 38px;
   height: 38px;
   border-radius: 11px;
   flex: none;
-  background: linear-gradient(135deg, var(--teal), #28a862);
+  background: linear-gradient(135deg, var(--teal), var(--teal-400));
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   font-size: 18px;
-  box-shadow: 0 6px 16px rgba(26, 138, 78, .4);
+  box-shadow: 0 6px 16px var(--tint-teal-glow);
 }
 .brand b {
-  color: #fff;
-  font-size: 17px;
-  font-weight: 600;
+  color: var(--sidebar-ink-strong);
+  font-size: 16.5px;
+  font-weight: 700;
   letter-spacing: .2px;
 }
 .brand span {
   display: block;
-  color: #7c80a8;
+  color: var(--sidebar-muted);
   font-size: 11px;
   font-weight: 500;
   margin-top: 1px;
 }
 
 .nav {
-  padding: 8px 14px;
+  padding: 10px 12px;
   overflow-y: auto;
   flex: 1;
 }
 .group {
-  color: #5d6191;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 1.4px;
+  color: var(--sidebar-group);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
   text-transform: uppercase;
-  padding: 18px 12px 8px;
+  padding: 14px 12px 6px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 11px 14px;
+  gap: 12px;
+  padding: 10px 13px;
   border-radius: 11px;
-  color: #b6b9d8;
+  color: var(--sidebar-ink);
   font-weight: 500;
   font-size: 13.5px;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   transition: var(--t);
   cursor: pointer;
 }
 .navItem:hover {
   background: var(--sidebar-hover);
-  color: #fff;
+  color: var(--sidebar-ink-strong);
+}
+.navItem:hover .ic {
+  color: var(--sidebar-ink-strong);
 }
 .navItem.active {
   background: var(--sidebar-active);
-  color: #fff;
-  box-shadow: inset 3px 0 0 var(--teal);
+  color: var(--teal-ink);
+  font-weight: 600;
 }
 .navItem.active .ic {
   color: var(--teal);
 }
 .navItem[aria-disabled='true'] {
-  opacity: .45;
+  color: var(--sidebar-disabled);
   cursor: not-allowed;
+}
+.navItem[aria-disabled='true'] .ic {
+  color: var(--sidebar-disabled-ic);
 }
 .navItem[aria-disabled='true']:hover {
   background: transparent;
-  color: #b6b9d8;
+  color: var(--sidebar-disabled);
 }
 .ic {
   width: 20px;
   height: 20px;
   flex: none;
-  opacity: .9;
-}
-
-.side-foot {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, .06);
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.av {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #2a2a52;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-weight: 600;
-  font-size: 13px;
-  flex: none;
-}
-.nm {
-  flex: 1;
-  min-width: 0;
-  font-size: 12.5px;
-  color: #e6e7f4;
-  font-weight: 500;
-  line-height: 1.3;
-}
-.nm small {
-  display: block;
-  color: #7c80a8;
-  font-size: 11px;
-  font-weight: 400;
-}
-
-.logoutBtn {
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #7c80a8;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  color: var(--sidebar-muted);
   transition: var(--t);
 }
-.logoutBtn:hover {
-  background: rgba(255, 255, 255, .08);
-  color: #fff;
+
+/* Footer help block — fills the rail's bottom slack with something useful. */
+.side-foot {
+  padding: 12px 14px 16px;
+  border-top: 1px solid var(--sidebar-line);
+}
+.help {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 13px;
+  border: none;
+  border-radius: 12px;
+  background: var(--sidebar-hover);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sidebar-ink);
+  cursor: pointer;
+  text-align: left;
+  transition: var(--t);
+}
+.help:hover {
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+}
+.help svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
 }
 
 /* Ported from reference lines 684-687 (mobile sidebar slide-in) */
@@ -158,5 +150,6 @@
   }
   .sidebar.open {
     transform: none;
+    box-shadow: var(--shadow-lg);
   }
 }

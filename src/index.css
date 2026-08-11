@@ -1,38 +1,266 @@
-:root{
-  /* Brand + accent */
-  --teal:#1A8A4E;          /* ORBI brand green (primary accent) */
-  --teal-600:#146F3E;
-  --teal-soft:#DCF3E5;     /* chip / badge background */
-  --teal-ink:#0E6B3B;
+/* ============================================================
+   COLOR THEME LAYER
+   Every color (and shadow, since shadows here are colored rgba
+   values whose tint changes with the surface they sit on) lives in
+   this block, keyed by `[data-theme]`. Components never read
+   `[data-theme]` themselves — they only ever reference the var name
+   (--bg, --ink, --sidebar, ...), so swapping the theme is a matter of
+   which block below is active, with zero component changes.
 
-  /* Surfaces */
-  --bg:#EEF1F4;
-  --card:#ffffff;
-  --sidebar:#15663B;       /* ORBI dark green shell */
-  --sidebar-2:#0E4A2A;
-  --sidebar-hover:#1C7A48;
-  --sidebar-active:#1A7044;
+   - `:root, [data-theme="light"]` — the LIGHT theme, and the default
+     when no theme has been set yet (e.g. before theme.js's setTheme()
+     has run once).
+   - `[data-theme="dark"]` — the DARK theme. Every property declared in
+     the light block is re-declared there under the same name; nothing
+     is added or removed, so a component never has to know which theme
+     is live.
 
-  /* Text */
-  --ink:#1b1b2c;
-  --ink-2:#3f425a;
-  --muted:#7E8299;
-  --line:#eceef4;
-  --line-2:#e4e7f0;
+   SOURCE OF TRUTH: the owner's design-tool colour library (2026-08-04),
+   which names its entries by role. The mapping is spelled out per token
+   below as `library: <their name>`; anything without that note is
+   derived, and says how. Percentages in the library are the base mixed
+   over white, which is exactly the two roles this system already had:
+   10% is a tinted badge/panel background, 40% is the border on it.
 
-  /* Semantic (replace meaningless colored stripes) */
-  --pos:#1A8A4E;  --pos-bg:#DCF3E5;  --pos-ink:#0E6B3B;   /* paid / active / positive */
-  --warn:#FFA800; --warn-bg:#FFF4DE; --warn-ink:#b57400;  /* pause / pending / warning */
-  --neg:#F1416C;  --neg-bg:#FFE2EA;  --neg-ink:#c01e49;   /* overdue / negative balance */
-  --info:#3699FF; --info-bg:#E1F0FF; --info-ink:#1d6fd0;
+   The library covers LIGHT MODE only, so the dark block keeps the same
+   library hues and re-derives the surfaces and tints for a dark ground.
+   ============================================================ */
+:root,
+[data-theme='light'] {
+  /* ---- Brand green.
+     #00663C is the primary (owner, 2026-08-04), and it sits between the
+     library's "Dark green" #004B2C and "Button green" #008E49 — so those two
+     become its darker and lighter steps rather than competing with it. All
+     three are on hue 155°. White on the primary is 7.1:1 (it was 4.2:1 back
+     when #008E49 was the primary, borderline for a button label). */
+  --teal:#00663C;          /* ORBI brand green (primary accent) */
+  --teal-600:#004B2C;      /* pressed / hover — library: Dark green */
+  --teal-400:#008E49;      /* lighter partner in the logo/CTA gradient — library: Button green */
+  --teal-soft:#E6F0EC;     /* chip / badge background — primary at 10% */
+  --teal-soft-hover:#CCE0D8; /* primary at 20% */
+  --teal-line:#99C2B1;     /* border on a teal-soft surface — primary at 40% */
+  --teal-ghost:#F2F7F5;    /* watermark tint (guide section numbers) — primary at 5% */
+  --teal-tint:#F2F7F5;     /* near-white green wash (selected rows, info panels) */
+  /* Green as FOREGROUND (text/icon), never as a fill. Same value as the
+     primary here — 7.1:1 on white and 6.1:1 on --teal-soft, so it needs no
+     darkening — but it stays a separate token because the two roles diverge
+     in dark mode, where fill and ink brighten by different amounts.
+     NOT the library's "Text green" #28A745: that is 3.1:1 on white, fine as
+     a fill or on a dark ground but unreadable as body text here. */
+  --teal-ink:#00663C;
 
-  /* Shape + depth */
+  /* Text/icons that sit ON a filled accent (--teal, --warn, --neg, --indigo).
+     A single token because the fills all take the same treatment: in light
+     that is white, in dark it flips to near-black against brighter fills. */
+  --on-accent:#ffffff;                      /* library: White */
+  --tint-on-accent:rgba(255, 255, 255, .5); /* the dim half of a spinner ring drawn on an accent fill */
+
+  /* Toast: a deliberately inverted surface in BOTH themes, so it reads as an
+     overlay rather than as another card. It used to borrow --sidebar, which
+     stopped working when the rail turned white in P3-6 (white on white). */
+  --toast-bg:#212121;      /* library: airbnb dark button */
+  --toast-ink:#ffffff;
+
+  /* ---- Surfaces */
+  --bg:#F2F2F7;            /* library: Background */
+  --card:#ffffff;          /* library: White */
+  --surface-2:#F9F9FE;     /* inset panel inside a card — library: Background 2 */
+  --fill:#EAEAEA;          /* neutral chip, track, icon tile — library: Background 3 */
+  --fill-2:#CECECE;        /* image placeholder — library: Light icon 40% */
+  /* Sidebar surface tokens live with the rest of the sidebar roles below. */
+
+  /* ---- Text.
+     The library's three greys are Dark text (body/headings), Light text
+     (secondary) and Light icon (icons). --muted carries small TEXT here, so
+     it is one step darker than "Light icon" #848484, which would be 3.7:1 on
+     white and 3.0:1 on --bg. #6E6E6E holds 5.1:1 and 4.6:1. */
+  --ink:#272727;           /* library: Dark text */
+  --ink-2:#666666;         /* library: Light text */
+  --muted:#6E6E6E;         /* between the library's Light text and Light icon — see above */
+  --line:#F3F3F3;          /* library: Light icon 10% */
+  --line-2:#E6E6E6;        /* library: Light icon 20% */
+  --card-line:rgba(132, 132, 132, .18); /* card hairline — Light icon, softer than --line-2 */
+  --row-on:#F2F7F5;        /* selected row band (multi-pay table) */
+
+  /* ---- Semantic.
+     Each --*-bg is the base at 10%, --*-line at 40%, and --*-ink a shade
+     dark enough to read on its own 10% tint (green 6.1:1, amber 4.6:1, red
+     5.4:1, blue 5.0:1, indigo 6.5:1). The bases with no shading — amber and
+     the two blues — are too light to be text on white on their own. */
+  --pos:#00663C;  --pos-bg:#E6F0EC;  --pos-ink:#00663C;   /* paid / active / positive */
+  --warn:#FFA800; --warn-bg:#FFF6E6; --warn-line:#FFDC99; --warn-ink:#996500;  /* library: Pending or ongoing */
+  --warn-600:#D98F00;
+  --neg:#E23737;  --neg-bg:#FCEBEB;  --neg-line:#F3AFAF;  --neg-ink:#B52C2C;   /* library: airbnb error red */
+  --info:#3699FF; --info-bg:#EBF5FF; --info-line:#AFD6FF; --info-ink:#266BB2;  /* library: Water — and it IS the water service accent */
+  /* library: TV & Internet — the Internet & TV service accent, and the
+     Maintenance line in the dashboard legend (which cannot also be green,
+     since green is the brand/action colour there). */
+  --indigo:#4A51FF; --indigo-bg:#EDEEFF; --indigo-line:#B7B9FF; --indigo-ink:#3B41CC; /* --indigo-line is the library's 40%, kept for symmetry; no border uses it yet */
+
+  /* ---- Depth (colored — shadow/ring tints follow the theme).
+     Neutral now, tinted with "Dark text" rather than the old blue-grey. */
+  --shadow:0 4px 24px rgba(39,39,39,.06), 0 1px 3px rgba(39,39,39,.05);
+  --shadow-lg:0 18px 50px rgba(39,39,39,.18);
+  --ring:0 0 0 3px rgba(0,102,60,.28);
+  --overlay:rgba(33, 33, 33, .5);       /* modal scrim — library: airbnb dark button */
+  --overlay-soft:rgba(33, 33, 33, .4);  /* mobile sidebar scrim */
+
+  /* Tints used inside a shadow/border shorthand, where only the COLOUR is
+     theme-dependent and the geometry belongs to the component. In light
+     they are the accent's own hue at low alpha (a coloured glow under a
+     coloured button); in dark a glow reads as haze, so they become plain
+     black and the borders keep the hue instead. */
+  --tint-teal-glow:rgba(0, 102, 60, .30);
+  --tint-warn-glow:rgba(255, 168, 0, .28);
+  --tint-drop:rgba(39, 39, 39, .12);
+  --tint-ink-teal:rgba(0, 102, 60, 0.12);        /* chip button on a teal-soft field */
+  --tint-ink-teal-strong:rgba(0, 102, 60, 0.24);
+
+  --skeleton-a:#EAEAEA;    /* library: Background 3 */
+  --skeleton-b:#D8D8D8;
+
+  /* Header: the sticky header's tinted glass backdrop and hairline border,
+     as vars (not raw rgba() in the module CSS) so the dark theme can swap
+     them alongside everything else. */
+  --header-bg:rgba(242, 242, 247, .82);  /* --bg, translucent */
+  --header-line:rgba(39, 39, 39, .08);
+
+  /* ---- Sidebar surface + text roles. The shell is LIGHT (owner-picked
+     "minimal" variant): a white rail whose only brand colour is the logo
+     tile and the active row's teal-soft pill. Every value here is a token
+     so the dark theme swaps the whole rail without touching the module CSS.
+     Contrast on white: --sidebar-ink 5.7:1, --sidebar-muted 5.1:1. */
+  --sidebar:#ffffff;            /* rail surface (gradient start) */
+  --sidebar-2:#ffffff;          /* rail surface (gradient end) */
+  --sidebar-hover:#F9F9FE;      /* idle row hover — library: Background 2 */
+  --sidebar-active:var(--teal-soft); /* active row pill */
+  --sidebar-ink:#666666;        /* idle nav item text — library: Light text */
+  --sidebar-ink-strong:#272727; /* hover text, brand wordmark — library: Dark text */
+  --sidebar-muted:#6E6E6E;      /* tagline, idle icons */
+  --sidebar-group:#6E6E6E;      /* group label */
+  --sidebar-name:#272727;       /* user name (header menu reuse) */
+  --sidebar-avatar-bg:#485063;  /* library: Night */
+  --sidebar-line:#F3F3F3;       /* brand/footer separators */
+  --sidebar-disabled:#ADADAD;   /* "coming soon" nav item */
+  --sidebar-disabled-ic:#C1C1C1; /* library: Light icon 50% */
+}
+
+/* Dark theme. Same names, re-valued — see the contract note above.
+   Three rules shape it, and they are why the values are not simply the
+   light ones inverted:
+
+   1. Surfaces get LIGHTER as they come forward (--bg → --card →
+      --surface-2 → --fill), the opposite of light mode, because on a
+      dark page elevation reads as light, not as shadow. The ramp is
+      neutral grey, the same family as the library's #212121.
+   2. The brand green splits in two, because #00663C on a dark page is
+      nearly invisible. As a FILL it becomes the library's brightest
+      green #4CD090 ("New Test Green", 8.5:1 on --card), which flips
+      --on-accent to near-black (9.2:1); white on a bright green would
+      fail. As a FOREGROUND it is --teal-ink #7FE0B0 (10.5:1).
+   3. The library's 40%/10% variants are white mixes, so they don't
+      transfer: the same bases are mixed into --card instead
+      (10% -> 18%, 40% -> 34%), which is the same idea against a dark
+      ground. Amber, red, blue and indigo keep their exact library value
+      as fills — they are already bright enough.
+
+   Measured on --card #1E1E1E: --ink 15.3:1, --ink-2 9.9:1, --muted
+   5.9:1, --teal 8.5:1. The accent inks land between 7.4:1 and 10.5:1. */
+[data-theme='dark'] {
+  /* ---- Brand green */
+  --teal:#4CD090;          /* library: New Test Green */
+  --teal-600:#6EDCA6;      /* hover brightens in dark rather than darkening */
+  --teal-400:#7FE0B0;
+  --teal-soft:#263E33;
+  --teal-soft-hover:#2A4C3C;
+  --teal-line:#2E5B45;
+  --teal-ghost:#24332C;
+  --teal-tint:#24332C;
+  --teal-ink:#7FE0B0;
+
+  --on-accent:#0B1A12;
+  --tint-on-accent:rgba(11, 26, 18, .35);
+  --toast-bg:#333333;
+  --toast-ink:#F5F5F5;
+
+  /* ---- Surfaces */
+  --bg:#141414;
+  --card:#1E1E1E;
+  --surface-2:#262626;
+  --fill:#333333;
+  --fill-2:#3D3D3D;
+
+  /* ---- Text */
+  --ink:#F5F5F5;
+  --ink-2:#C7C7C7;
+  --muted:#9A9A9A;
+  --line:#2E2E2E;
+  --line-2:#3A3A3A;
+  --card-line:rgba(58, 58, 58, .9);
+  --row-on:#24332C;
+
+  /* ---- Semantic */
+  --pos:#4CD090;  --pos-bg:#263E33;  --pos-ink:#7FE0B0;
+  --warn:#FFA800; --warn-bg:#463719; --warn-line:#6A4D14; --warn-ink:#FFC24D;
+  --warn-600:#FFBB33;
+  --neg:#E23737;  --neg-bg:#412222; --neg-line:#612626;  --neg-ink:#FF8A8A;
+  --info:#3699FF; --info-bg:#223446; --info-line:#26486A; --info-ink:#8CC4FF;
+  --indigo:#4A51FF; --indigo-bg:#262746; --indigo-line:#2D2F6A; --indigo-ink:#A5A8FF;
+
+  /* ---- Depth */
+  --shadow:0 4px 24px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.65);
+  --ring:0 0 0 3px rgba(76,208,144,.35);
+  --overlay:rgba(0, 0, 0, .66);
+  --overlay-soft:rgba(0, 0, 0, .55);
+
+  --tint-teal-glow:rgba(0, 0, 0, .45);
+  --tint-warn-glow:rgba(0, 0, 0, .45);
+  --tint-drop:rgba(0, 0, 0, .5);
+  --tint-ink-teal:rgba(127, 224, 176, 0.16);
+  --tint-ink-teal-strong:rgba(127, 224, 176, 0.28);
+
+  --skeleton-a:#262626;
+  --skeleton-b:#333333;
+
+  --header-bg:rgba(20, 20, 20, .82);
+  --header-line:rgba(255, 255, 255, .08);
+
+  /* Sidebar — one step darker than --card so the rail still reads as a
+     separate plane once the page behind it is dark too. */
+  --sidebar:#181818;
+  --sidebar-2:#181818;
+  --sidebar-hover:#242424;
+  --sidebar-active:var(--teal-soft);
+  --sidebar-ink:#C7C7C7;
+  --sidebar-ink-strong:#F5F5F5;
+  --sidebar-muted:#9A9A9A;
+  --sidebar-group:#9A9A9A;
+  --sidebar-name:#F5F5F5;
+  --sidebar-avatar-bg:#485063;   /* library: Night — works on both grounds */
+  --sidebar-line:#2E2E2E;
+  --sidebar-disabled:#5C5C5C;
+  --sidebar-disabled-ic:#4D4D4D;
+}
+
+/* Library colours the app has no role for yet, left out on purpose rather
+   than assigned somewhere arbitrary: New request blue #83C1C2, Light Green
+   #4FB84F, Red #DC3545 (a second red beside the error red), Sunset #8950FC,
+   Service #D1C73B. Ask the owner before spending any of them. */
+
+:root { color-scheme: light }
+[data-theme='dark'] { color-scheme: dark }
+
+/* ============================================================
+   STRUCTURAL TOKENS
+   Theme-independent: shape, spacing, and layout dimensions. These
+   don't vary between light/dark, so they stay in a plain :root
+   block outside the theme layer above.
+   ============================================================ */
+:root {
   --r:16px;
   --r-sm:10px;
   --r-pill:999px;
-  --shadow:0 4px 24px rgba(34,41,82,.06), 0 1px 3px rgba(34,41,82,.05);
-  --shadow-lg:0 18px 50px rgba(20,24,60,.18);
-  --ring:0 0 0 3px rgba(26,138,78,.28);
 
   /* Spacing scale */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px; --s8:40px;
@@ -52,6 +280,22 @@ body{
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
-button{font-family:inherit}
+/* Form controls don't inherit the page font — a textarea in particular falls
+   back to the UA's monospace, which is why the chat composer's placeholder
+   was rendering in a different typeface from everything around it. */
+button,input,textarea,select{font-family:inherit}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
+
+/* Screen-reader-only text. For cases where the visual design carries meaning
+   through layout that the DOM alone can't state — e.g. the dashboard's two
+   headline balances, which read as bare numbers without their label. */
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  margin:-1px;padding:0;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap;
+  border:0;
+}

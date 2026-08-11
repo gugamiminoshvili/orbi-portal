@@ -4,6 +4,7 @@ import { adaptNewsList, adaptNewsItem } from './news'
 import { adaptAgreement, adaptTariffs } from './internet'
 import { adaptTicket, adaptTicketList, adaptTicketMessage, adaptTicketMessages, adaptSubjects } from './support'
 import { adaptLockHistory, adaptTransaction, adaptTransactions } from './finance'
+import { adaptCommunals, adaptRate, adaptContractsSummary, adaptUnpaidInvoices } from './dashboard'
 import { APTS } from '../mock/apartments'
 import { SERVICES } from '../mock/services'
 import { PLANS, BOOSTS } from '../mock/plans'
@@ -18,6 +19,11 @@ import ticketMessages from './__fixtures__/ticket-messages.json'
 import subjects from './__fixtures__/subjects.json'
 import lockHistory from './__fixtures__/lock-history.json'
 import financeTransactions from './__fixtures__/finance-transactions.json'
+import communals from './__fixtures__/dashboard-communals.json'
+import currencyRateUSD from './__fixtures__/currency-rate.json'
+import tournoverNoCrm from './__fixtures__/finance-tournover-no-crm.json'
+import scheduleFixture from './__fixtures__/finance-schedule.json'
+import paymentList from './__fixtures__/payment-list.json'
 
 // The fixture mirrors the live /properties/v2/ shape: COMPLEXES with a
 // `flats` array. adaptProperty maps one FLAT record.
@@ -60,12 +66,15 @@ describe('adaptProperty', () => {
   })
 
   test('missing epcode falls back to the em-dash placeholder', () => {
-    expect(adaptProperty({}).epcode).toBe('—')
+    expect(adaptProperty({}).epcode).toBe('-')
   })
 
-  test('synthesizes services with real GEL balances, counters and indication', () => {
+  test('synthesizes services with real balances, counters and indication', () => {
     const { services } = adaptProperty(flats[0])
-    expect(services.maintenance.balance).toBe(-1677.73)
+    // Maintenance keeps the CONTRACT currency (apartmentBalance/USD), not the
+    // pre-converted apartmentBalanceGEL the other services use.
+    expect(services.maintenance.balance).toBe(-637.12)
+    expect(services.maintenance.currency).toBe('$')
     expect(services.electricity.balance).toBe(-230.73)
     expect(services.electricity.counter).toBe('35010009')
     expect(services.electricity.status).toBe('Active') // display_services includes electricity
@@ -102,13 +111,13 @@ describe('adaptProperty', () => {
 
   test('fields with no live source get documented, render-safe fallbacks', () => {
     const { services } = adaptProperty(flats[0])
-    // numeric fields piped through fmt() -> 0, never NaN/undefined
-    expect(services.maintenance.tariff).toBe(0)
-    // plain-text fields -> the app's '—' unknown placeholder
-    expect(services.maintenance.start).toBe('—')
-    expect(services.water.updated).toBe('—')
-    expect(services.electricity.updated).toBe('—')
-    expect(services.internet.provider).toBe('—')
+    // UNKNOWN, not zero: the card renders '-' rather than a "0.00 $" price
+    expect(services.maintenance.tariff).toBeNull()
+    // plain-text fields -> the app's '-' unknown placeholder
+    expect(services.maintenance.start).toBe('-')
+    expect(services.water.updated).toBe('-')
+    expect(services.electricity.updated).toBe('-')
+    expect(services.internet.provider).toBe('-')
   })
 })
 
@@ -125,20 +134,20 @@ describe('adaptFlatDetail', () => {
       building: 'Orbi Plaza, Block A', // synthesized — no building-name field exists
       cadastral: '05.24.03.036.01.543', // real field name: cadastre
       waterCode: '271/4a-205a',
-      apCode: '—', // epcode is "" on the live sample
+      apCode: '-', // epcode is "" on the live sample
       role: 'Owner', // apartmentCategory "OWN - Owner" -> the part after ' - '
     })
   })
 
   test('unknown fields fall back to the em-dash placeholder', () => {
     const detail = adaptFlatDetail({})
-    expect(detail.project).toBe('—')
-    expect(detail.code).toBe('—')
-    expect(detail.block).toBe('—')
-    expect(detail.building).toBe('—')
-    expect(detail.cadastral).toBe('—')
-    expect(detail.waterCode).toBe('—')
-    expect(detail.apCode).toBe('—')
+    expect(detail.project).toBe('-')
+    expect(detail.code).toBe('-')
+    expect(detail.block).toBe('-')
+    expect(detail.building).toBe('-')
+    expect(detail.cadastral).toBe('-')
+    expect(detail.waterCode).toBe('-')
+    expect(detail.apCode).toBe('-')
     expect(detail.role).toBe('Owner')
   })
 })
@@ -168,7 +177,7 @@ describe('adaptProperty + adaptFlatDetail cover every key the UI reads off an ap
   test('merged services object has every key each service card reads', () => {
     const merged = { ...adaptFlatDetail(flat), ...adaptProperty(flats[0]) }
     expect(merged.services.maintenance).toEqual(
-      expect.objectContaining({ balance: expect.any(Number), tariff: expect.any(Number), start: expect.any(String) })
+      expect.objectContaining({ balance: expect.any(Number), tariff: null, start: expect.any(String) })
     )
     expect(merged.services.water).toEqual(
       expect.objectContaining({ counter: expect.any(String), indication: expect.any(String), updated: expect.any(String) })
@@ -244,7 +253,7 @@ describe('adaptNewsList', () => {
   test('missing/invalid created_at falls back to ts 0 and a placeholder date', () => {
     const item = adaptNewsItem({ id: 999 })
     expect(item.ts).toBe(0)
-    expect(item.date).toBe('—')
+    expect(item.date).toBe('-')
   })
 
   test('empty dto list yields an empty, well-shaped result', () => {
@@ -264,7 +273,7 @@ describe('adaptTariffs', () => {
   test('maps `boost` tariffs to the v1 BOOSTS shape — no duration field exists on the live payload', () => {
     const { boosts } = adaptTariffs(tariffs)
     expect(boosts).toEqual([
-      { id: 6, name: 'Boost', price: 10, speed: '+65 Mbps', duration: '—' },
+      { id: 6, name: 'Boost', price: 10, speed: '+65 Mbps', duration: '-' },
     ])
   })
 
@@ -292,7 +301,7 @@ describe('adaptAgreement', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-17T00:00:00Z'))
     expect(adaptAgreement(agreement)).toEqual({
-      provider: '—', // no provider field on the live agreement
+      provider: '-', // no provider field on the live agreement
       planId: 3, // net_tariff.id
       planName: 'Package 2',
       tariff: 70, // cost_gel
@@ -313,8 +322,8 @@ describe('adaptAgreement', () => {
     expect(s.tariff).toBe(0)
     expect(s.daysLeft).toBe(0)
     expect(s.cycleDays).toBe(0)
-    expect(s.provider).toBe('—')
-    expect(s.renewal).toBe('—')
+    expect(s.provider).toBe('-')
+    expect(s.renewal).toBe('-')
   })
 
   test('daysLeft clamps to 0 for an already-ended agreement', () => {
@@ -391,7 +400,7 @@ describe('adaptTicket / adaptTicketList', () => {
     expect(ticket).toEqual({
       id: 101245,
       topic: 'technical', // subject "Technical problem" exact-matches the subjects entry
-      apt: null,
+      apts: [],
       status: 'active', // closed_at is null
       statusLabel: 'New', // status.{en} — shown verbatim, not TSTATUS-mapped
       statusTone: 'pos', // no closed_at
@@ -424,8 +433,8 @@ describe('adaptTicket / adaptTicketList', () => {
     expect(ticket.topic).toBe('other')
   })
 
-  test('apt is always null — the live Ticket carries no flat/apartment reference field', () => {
-    expect(adaptTicket(tickets.data[0]).apt).toBeNull()
+  test('apts is empty — the live GET Ticket carries no flat/apartment reference field', () => {
+    expect(adaptTicket(tickets.data[0]).apts).toEqual([])
   })
 
   test('adaptTicketList reads the live {limit,offset,totalTickets,data} envelope', () => {
@@ -545,5 +554,139 @@ describe('adaptTransaction / adaptTransactions', () => {
 
   test('empty dto list yields an empty result', () => {
     expect(adaptTransactions([])).toEqual([])
+  })
+})
+
+describe('adaptCommunals', () => {
+  test('reads the top-level aggregated sums (not a recomputed per-apartment sum)', () => {
+    const { utilities, maintenance } = adaptCommunals(communals)
+    expect(utilities).toEqual({ electricitySum: 71.38, internetSum: 50, currency: 'GEL' })
+    // Renamed by meaning, not by the backend's field names: balance_sum
+    // (the positive split) is what is owed, debt_sum (the negative split) is
+    // what has been paid ahead. See adaptCommunals + utils/balance.js.
+    expect(maintenance).toEqual({ owed: 657.71, advance: -637.12, currency: 'USD' })
+  })
+
+  test('merges electricity/water/internettv/flatBalance detail by apartment code', () => {
+    const { byApartment } = adaptCommunals(communals)
+    expect(byApartment).toHaveLength(4) // union of codes across all 4 detail maps
+
+    const oct1519 = byApartment.find((a) => a.code === 'OCT.A.15.1519')
+    expect(oct1519).toMatchObject({
+      code: 'OCT.A.15.1519',
+      epcode: '60011519',
+      electricity: -230.73,
+      waterIndication: '5.00',
+      maintenance: -637.12,
+      displayServices: ['water', 'maintenance', 'electricity', 'orbinet', 'doors'],
+    })
+    // no internettv entry for this apartment -> zeroed, not undefined/NaN
+    expect(oct1519.internet).toEqual({ balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 })
+  })
+
+  test('an apartment WITH an internettv entry surfaces its balance/cost/penalty', () => {
+    const { byApartment } = adaptCommunals(communals)
+    const oct3026 = byApartment.find((a) => a.code === 'OCT.A.30.3026')
+    expect(oct3026.internet).toEqual({ balance: 0, balanceWithPenalty: 0, cost: 50, penalty: 0 })
+  })
+
+  test('internettv balance_with_penalty is captured distinctly (falls back to balance when absent)', () => {
+    const dto = {
+      communal: {
+        detailed: {
+          internettv: {
+            'X.1': { balance: -95.13, balance_with_penalty: -101.5, cost: 50, penalty: 6.37 },
+            'X.2': { balance: -40, cost: 50, penalty: 0 }, // no *_with_penalty field
+          },
+        },
+      },
+    }
+    const { byApartment } = adaptCommunals(dto)
+    expect(byApartment.find((a) => a.code === 'X.1').internet).toMatchObject({
+      balance: -95.13,
+      balanceWithPenalty: -101.5,
+    })
+    expect(byApartment.find((a) => a.code === 'X.2').internet).toMatchObject({
+      balance: -40,
+      balanceWithPenalty: -40,
+    })
+  })
+
+  test('empty/missing dto yields empty sums and an empty apartment list', () => {
+    expect(adaptCommunals({})).toEqual({
+      utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+      maintenance: { owed: 0, advance: 0, currency: 'USD' },
+      byApartment: [],
+    })
+    expect(adaptCommunals().byApartment).toEqual([])
+  })
+})
+
+describe('adaptRate', () => {
+  test('maps a live currency/rate response to {pair, rate, delta}', () => {
+    expect(adaptRate(currencyRateUSD, 'USD/GEL')).toEqual({ pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 })
+  })
+
+  test('non-numeric rate/changes parse to 0, not NaN', () => {
+    expect(adaptRate({}, 'EUR/GEL')).toEqual({ pair: 'EUR/GEL', rate: 0, delta: 0 })
+  })
+})
+
+describe('adaptContractsSummary', () => {
+  test('a crm-less tournover response (code:1, empty result) yields {empty: true}', () => {
+    // tournoverNoCrm is what parseEnvelope hands back for the live capture:
+    // code:1 -> just `.result`, which is `[]` here (see the fixture).
+    expect(adaptContractsSummary(tournoverNoCrm.result, scheduleFixture)).toEqual({ empty: true })
+  })
+
+  test('a populated tournover `deals` map is adapted alongside the schedule', () => {
+    const tournoverDto = {
+      deals: {
+        42: { total: 1000, paid: 400, remain: 600, status: 'Current', overdue: 0, paid_percentage: 40 },
+      },
+    }
+    const scheduleDto = {
+      schedule: [{ id: 1, UF_DEAL_ID: '42', DATE_PAY_BEFORE: '2026-08-01', INVOICE_SUM: 500, PAID_SUM: 0, DEBTS: 500, STATUS_ID: 'N' }],
+    }
+    expect(adaptContractsSummary(tournoverDto, scheduleDto)).toEqual({
+      empty: false,
+      deals: [{ id: '42', total: 1000, paid: 400, remain: 600, status: 'Current', overdue: 0, paidPercentage: 40 }],
+      schedule: [
+        { id: 1, dealId: '42', dueDate: '2026-08-01', invoiceSum: 500, paidSum: 0, debts: 500, statusId: 'N' },
+      ],
+    })
+  })
+
+  test('missing/empty deals object yields {empty: true} regardless of schedule content', () => {
+    expect(adaptContractsSummary({}, scheduleFixture)).toEqual({ empty: true })
+    expect(adaptContractsSummary(null, null)).toEqual({ empty: true })
+  })
+})
+
+describe('adaptUnpaidInvoices', () => {
+  test('maps the live CustomerInvoiceSerializer list to {count, invoices}', () => {
+    const { count, invoices } = adaptUnpaidInvoices(paymentList)
+    expect(count).toBe(3)
+    expect(invoices[0]).toEqual({
+      id: 19365,
+      epcode: '60011519',
+      debtAmount: 268.92,
+      service: 41,
+      flat: 9910,
+      createdAt: '2026-05-06 08:54:50',
+    })
+  })
+
+  test('also accepts a {result: [...]} envelope', () => {
+    expect(adaptUnpaidInvoices({ result: paymentList }).count).toBe(3)
+  })
+
+  test('empty dto list yields an empty, well-shaped result', () => {
+    expect(adaptUnpaidInvoices([])).toEqual({ count: 0, invoices: [] })
+    expect(adaptUnpaidInvoices()).toEqual({ count: 0, invoices: [] })
+  })
+
+  test('non-numeric debtAmount parses to 0, not NaN', () => {
+    expect(adaptUnpaidInvoices([{ id: 1, debtAmount: 'n/a' }]).invoices[0].debtAmount).toBe(0)
   })
 })

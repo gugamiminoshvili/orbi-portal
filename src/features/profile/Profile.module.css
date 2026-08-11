@@ -1,0 +1,336 @@
+/* Profile — "stat strip" layout (owner-picked Variant 2): an identity card
+   plus key-fact cards on top, then one wide pane holding either the detail
+   list or the change-password form. Card/Seg/Icon supply the shared visual
+   language; only layout and the row/field chrome live here. */
+
+.page-head {
+  margin-bottom: var(--s6);
+}
+.page-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+/* ---------- Top strip ---------- */
+.strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s4);
+  margin-bottom: var(--s4);
+}
+/* Tablet: identity spans the full width, the two facts share the row below. */
+@media (max-width: 900px) {
+  .strip {
+    grid-template-columns: 1fr 1fr;
+  }
+  .who-card {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 520px) {
+  .strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+.who-card,
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s5);
+  min-width: 0;
+}
+
+.avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  flex: none;
+}
+.who-body {
+  min-width: 0;
+}
+.name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  overflow-wrap: anywhere;
+}
+.mail {
+  display: inline-block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.mail:hover {
+  color: var(--teal-ink);
+  text-decoration: underline;
+}
+
+.stat-ic {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.stat-ic svg {
+  width: 20px;
+  height: 20px;
+}
+.stat-ic.pos {
+  background: var(--pos-bg);
+  color: var(--pos-ink);
+}
+.stat-ic.warn {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.stat-ic.neg {
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+}
+.stat-ic.indigo {
+  background: var(--indigo-bg);
+  color: var(--indigo-ink);
+}
+.stat-body {
+  min-width: 0;
+}
+.stat-k {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stat-v {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.ink-pos {
+  color: var(--pos-ink);
+}
+.ink-warn {
+  color: var(--warn-ink);
+}
+.ink-neg {
+  color: var(--neg-ink);
+}
+
+/* ---------- Detail / security pane ---------- */
+.pane-card {
+  overflow: hidden;
+}
+.pane-head {
+  flex-wrap: wrap;
+}
+.pane-head h3 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+.pane-pad {
+  padding: var(--s2) var(--s6) var(--s5);
+}
+
+.rows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: grid;
+  grid-template-columns: 34px minmax(120px, 200px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s4);
+  padding: 14px 0;
+}
+.row:not(:last-child) {
+  border-bottom: 1px solid var(--line);
+}
+.row-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.row dt {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.row dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+/* Phone: label above value, icon keeps its column so rows stay aligned. */
+@media (max-width: 600px) {
+  .row {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 2px var(--s3);
+    padding: 12px 0;
+  }
+  .row-ic {
+    grid-row: span 2;
+    align-self: center;
+  }
+  .row dt {
+    font-size: 12px;
+  }
+  .row dd {
+    font-size: 14.5px;
+  }
+}
+
+/* ---------- Change-password form ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  max-width: 420px;
+  padding-top: var(--s3);
+}
+.form-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+/* Password rules. Sits between the New password field and Repeat, so the
+   negative margin pulls it up against the field it belongs to instead of
+   floating in the form's own 16px rhythm. */
+.rules {
+  margin-top: calc(var(--s4) * -1 + 2px);
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.rules-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.rules ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.rules li {
+  display: flex;
+  /* Not center: on a phone the longest rule wraps to two lines, and a centred
+     tick would then float between them instead of marking the first. */
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  transition: color var(--t);
+}
+.rules li.met {
+  color: var(--teal-ink);
+}
+/* Empty ring until the rule is met, then the tick sits inside it — the box
+   is the same size either way so the rows never shift as you type. */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;   /* optically centres the ring against a single 19px line */
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-2);
+  color: var(--on-accent);
+  transition: var(--t);
+}
+.met .mark {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 7px;
+}
+.pw-wrap {
+  position: relative;
+  display: flex;
+}
+.pw-wrap input {
+  width: 100%;
+  padding-right: 44px;
+}
+.invalid {
+  border-color: var(--neg);
+}
+.pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: var(--t);
+}
+.pw-toggle:hover {
+  color: var(--teal-ink);
+  background: var(--teal-soft);
+}
+.pw-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+.err {
+  margin-top: 6px;
+  color: var(--neg-ink);
+  font-size: 12px;
+  font-weight: 500;
+}
+.form-foot {
+  margin-top: var(--s2);
+}
+@media (max-width: 520px) {
+  .form {
+    max-width: none;
+  }
+  .form-foot button {
+    width: 100%;
+    justify-content: center;
+  }
+}

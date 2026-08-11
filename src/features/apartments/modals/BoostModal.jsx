@@ -125,7 +125,7 @@ export default function BoostModal({ apartment, onDone }) {
           <div
             style={{
               display: 'flex', alignItems: 'center', gap: 14, border: '1.5px solid var(--teal)',
-              background: '#f3fdfc', borderRadius: 12, padding: '14px 16px', marginBottom: 14,
+              background: 'var(--teal-tint)', borderRadius: 12, padding: '14px 16px', marginBottom: 14,
             }}
           >
             <div style={{ width: 42, height: 42, borderRadius: 11, background: 'var(--teal-soft)', color: 'var(--teal-ink)', display: 'grid', placeItems: 'center', flex: 'none' }}>
@@ -169,7 +169,7 @@ export default function BoostModal({ apartment, onDone }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 14, width: '100%',
                 border: `1.5px solid ${sel ? 'var(--teal)' : 'var(--line-2)'}`,
-                background: sel ? '#f3fdfc' : '#fff',
+                background: sel ? 'var(--teal-tint)' : 'var(--card)',
                 borderRadius: 12, padding: '14px 16px', marginBottom: 10, cursor: 'pointer', textAlign: 'left',
               }}
             >
@@ -184,7 +184,7 @@ export default function BoostModal({ apartment, onDone }) {
               <div
                 style={{
                   width: 22, height: 22, borderRadius: '50%', border: `2px solid ${sel ? 'var(--teal)' : 'var(--line-2)'}`,
-                  background: sel ? 'var(--teal)' : 'transparent', display: 'grid', placeItems: 'center', flex: 'none', color: '#fff',
+                  background: sel ? 'var(--teal)' : 'transparent', display: 'grid', placeItems: 'center', flex: 'none', color: 'var(--on-accent)',
                 }}
               >
                 {sel && <Icon name="check" size={12} />}

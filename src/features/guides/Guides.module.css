@@ -1,0 +1,507 @@
+/* Process-guide pages. The source posters were print artefacts — a dark-green
+   1080px sheet with its own logo, hero and language pills. Here the same
+   content adopts the portal's language instead: light Card surfaces, teal
+   accents, the shell's own header and language menu. Every colour is a token,
+   so these pages follow the theme like the rest of the app. */
+
+.page-head {
+  margin-bottom: var(--s6);
+  max-width: 78ch;
+}
+/* Editorial eyebrow rather than a Badge: the muted badge's own grey sits a
+   shade off the page background and read as plain text. */
+.kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--teal-ink);
+}
+.page-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 10px 0 0;
+  letter-spacing: -0.4px;
+}
+/* The one paragraph a guide leads with. It is content (the poster's standfirst),
+   not the muted page subtitle that was removed from the module headers — hence
+   full ink and a reading measure. */
+.lead {
+  margin: 10px 0 0;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ---------- Stats strip (Service guide) ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s4);
+  margin-bottom: var(--s5);
+}
+.stat {
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
+  border-radius: var(--r);
+  padding: 18px 16px;
+  text-align: center;
+}
+.stat b {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--teal-ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat span {
+  display: block;
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* ---------- Sections ----------
+   A grid, not a stack: the posters laid their blocks out three-up (handover)
+   or two-up (the rest) with a handful spanning the full width, and reading
+   them as one full-width row each lost that rhythm. `--cols` is set per guide
+   from the content; `align-items: start` keeps a short card short instead of
+   stretching it to its row's tallest sibling. */
+.sections {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+  gap: var(--s4);
+  align-items: start;
+}
+.section {
+  padding: var(--s5);
+  position: relative;
+  overflow: hidden;
+  /* Fills its row so neighbours in the same row share a baseline height. */
+  height: 100%;
+}
+.sec-wide {
+  grid-column: 1 / -1;
+}
+/* Everything except the watermark sits above it. .sec-n is a positioned
+   element, so without this the number would paint OVER the text: a static
+   block's content is painted before any positioned sibling, whatever its
+   z-index. */
+.section > *:not(.sec-n) {
+  position: relative;
+  z-index: 1;
+}
+/* Icon on its own line above the title, as in the posters' blocks — in a
+   narrow grid column an icon beside the title left too little room for it. */
+.sec-head {
+  margin-bottom: var(--s3);
+  /* Room for the watermark so a long title never runs under it. */
+  padding-right: 58px;
+}
+.sec-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.sec-ic {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 13px;
+  border-radius: var(--r-sm);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  display: grid;
+  place-items: center;
+}
+/* The posters' big ghost number, kept: a pale watermark in the card's top-right
+   corner rather than a counter in the heading row (owner call 2026-07-30). It
+   is decorative — the sections are already in order and each has its own
+   heading — so it's aria-hidden and can't be selected or clicked. */
+.sec-n {
+  position: absolute;
+  top: 8px;
+  right: 18px;
+  z-index: 0;
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--teal-ghost);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
+}
+
+.body {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.65;
+  max-width: 78ch;
+}
+.body strong {
+  color: var(--teal-ink);
+  font-weight: 700;
+}
+
+/* ---------- Checklist ---------- */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+.tick {
+  flex: none;
+  width: 21px;
+  height: 21px;
+  margin-top: 1px;
+  border-radius: 6px;
+  background: var(--teal);
+  color: var(--on-accent);
+  display: grid;
+  place-items: center;
+}
+.tick svg {
+  width: 13px;
+  height: 13px;
+}
+.tag {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* ---------- Label/value pairs ---------- */
+.pairs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s3);
+  margin: 0;
+}
+.pair {
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+}
+.pair.wide {
+  grid-column: 1 / -1;
+}
+.pair dt {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--teal-ink);
+  margin-bottom: 3px;
+}
+.pair dd {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+/* ---------- Numbered steps ---------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.step {
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-line);
+  border-radius: var(--r-sm);
+  padding: 15px;
+}
+.step-n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--teal);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.step h3 {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.step p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+/* ---------- Revenue split bar ---------- */
+.split {
+  display: flex;
+  height: 52px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: var(--s3);
+}
+.split div {
+  display: grid;
+  place-items: center;
+  color: var(--on-accent);
+  font-weight: 700;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+.split .a {
+  background: var(--teal);
+  font-size: 15px;
+}
+.split .b {
+  background: var(--teal-ink);
+  font-size: 12.5px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3) var(--s5);
+  margin-bottom: var(--s4);
+}
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.legend i {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}
+.dotA {
+  background: var(--teal);
+}
+.dotB {
+  background: var(--teal-ink);
+}
+
+.footnote {
+  margin: var(--s4) 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 78ch;
+}
+
+/* ---------- Note / banner / footer ---------- */
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  margin-top: var(--s4);
+  padding: 15px 18px;
+  border-radius: var(--r);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+}
+.note svg {
+  flex: none;
+  margin-top: 1px;
+}
+.note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  margin-top: var(--s4);
+  padding: 20px 22px;
+  border-radius: var(--r);
+  background: var(--teal);
+  color: var(--on-accent);
+}
+.banner svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+.banner p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.foot svg {
+  flex: none;
+}
+
+/* ---------- Responsive ----------
+   Sized by CONTAINER, not viewport. The shell's rail is 264px wide and
+   disappears at 880px, so the same viewport width can leave the content
+   column ~260px wider or narrower — viewport breakpoints put a guide's grid
+   at three columns exactly where the rail had squeezed them thinnest. Two
+   containers: the grid area decides how many section columns fit, and each
+   section decides how its own pairs/steps/split behave, so a block inside a
+   full-width card can stay four-up while the same block in a one-third
+   column goes single-file.
+
+   Container queries land with the same browser floor as the :has() this
+   codebase already relies on; the @supports fallback at the bottom keeps the
+   old viewport steps for anything older. */
+.wrap {
+  container-type: inline-size;
+  container-name: guide;
+}
+.section {
+  container-type: inline-size;
+  container-name: guidesec;
+}
+
+@container guide (max-width: 940px) {
+  .sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container guide (max-width: 620px) {
+  .sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@container guide (max-width: 760px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container guide (max-width: 380px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Inside one card. 760px is roughly where four step tiles stop holding a
+   readable line; 460px where two label/value cells do. */
+@container guidesec (max-width: 760px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container guidesec (max-width: 460px) {
+  .pairs,
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pair.wide {
+    grid-column: auto;
+  }
+  /* The 9% sliver can't hold its label this narrow, so the bar becomes two
+     stacked rows and the legend below carries the reading. */
+  .split {
+    height: auto;
+    flex-direction: column;
+  }
+  .split div {
+    flex-basis: auto !important;
+    padding: 11px 8px;
+  }
+}
+
+/* Type and chrome still key off the viewport — a phone wants smaller headings
+   whatever the container arithmetic says. */
+@media (max-width: 560px) {
+  .page-head h1 {
+    font-size: 22px;
+  }
+  .sec-n {
+    font-size: 40px;
+    right: 14px;
+  }
+  .sec-head {
+    padding-right: 44px;
+  }
+  .section {
+    padding: var(--s4);
+  }
+  .banner p {
+    font-size: 14.5px;
+  }
+  .banner {
+    align-items: flex-start;
+  }
+}
+
+@supports not (container-type: inline-size) {
+  @media (max-width: 1180px) {
+    .sections {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 900px) {
+    .stats,
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 760px) {
+    .sections {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .pairs,
+    .steps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pair.wide {
+      grid-column: auto;
+    }
+    .split {
+      height: auto;
+      flex-direction: column;
+    }
+    .split div {
+      flex-basis: auto !important;
+      padding: 11px 8px;
+    }
+  }
+}

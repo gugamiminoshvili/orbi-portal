@@ -7,6 +7,7 @@ import { resumeInternet } from '../../../api/endpoints/apartments'
 import { flatId } from '../../../api/adapters/apartments'
 import { planById } from '../../../api/mock/plans'
 import { fmt } from '../../../utils/format'
+import { amountOwed, balanceTone, owes } from '../../../utils/balance'
 import Icon from '../../../components/ui/Icon'
 import Button from '../../../components/ui/Button'
 import buttonStyles from '../../../components/ui/Button.module.css'
@@ -28,7 +29,11 @@ export default function InternetCard({ apt, onReload }) {
   const toast = useToast()
   const { openModal } = useModal()
   const s = apt.services.internet
-  const neg = s.balance < 0
+  // Positive balance = owed — see utils/balance.js. Internet used to be
+  // documented as the exception to the sign rule; the 2026-08-06 ruling
+  // says there is no exception.
+  const due = owes(s.balance)
+  const tone = balanceTone(s.balance)
   const active = s.status === 'Active'
   const paused = s.status === 'Paused'
   const pl = planById(s.planId)
@@ -36,19 +41,30 @@ export default function InternetCard({ apt, onReload }) {
   // catalog can't resolve — but the adapted agreement carries the plan's own
   // name (orbinet_agreement.net_tariff.name, Task L1), so prefer the mock
   // catalog hit (mock mode) and fall back to the agreement's name.
-  const planName = pl ? pl.name : s.planName && s.planName !== '—' ? s.planName : ''
+  const planName = pl ? pl.name : s.planName && s.planName !== '-' ? s.planName : ''
+  // The provider name is not shown (owner call 2026-07-30) — the live
+  // agreement doesn't carry one anyway, and on mock data it only repeated
+  // what the plan already says. The speed comes from the mock plan catalog
+  // alone, so the line is joined from whatever parts exist rather than
+  // interpolated into a fixed template.
+  const planLine = [planName, pl ? t('apartments:speedMbps', { mbps: pl.mbps }) : '']
+    .filter(Boolean)
+    .join(' · ')
   const [resuming, setResuming] = useState(false)
 
   const sub = active
-    ? `${planName} · ${s.provider}`
+    ? planName || t('apartments:active')
     : paused
       ? t('apartments:pausedLabel')
       : t('apartments:noActivePlan')
 
+  // Balance, not the monthly tariff — the same metric the Maintenance and
+  // Electricity headers show, so the three read as one column (owner call
+  // 2026-07-30). The tariff still has its own cell in the panel below.
   const right = (
-    <Metric label={t('apartments:monthly')}>
+    <Metric label={active || paused ? t('apartments:balance') : t('apartments:monthly')}>
       {active || paused ? (
-        <span style={{ fontSize: 14 }}>{fmt(s.tariff)}</span>
+        <span className={`${styles.money} ${styles[tone]}`}>{fmt(amountOwed(s.balance))}</span>
       ) : (
         <span style={{ fontSize: 13, color: 'var(--muted)' }}>{t('apartments:inactive')}</span>
       )}
@@ -125,13 +141,9 @@ export default function InternetCard({ apt, onReload }) {
             <div className={styles.v}>
               <Badge tone="pos" dot>{t('apartments:active')}</Badge>
             </div>
-            <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>
-              {t('apartments:providerPlanLine', {
-                provider: s.provider,
-                plan: planName,
-                mbps: pl ? pl.mbps : '',
-              })}
-            </div>
+            {planLine && (
+              <div style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>{planLine}</div>
+            )}
           </div>
           <div className={styles.cell}>
             <div className={styles.k}>{t('apartments:monthlyTariff')}</div>
@@ -164,10 +176,10 @@ export default function InternetCard({ apt, onReload }) {
           </div>
         )}
 
-        {neg && (
+        {due && (
           <div className={styles['neg-strip']}>
             <span style={{ fontWeight: 600, color: 'var(--neg-ink)' }}>{t('apartments:outstandingBalance')}</span>
-            <span className={`${styles.money} ${styles.neg}`}>{fmt(-s.balance)}</span>
+            <span className={`${styles.money} ${styles.neg}`}>{fmt(s.balance)}</span>
           </div>
         )}
 
@@ -181,7 +193,7 @@ export default function InternetCard({ apt, onReload }) {
           <Button
             variant="ghost"
             size="sm"
-            style={{ color: 'var(--warn-ink)', borderColor: '#ffe1a8' }}
+            style={{ color: 'var(--warn-ink)', borderColor: 'var(--warn-line)' }}
             onClick={openPause}
           >
             <Icon name="pause" /> {t('apartments:pause')}
@@ -189,9 +201,13 @@ export default function InternetCard({ apt, onReload }) {
           <Button variant="ghost" size="sm" onClick={() => toast(t('apartments:subscriptionDownloaded'))}>
             <Icon name="dl" /> {t('common:download')}
           </Button>
-          {neg && (
-            <Link to={`/pay/${apt.id}`} className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}>
-              {t('apartments:payAmount', { amount: fmt(-s.balance) })}
+          {due && (
+            <Link
+              to={`/pay/${apt.id}`}
+              state={{ apartmentCode: apt.code, utility: 'internettv' }}
+              className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
+            >
+              {t('apartments:payAmount', { amount: fmt(s.balance) })}
             </Link>
           )}
         </div>
@@ -200,7 +216,7 @@ export default function InternetCard({ apt, onReload }) {
   }
 
   return (
-    <ServiceShell icon="wifi" iconBg="#ece7ff" iconColor="#6b4bff" name={t('apartments:internetName')} sub={sub} right={right}>
+    <ServiceShell icon="wifi" iconBg="var(--indigo-bg)" iconColor="var(--indigo-ink)" name={t('apartments:internetName')} sub={sub} right={right}>
       {body}
     </ServiceShell>
   )

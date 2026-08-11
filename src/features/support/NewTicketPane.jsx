@@ -2,33 +2,92 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '../../context/ToastContext'
-import { createTicket } from '../../api/endpoints/support'
-import { SUPPORT_TOPICS } from '../../api/mock/tickets'
-import { APTS, blockGrad } from '../../api/mock/apartments'
+import { useModal } from '../../context/ModalContext'
+import { useAsync } from '../../hooks/useAsync'
+import { createTicket, uploadTicketFile } from '../../api/endpoints/support'
+import { listApartments } from '../../api/endpoints/apartments'
+import { SUPPORT_TOPICS, topicById } from '../../api/mock/tickets'
+import { blockGrad } from '../../api/mock/apartments'
+import {
+  ATTACHMENT_ACCEPT,
+  MAX_ATTACHMENT_BYTES,
+  formatBytes,
+  partitionFiles,
+} from '../../utils/attachments'
+import { PendingAttachments } from './Attachments'
 import Icon from '../../components/ui/Icon'
 import Button from '../../components/ui/Button'
 import { SearchField } from '../../components/ui/Field'
 import buttonStyles from '../../components/ui/Button.module.css'
 import fieldStyles from '../../components/ui/Field.module.css'
+import modalStyles from '../../context/Modal.module.css'
 import styles from './Support.module.css'
 
-// New-ticket form for /support/new. Mirrors supCreateHtml() at reference
-// lines 1905-1957, with the topic picker inlined as a grid on the page
-// itself (the modal from the prototype isn't ported — the brief's create
-// flow only needs the grid to be visible immediately).
+// The topic picker lives in a modal (opened from the collapsed "Select topic"
+// row) rather than an always-visible grid; picking a card closes it.
+function TopicModal({ current, onPick }) {
+  const { t } = useTranslation()
+  const { closeModal } = useModal()
+  return (
+    <>
+      <div className={modalStyles['modal-head']}>
+        <div>
+          <h3>{t('support:newTicket')}</h3>
+          <div className={styles['dh-sub']}>{t('support:newTicketSub')}</div>
+        </div>
+        <button type="button" className={modalStyles['modal-x']} aria-label={t('common:close')} onClick={closeModal}>
+          ✕
+        </button>
+      </div>
+      <div className={modalStyles['modal-body']}>
+        <div className={styles['topic-grid']}>
+          {SUPPORT_TOPICS.map((tp) => (
+            <button
+              key={tp.id}
+              type="button"
+              className={`${styles['topic-card']} ${current === tp.id ? styles.sel : ''}`}
+              onClick={() => {
+                onPick(tp.id)
+                closeModal()
+              }}
+            >
+              <span className={styles['tc-ic']} style={{ background: tp.tintBg, color: tp.tintCol }}>
+                <Icon name={tp.icon} />
+              </span>
+              <span className={styles['tc-t']}>{t(`support:topics.${tp.id}.label`)}</span>
+              <span className={styles['tc-d']}>{t(`support:topics.${tp.id}.desc`)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
+// New-ticket form for /support/new. No back-header (owner request): the topic
+// selection sits at the top as a collapsed row that opens the picker modal,
+// and the apartment field is a multi-select (submitted as roomsId[]).
 export default function NewTicketPane() {
   const { t } = useTranslation()
   const toast = useToast()
   const navigate = useNavigate()
+  const { openModal } = useModal()
   const { bumpTicketsRefresh } = useOutletContext()
 
+  const { data: apartments } = useAsync(() => listApartments(), [])
+  const apts = apartments || []
+
   const [topic, setTopic] = useState(null)
-  const [apt, setApt] = useState(null)
+  const [aptIds, setAptIds] = useState([])
   const [text, setText] = useState('')
   const [aptOpen, setAptOpen] = useState(false)
   const [aptQuery, setAptQuery] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  // Held locally until the ticket exists: POST /tickets/file/ needs a
+  // ticketId, and on this form there isn't one yet.
+  const [files, setFiles] = useState([])
   const comboRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     function onDocClick(e) {
@@ -38,87 +97,145 @@ export default function NewTicketPane() {
     return () => document.removeEventListener('mousedown', onDocClick)
   }, [aptOpen])
 
+  const selectedTopic = topic ? topicById(topic) : null
   const canSubmit = !!topic && text.trim().length > 0
-  const selectedApt = apt ? APTS.find((a) => a.id === apt) : null
+  const selectedApts = apts.filter((a) => aptIds.includes(a.id))
   const q = aptQuery.trim().toLowerCase()
-  const filteredApts = q ? APTS.filter((a) => a.code.toLowerCase().includes(q)) : APTS
-  const showGeneral = !q || 'general'.includes(q)
+  const filteredApts = q ? apts.filter((a) => a.code.toLowerCase().includes(q)) : apts
+
+  function openTopicModal() {
+    openModal(<TopicModal current={topic} onPick={setTopic} />, { size: 'lg' })
+  }
+
+  function toggleApt(id) {
+    setAptIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
+  }
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return
     setSubmitting(true)
-    const ticket = await createTicket({ topic, apt, text: text.trim() })
+    const ticket = await createTicket({ topic, apts: selectedApts, text: text.trim() })
+
+    // Create first, then upload — one request per file, since the endpoint
+    // takes a single `file`. A failed upload doesn't undo the ticket: the
+    // message is already filed, so the honest outcome is "ticket created, N
+    // attachments didn't make it" rather than losing the whole submission.
+    let failed = 0
+    for (const file of files) {
+      try {
+        await uploadTicketFile(ticket.id, file)
+      } catch {
+        failed += 1
+      }
+    }
+
     setSubmitting(false)
     bumpTicketsRefresh()
-    toast(t('support:createdToast', { id: ticket.id }))
+    toast(
+      failed > 0
+        ? t('support:attachSomeFailed', { count: failed })
+        : t('support:createdToast', { id: ticket.id })
+    )
     navigate(`/support/t/${ticket.id}`)
   }
 
   function handleAttach() {
-    toast(t('support:attachToast'))
+    fileInputRef.current?.click()
   }
 
-  function openCombo() {
-    setAptOpen((o) => !o)
-    setAptQuery('')
+  function handleFilesPicked(e) {
+    const picked = Array.from(e.target.files || [])
+    e.target.value = '' // so re-picking the same file fires change again
+    const { accepted, errors } = partitionFiles(picked, t)
+    if (errors.length) toast(errors[0])
+    if (accepted.length) setFiles((prev) => [...prev, ...accepted])
+  }
+
+  function removeFile(index) {
+    setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
   return (
     <>
-      <div className={styles['sup-dhead']}>
-        <Link to="/support" className={styles['sup-back']} aria-label={t('common:back')}>
-          <Icon name="back" />
-        </Link>
-        <div className={styles['dh-main']}>
-          <h3>{t('support:newTicket')}</h3>
-          <div className={styles['dh-sub']}>{t('support:newTicketSub')}</div>
-        </div>
-      </div>
-
       <div className={styles['sup-create-body']}>
         <div className={styles['sup-form']}>
           <div className={styles.field}>
             <label>
               {t('support:topic')} <span className={styles.req}>*</span>
             </label>
-            <div className={styles['topic-grid']}>
-              {SUPPORT_TOPICS.map((tp) => (
-                <button
-                  key={tp.id}
-                  type="button"
-                  className={`${styles['topic-card']} ${topic === tp.id ? styles.sel : ''}`}
-                  onClick={() => setTopic(tp.id)}
-                >
-                  <span className={styles['tc-ic']} style={{ background: tp.tintBg, color: tp.tintCol }}>
-                    <Icon name={tp.icon} />
+            <button type="button" className={styles['topic-select']} onClick={openTopicModal}>
+              {selectedTopic ? (
+                <>
+                  <span
+                    className={styles['ts-ic']}
+                    style={{ background: selectedTopic.tintBg, color: selectedTopic.tintCol }}
+                  >
+                    <Icon name={selectedTopic.icon} />
                   </span>
-                  <span className={styles['tc-t']}>{t(`support:topics.${tp.id}.label`)}</span>
-                  <span className={styles['tc-d']}>{t(`support:topics.${tp.id}.desc`)}</span>
-                </button>
-              ))}
-            </div>
+                  <span className={styles['ts-label']}>{t(`support:topics.${selectedTopic.id}.label`)}</span>
+                  <span className={styles['ts-action']}>{t('support:changeTopic')}</span>
+                </>
+              ) : (
+                <>
+                  <span className={`${styles['ts-ic']} ${styles.empty}`}>
+                    <Icon name="empty" />
+                  </span>
+                  <span className={styles['ts-label']}>{t('support:selectTopic')}</span>
+                  <span className={styles['ts-action']}>{t('support:selectAction')}</span>
+                </>
+              )}
+            </button>
           </div>
 
           <div className={styles.field}>
             <label>
-              {t('support:apartment')} <span className={styles.optional}>{t('support:optional')}</span>
+              {t('support:apartments')} <span className={styles.optional}>{t('support:optional')}</span>
             </label>
             <div ref={comboRef} className={`${styles.combo} ${aptOpen ? styles.open : ''}`}>
-              <button type="button" className={styles['combo-btn']} onClick={openCombo}>
-                {selectedApt ? (
-                  <>
-                    <span className={styles['co-ic']} style={{ background: blockGrad(selectedApt) }}>
-                      <Icon name="building" />
-                    </span>
-                    <b>{selectedApt.code}</b>
-                  </>
+              <div
+                className={styles['combo-control']}
+                role="button"
+                tabIndex={0}
+                aria-expanded={aptOpen}
+                aria-haspopup="listbox"
+                onClick={() => {
+                  setAptOpen((o) => !o)
+                  setAptQuery('')
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setAptOpen((o) => !o)
+                    setAptQuery('')
+                  }
+                }}
+              >
+                {selectedApts.length === 0 ? (
+                  <span className={styles['combo-ph']}>{t('support:selectApartmentPlaceholder')}</span>
                 ) : (
-                  <span>{t('support:generalOption')}</span>
+                  <div className={styles['combo-chips']}>
+                    {selectedApts.map((a) => (
+                      <span key={a.id} className={styles['apt-chip']}>
+                        <Icon name="building" />
+                        {a.code}
+                        <button
+                          type="button"
+                          aria-label={t('common:remove', 'Remove')}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleApt(a.id)
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 )}
                 <span className={styles['cb-chev']}>
                   <Icon name="chevron" />
                 </span>
-              </button>
+              </div>
               {aptOpen && (
                 <div className={styles['combo-panel']}>
                   <div className={styles['combo-search']}>
@@ -131,41 +248,26 @@ export default function NewTicketPane() {
                     />
                   </div>
                   <div className={styles['combo-opts']}>
-                    {showGeneral && (
-                      <button
-                        type="button"
-                        className={`${styles['combo-opt']} ${styles.general} ${!apt ? styles.sel : ''}`}
-                        onClick={() => {
-                          setApt(null)
-                          setAptOpen(false)
-                        }}
-                      >
-                        <span className={styles['co-ic']}>
-                          <Icon name="home" />
-                        </span>
-                        <span>
-                          <div className={styles['co-t']}>{t('support:general')}</div>
-                          <div className={styles['co-s']}>{t('support:generalHint')}</div>
-                        </span>
-                      </button>
-                    )}
-                    {filteredApts.map((a) => (
-                      <button
-                        key={a.id}
-                        type="button"
-                        className={`${styles['combo-opt']} ${apt === a.id ? styles.sel : ''}`}
-                        onClick={() => {
-                          setApt(a.id)
-                          setAptOpen(false)
-                        }}
-                      >
-                        <span className={styles['co-ic']} style={{ background: blockGrad(a) }}>
-                          <Icon name="building" />
-                        </span>
-                        <div className={styles['co-t']}>{a.code}</div>
-                      </button>
-                    ))}
-                    {!showGeneral && filteredApts.length === 0 && (
+                    {filteredApts.map((a) => {
+                      const on = aptIds.includes(a.id)
+                      return (
+                        <button
+                          key={a.id}
+                          type="button"
+                          className={`${styles['combo-opt']} ${on ? styles.sel : ''}`}
+                          onClick={() => toggleApt(a.id)}
+                        >
+                          <span className={styles['co-ic']} style={{ background: blockGrad(a) }}>
+                            <Icon name="building" />
+                          </span>
+                          <div className={styles['co-t']}>{a.code}</div>
+                          <span className={`${styles['opt-check']} ${on ? styles.on : ''}`}>
+                            {on && <Icon name="check" />}
+                          </span>
+                        </button>
+                      )
+                    })}
+                    {filteredApts.length === 0 && (
                       <div className={styles['combo-empty']}>{t('support:noApartmentsFound')}</div>
                     )}
                   </div>
@@ -191,6 +293,14 @@ export default function NewTicketPane() {
           </div>
 
           <div className={styles['sup-attach-row']}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ATTACHMENT_ACCEPT}
+              hidden
+              onChange={handleFilesPicked}
+            />
             <button
               type="button"
               className={`${buttonStyles.btn} ${buttonStyles['btn-ghost']} ${buttonStyles['btn-sm']}`}
@@ -198,8 +308,14 @@ export default function NewTicketPane() {
             >
               <Icon name="clip" /> {t('support:attachFiles')}
             </button>
-            <span className={styles.hint}>{t('support:attachHint')}</span>
+            <span className={styles.hint}>
+              {t('support:attachHint', {
+                types: t('support:attachTypes'),
+                max: formatBytes(MAX_ATTACHMENT_BYTES),
+              })}
+            </span>
           </div>
+          <PendingAttachments files={files} onRemove={removeFile} />
         </div>
       </div>
 

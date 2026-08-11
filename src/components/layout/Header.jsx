@@ -1,17 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import Icon from '../ui/Icon'
 import Breadcrumbs from './Breadcrumbs'
-import { setLang } from '../../i18n'
+import UserMenu from './UserMenu'
+import Icon from '../ui/Icon'
 import styles from './Header.module.css'
 
-const LANGS = [
-  { code: 'en', label: 'EN' },
-  { code: 'ka', label: 'ქარ' },
-  { code: 'ru', label: 'РУС' },
-]
-
 export default function Header({ crumbs, onBurger }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   return (
     <header className={styles.header}>
@@ -20,28 +14,14 @@ export default function Header({ crumbs, onBurger }) {
       </button>
       <Breadcrumbs items={crumbs} />
       <div className={styles.spacer} />
-      <div className={styles['h-search']}>
-        <Icon name="search" />
-        <input type="search" placeholder={t('common:search')} aria-label={t('common:search')} />
-      </div>
-      <div className={styles['lang-switch']} role="group" aria-label={t('common:ariaLanguage')}>
-        {LANGS.map((lang) => (
-          <button
-            key={lang.code}
-            className={i18n.language === lang.code ? styles.on : ''}
-            onClick={() => setLang(lang.code)}
-          >
-            {lang.label}
-          </button>
-        ))}
-      </div>
+      {/* Owner calls 2026-08-04: language moved into UserMenu, and the help
+          "?" button is gone — the sidebar's own Help & guides footer covers
+          it. The header is the bell plus the account cluster. */}
       <button className={styles['icon-btn']} aria-label={t('common:ariaNotifications')}>
         <span className={styles.dot} />
-        🔔
+        <Icon name="bell" />
       </button>
-      <button className={`${styles['icon-btn']} ${styles['hide-sm']}`} aria-label={t('common:ariaHelp')}>
-        ?
-      </button>
+      <UserMenu />
     </header>
   )
 }

@@ -1,17 +1,21 @@
 // Apartments mock data — lifted verbatim from reference/orbi-portal-redesign.html (lines 859-877)
 export const APTS = [
-  { id: 'A1', project: 'Orbi City', code: 'OCT.A.30.3026', block: 'A', number: '3026', name: 'OCT.A.30.3026', building: 'Orbi City, Block A', addr: 'Sherif Khimshiashvili St 5, Batumi', type: '1 Bedroom', area: 42, floor: 30, status: 'active', balance: -180.00, nextDue: 'Jun 25, 2026', rent: 1450, occupancy: 'Rented', seed: 0 },
-  { id: 'A2', project: 'Orbi City', code: 'OCT.A.14.1408', block: 'A', number: '1408', name: 'OCT.A.14.1408', building: 'Orbi City, Block A', addr: 'Sherif Khimshiashvili St 5, Batumi', type: 'Studio', area: 31, floor: 14, status: 'active', balance: 0.00, nextDue: '—', rent: 1100, occupancy: 'Owner use', seed: 4 },
-  { id: 'A3', project: 'Orbi City', code: 'OCT.B.21.2105', block: 'B', number: '2105', name: 'OCT.B.21.2105', building: 'Orbi City, Block B', addr: 'Sherif Khimshiashvili St 5, Batumi', type: '2 Bedroom', area: 58, floor: 21, status: 'active', balance: -95.00, nextDue: 'Jun 25, 2026', rent: 1600, occupancy: 'Rented', seed: 3 },
+  { id: 'A1', project: 'Orbi City', code: 'OCT.A.30.3026', block: 'A', number: '3026', name: 'OCT.A.30.3026', building: 'Orbi City, Block A', addr: 'Sherif Khimshiashvili St 5, Batumi', type: '1 Bedroom', area: 42, floor: 30, status: 'active', balance: 180.00, nextDue: 'Jun 25, 2026', rent: 1450, occupancy: 'Rented', seed: 0 },
+  { id: 'A2', project: 'Orbi City', code: 'OCT.A.14.1408', block: 'A', number: '1408', name: 'OCT.A.14.1408', building: 'Orbi City, Block A', addr: 'Sherif Khimshiashvili St 5, Batumi', type: 'Studio', area: 31, floor: 14, status: 'active', balance: 0.00, nextDue: '-', rent: 1100, occupancy: 'Owner use', seed: 4 },
+  { id: 'A3', project: 'Orbi City', code: 'OCT.B.21.2105', block: 'B', number: '2105', name: 'OCT.B.21.2105', building: 'Orbi City, Block B', addr: 'Sherif Khimshiashvili St 5, Batumi', type: '2 Bedroom', area: 58, floor: 21, status: 'active', balance: 95.00, nextDue: 'Jun 25, 2026', rent: 1600, occupancy: 'Rented', seed: 3 },
   { id: 'A4', project: 'Orbi Sea Towers', code: 'OST.A.08.0803', block: 'A', number: '0803', name: 'OST.A.08.0803', building: 'Orbi Sea Towers, Block A', addr: 'Khimshiashvili St 17, Batumi', type: '2 Bedroom', area: 60, floor: 8, status: 'paused', balance: 0.00, nextDue: 'Paused', rent: 0, occupancy: 'Under renovation', seed: 5 },
-  { id: 'A5', project: 'Orbi Sea Towers', code: 'OST.A.17.1702', block: 'A', number: '1702', name: 'OST.A.17.1702', building: 'Orbi Sea Towers, Block A', addr: 'Khimshiashvili St 17, Batumi', type: '1 Bedroom', area: 45, floor: 17, status: 'active', balance: 320.00, nextDue: '—', rent: 1250, occupancy: 'Owner use', seed: 1 },
+  { id: 'A5', project: 'Orbi Sea Towers', code: 'OST.A.17.1702', block: 'A', number: '1702', name: 'OST.A.17.1702', building: 'Orbi Sea Towers, Block A', addr: 'Khimshiashvili St 17, Batumi', type: '1 Bedroom', area: 45, floor: 17, status: 'active', balance: -320.00, nextDue: '-', rent: 1250, occupancy: 'Owner use', seed: 1 },
 ]
 
-// stable color per block/project for the building icon tiles
+// Stable colour per block/project for the building icon tiles. Steps along the
+// brand green's own hue, 155° (owner palette, 2026-08-04), so each block reads
+// as a different building without leaving the brand. Raw hex rather than
+// tokens: these are gradient STOPS whose only job is to differ from each
+// other, and they sit under white glyphs in both themes.
 export const BLOCK_COLORS = {
-  'Orbi City|A': ['#1A8A4E', '#26A862'],
-  'Orbi City|B': ['#15663B', '#1E8A4F'],
-  'Orbi Sea Towers|A': ['#0E7A45', '#19A05C'],
+  'Orbi City|A': ['#00663C', '#008F54'],
+  'Orbi City|B': ['#004C2D', '#00663C'],
+  'Orbi Sea Towers|A': ['#005C36', '#00804A'],
   '_default': ['#3F7A5A', '#5A9B78'],
 }
 export function blockGrad(a) {

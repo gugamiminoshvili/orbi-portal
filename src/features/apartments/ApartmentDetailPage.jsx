@@ -86,8 +86,13 @@ export default function ApartmentDetailPage() {
     { label: t('apartments:block'), value: apt.block },
     { label: t('apartments:square'), value: `${apt.area} m²` },
     { label: t('apartments:floor'), value: apt.floor },
+    // `wide` makes this cell span the full row once the grid drops to two
+    // columns — the cadastral number is too long to break cleanly in half a
+    // phone width. It sits 5th (not 6th as the reference had it) so that in
+    // two columns it starts a row: from an even slot it would push itself to
+    // the next row and leave a hole mid-grid.
+    { label: t('apartments:cadastralNumber'), value: apt.cadastral, copy: true, wide: true },
     { label: t('apartments:number'), value: apt.number },
-    { label: t('apartments:cadastralNumber'), value: apt.cadastral, copy: true },
     { label: t('apartments:waterCode'), value: apt.waterCode },
     { label: t('apartments:apCode'), value: apt.apCode },
   ]
@@ -124,7 +129,7 @@ export default function ApartmentDetailPage() {
           <div className={styles.meta}>
             <div className={styles['ov-meta']}>
               {meta.map((m) => (
-                <div className={styles.cell} key={m.label}>
+                <div className={`${styles.cell} ${m.wide ? styles.wide : ''}`} key={m.label}>
                   <div className={styles.k}>{m.label}</div>
                   <div className={styles.v}>
                     {m.copy ? (
@@ -155,15 +160,17 @@ export default function ApartmentDetailPage() {
               }}
               dangerouslySetInnerHTML={{ __html: qrSvg(apt.apCode) }}
             />
-            <div className={styles.ql}>{t('apartments:qrLabel')}</div>
-            <Button
-              variant="ghost"
-              size="sm"
-              style={{ marginTop: 8, width: '100%' }}
-              onClick={() => openModal(<QrModal apartment={apt} />, { size: 'md' })}
-            >
-              <Icon name="expand" /> {t('apartments:show')}
-            </Button>
+            <div className={styles['qr-side']}>
+              <div className={styles.ql}>{t('apartments:qrLabel')}</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={styles['qr-show']}
+                onClick={() => openModal(<QrModal apartment={apt} />, { size: 'md' })}
+              >
+                <Icon name="expand" /> {t('apartments:show')}
+              </Button>
+            </div>
           </div>
         </div>
       </Card>

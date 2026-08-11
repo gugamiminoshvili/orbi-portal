@@ -1,0 +1,60 @@
+/* Track. A <button role="switch">, not a checkbox: the control has no form
+   value, it just flips state — and a button gets Space/Enter for free. */
+.switch {
+  --w: 40px;
+  --h: 22px;
+  --pad: 3px;
+  width: var(--w);
+  height: var(--h);
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--line-2);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--t);
+}
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+.switch:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+/* Two selectors, one state: the semantic Switch reports it through
+   aria-checked, the decorative SwitchVisual through data-checked (it has no
+   ARIA of its own — see SwitchVisual in Switch.jsx). */
+.switch[aria-checked='true'],
+.switch[data-checked='true'] {
+  background: var(--teal);
+}
+/* The visual is a <span>, so give it the box the <button> gets for free. */
+span.switch {
+  display: inline-block;
+}
+
+/* Knob */
+.knob {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  width: calc(var(--h) - var(--pad) * 2);
+  height: calc(var(--h) - var(--pad) * 2);
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: 0 1px 3px var(--tint-drop);
+  transition: transform var(--t);
+}
+.switch[aria-checked='true'] .knob,
+.switch[data-checked='true'] .knob {
+  transform: translateX(calc(var(--w) - var(--h)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch,
+  .knob {
+    transition: none;
+  }
+}
