@@ -82,6 +82,48 @@ describe('MethodModal — rendering', () => {
   })
 })
 
+// Owner call 2026-08-07: the payer should see what the method adds before
+// they are redirected, not after.
+describe('MethodModal — fee and total', () => {
+  test('shows only a hint until a method is picked', () => {
+    renderModal()
+    expect(screen.getByText('The fee depends on the payment method.')).toBeInTheDocument()
+    expect(screen.queryByText('Total')).not.toBeInTheDocument()
+  })
+
+  test('the fee and total follow the selected method', () => {
+    renderModal()
+
+    // Bank Card — 2.5% of 30.00
+    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
+    expect(screen.getByText('Fee (2.5%)')).toBeInTheDocument()
+    expect(screen.getByText('+0.75 ₾')).toBeInTheDocument()
+    expect(screen.getByText('30.75 ₾')).toBeInTheDocument()
+
+    // Crypto — 0.6%, and the figures must REPLACE the previous ones
+    fireEvent.click(screen.getByRole('button', { name: /Crypto/ }))
+    expect(screen.getByText('Fee (0.6%)')).toBeInTheDocument()
+    expect(screen.getByText('+0.18 ₾')).toBeInTheDocument()
+    expect(screen.getByText('30.18 ₾')).toBeInTheDocument()
+    expect(screen.queryByText('+0.75 ₾')).not.toBeInTheDocument()
+  })
+
+  test('the invoice adds nothing, and says so', () => {
+    renderModal()
+    fireEvent.click(screen.getByRole('button', { name: /Invoice/ }))
+    expect(screen.getByText('No fee is added.')).toBeInTheDocument()
+    expect(screen.queryByText('Total')).not.toBeInTheDocument()
+  })
+
+  test('the fee is rounded to cents, never to a long float tail', () => {
+    // 203.26 * 2.5% = 5.0815 -> 5.08, total 208.34
+    renderModal({ amount: 203.26 })
+    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
+    expect(screen.getByText('+5.08 ₾')).toBeInTheDocument()
+    expect(screen.getByText('208.34 ₾')).toBeInTheDocument()
+  })
+})
+
 describe('MethodModal — continue gating', () => {
   test('Continue starts disabled and enables once a non-bank method is chosen', () => {
     renderModal()

@@ -6,6 +6,7 @@ import { payMulti, downloadInvoice } from '../../api/endpoints/pay'
 import { openPaymentTab } from '../../utils/paymentTab'
 import { langToApi } from '../../utils/lang'
 import { fmt } from '../../utils/format'
+import { round2 } from './payFlowData'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 import modalStyles from '../../context/Modal.module.css'
@@ -16,10 +17,11 @@ import modalStyles from '../../context/Modal.module.css'
 //
 // FLAG (backend-Q #2, "fees/limits source of truth" — still open): fees and
 // per-method limits below are hardcoded from the screenshots, not from any
-// API. The fee is informational only and is deliberately NOT added to
-// `amount` — the screenshots show the payable amount unchanged across
-// method selection, so the assumption is the payment provider adds its own
-// fee on top after redirect, not this app.
+// API. The modal now shows the fee and the resulting total (owner call
+// 2026-08-07), but it is still NOT added to what gets POSTed: the provider
+// charges its own fee after the redirect. If these percentages ever drift
+// from the provider's real ones, the total shown here becomes a lie — which
+// is the strongest reason yet to get them from the API.
 const METHODS = [
   { id: 'card', icon: 'card', feePct: 2.5, max: 3000 },
   { id: 'applepay', icon: 'wallet', feePct: 2.5, max: 3000 },
@@ -79,6 +81,11 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
   const [blocked, setBlocked] = useState(false)
 
   const methodDef = METHODS.find((m) => m.id === method)
+  // Null until a method that actually charges a fee is picked: the invoice is
+  // a document, not a payment, so it has no percentage of its own.
+  const feePct = methodDef?.feePct ?? null
+  const feeAmount = feePct == null ? 0 : round2((amount * feePct) / 100)
+  const total = round2(amount + feeAmount)
   const canContinue =
     Boolean(method) &&
     (method !== 'bank' || Boolean(bank)) &&
@@ -183,15 +190,48 @@ export default function MethodModal({ complexName, utilityLabel, amount, service
         <p style={{ margin: '-4px 0 14px', color: 'var(--muted)', fontSize: 13 }}>
           {t('pay:methodModalSubtitle', { complex: complexName, utility: utilityLabel })}
         </p>
+        {/* Amount, then what the chosen method adds on top. The fee is
+            DISPLAY-ONLY: `services[].amount` still carries the base figures,
+            because the provider charges its own fee after the redirect rather
+            than this app adding it to the request. Showing it here means the
+            payer is not surprised by a larger charge on the provider's page. */}
         <div
           style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '12px 16px', borderRadius: 12, background: 'var(--pos-bg)', color: 'var(--pos-ink)',
-            marginBottom: 16, fontWeight: 600, fontSize: 13.5,
+            marginBottom: 16,
           }}
         >
-          <span>{t('pay:amountToPayLabel')}</span>
-          <span style={{ fontSize: 17 }}>{fmt(amount, '₾')}</span>
+          <div
+            style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              fontWeight: 600, fontSize: 13.5,
+            }}
+          >
+            <span>{t('pay:amountToPayLabel')}</span>
+            <span style={{ fontSize: 17 }}>{fmt(amount, '₾')}</span>
+          </div>
+
+          {feePct != null ? (
+            <div
+              style={{
+                marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--teal-line)',
+                display: 'flex', flexDirection: 'column', gap: 6,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}>
+                <span>{t('pay:feeLabel', { pct: feePct })}</span>
+                <span>+{fmt(feeAmount, '₾')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, fontWeight: 700 }}>
+                <span>{t('pay:totalLabel')}</span>
+                <span>{fmt(total, '₾')}</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 8, fontSize: 12 }}>
+              {t(methodDef ? 'pay:feeNone' : 'pay:feeHint')}
+            </div>
+          )}
         </div>
 
         {METHODS.map((m) => {

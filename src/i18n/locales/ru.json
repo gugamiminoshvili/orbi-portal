@@ -314,6 +314,10 @@
     "methodModalTitle": "Выберите способ оплаты",
     "methodModalSubtitle": "{{complex}} • {{utility}}",
     "amountToPayLabel": "Сумма к оплате",
+    "feeLabel": "Комиссия ({{pct}}%)",
+    "totalLabel": "Итого",
+    "feeHint": "Комиссия зависит от способа оплаты.",
+    "feeNone": "Комиссия не добавляется.",
     "methods": {
       "card": "Банковская карта",
       "applepay": "Apple Pay",

@@ -304,6 +304,10 @@
     "methodModalTitle": "აირჩიეთ გადახდის მეთოდი",
     "methodModalSubtitle": "{{complex}} • {{utility}}",
     "amountToPayLabel": "გადასახდელი თანხა",
+    "feeLabel": "საკომისიო ({{pct}}%)",
+    "totalLabel": "სულ",
+    "feeHint": "საკომისიო გადახდის მეთოდზეა დამოკიდებული.",
+    "feeNone": "საკომისიო არ ემატება.",
     "methods": {
       "card": "საბანკო ბარათი",
       "applepay": "Apple Pay",

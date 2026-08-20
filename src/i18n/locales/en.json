@@ -304,6 +304,10 @@
     "methodModalTitle": "Select Payment Method",
     "methodModalSubtitle": "{{complex}} • {{utility}}",
     "amountToPayLabel": "Amount to pay",
+    "feeLabel": "Fee ({{pct}}%)",
+    "totalLabel": "Total",
+    "feeHint": "The fee depends on the payment method.",
+    "feeNone": "No fee is added.",
     "methods": {
       "card": "Bank Card",
       "applepay": "Apple Pay",
