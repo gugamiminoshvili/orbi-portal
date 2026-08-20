@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import '../../i18n'
 import { setLang } from '../../i18n'
@@ -28,23 +28,50 @@ function openAccountMenu() {
   fireEvent.click(screen.getByRole('button', { expanded: false, name: /Guga/ }))
 }
 
-test('sidebar shows nav and disabled items do not navigate', () => {
+// The rail's shape is an owner decision (2026-08-07), so it is asserted
+// exactly: three groups, in this order, with these rows and nothing else.
+test('the sidebar renders the three groups in order', () => {
   renderApp(['/news'])
-  expect(screen.getByText('My Apartments')).toBeInTheDocument()
-  // Your Devices is a genuinely disabled/coming-soon item. (Invoices and
-  // Bookings and Visits were removed at owner request 2026-07-21 until their
-  // forms are ready — see Sidebar.jsx.)
-  const devices = screen.getByText('Your Devices')
-  expect(devices.closest('[aria-disabled="true"]')).toBeTruthy()
+  const nav = document.querySelector('nav')
+  const groups = [...nav.children].map((g) => g.firstElementChild.textContent)
+  expect(groups).toEqual(['Main', 'Support', 'Guides'])
+
+  for (const label of [
+    'Dashboard', 'My Apartments', 'News', 'Bookings and Visits',
+    'Chat',
+    'Apartment handover', 'Power of Attorney', 'Service', 'Contact Centre',
+  ]) {
+    expect(within(nav).getByText(label)).toBeInTheDocument()
+  }
 })
 
-test('the temporarily-removed nav items are not rendered', () => {
+test('what left the sidebar is not rendered there any more', () => {
   renderApp(['/news'])
-  // Removed at owner request (2026-07-21) — restore when their pages exist.
-  expect(screen.queryByText('Bookings and Visits')).not.toBeInTheDocument()
-  expect(screen.queryByText('Invoices')).not.toBeInTheDocument()
-  expect(screen.queryByText('Payments')).not.toBeInTheDocument()
-  expect(screen.queryByText('Reports')).not.toBeInTheDocument()
+  const nav = document.querySelector('nav')
+  // Finance and Documents are gone outright; Settings went with the Account
+  // group; Your Devices moved into the account menu (asserted below).
+  for (const gone of ['Your Devices', 'Settings', 'Account', 'Finance', 'Invoices', 'Payments', 'Reports']) {
+    expect(within(nav).queryByText(gone)).not.toBeInTheDocument()
+  }
+})
+
+test('Bookings and Visits opens its own (still empty) page', () => {
+  renderApp(['/news'])
+  fireEvent.click(screen.getByText('Bookings and Visits'))
+  expect(screen.getByRole('heading', { name: 'Bookings and Visits' })).toBeInTheDocument()
+  expect(screen.getByText('Nothing here yet')).toBeInTheDocument()
+})
+
+test('Your Devices now lives in the account menu, below Change password, still disabled', () => {
+  renderApp(['/news'])
+  openAccountMenu()
+  const devices = screen.getByText('Your Devices')
+  expect(devices.closest('[aria-disabled="true"]')).toBeTruthy()
+
+  // Order matters: profile, change password, then devices.
+  const menu = screen.getByRole('menu')
+  const rows = [...menu.querySelectorAll('a, button, span[role="menuitem"]')].map((el) => el.textContent.trim())
+  expect(rows.slice(0, 3)).toEqual(['My profile', 'Change password', 'Your Devices'])
 })
 
 test('the account menu switches the UI language', async () => {

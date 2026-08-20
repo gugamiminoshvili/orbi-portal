@@ -8,20 +8,17 @@ const NAV = [
     { key: 'dashboard', icon: 'home', label: 'common:dashboard', to: '/dashboard' },
     { key: 'apartments', icon: 'building', label: 'common:myApartments', to: '/apartments' },
     { key: 'news', icon: 'doc', label: 'common:news', to: '/news' },
-    // Placeholder (P3-6): not built yet, same disabled/"coming soon" treatment.
-    { key: 'yourDevices', icon: 'door', label: 'common:yourDevices', disabled: true },
-    // TEMPORARILY HIDDEN (owner request, 2026-07-21): "Bookings and Visits"
-    // and the whole Finance group (Invoices/Payments/Reports) are removed
-    // until their forms are ready — service info, handover, additional
-    // services, and internal regulations go here later. Restore by
-    // uncommenting when the backing pages exist.
-    // { key: 'bookingsVisits', icon: 'cal', label: 'common:bookingsVisits', disabled: true },
+    // Owner call 2026-08-07: back in the rail, now as a real route. The page
+    // itself is an empty shell until the module is specified.
+    { key: 'bookingsVisits', icon: 'cal', label: 'common:bookingsVisits', to: '/bookings' },
   ] },
-  // { group: 'common:finance', items: [
-  //   { key: 'invoices', icon: 'doc', label: 'common:invoices', disabled: true },
-  //   { key: 'payments', icon: 'swap', label: 'common:payments', disabled: true },
-  //   { key: 'reports', icon: 'doc', label: 'common:reports', disabled: true },
-  // ] },
+  // Its own group with a single row (owner call 2026-08-07). The group is
+  // "Support" — the place — and the row is "Chat" — the thing you do there;
+  // the old Account group (Settings + Support) is gone, and Your Devices
+  // moved into the account menu beside the other personal settings.
+  { group: 'common:support', items: [
+    { key: 'chat', icon: 'chat', label: 'common:chat', to: '/support' },
+  ] },
   // The company's process rules, added at the owner's request (2026-07-30) as
   // their own group rather than as one "Guides" index entry — four rules is a
   // short, stable list, and one click beats two.
@@ -30,10 +27,6 @@ const NAV = [
     { key: 'guidePowerOfAttorney', icon: 'doc', label: 'common:guidePowerOfAttorney', to: '/guides/power-of-attorney' },
     { key: 'guideService', icon: 'wrench', label: 'common:guideService', to: '/guides/service' },
     { key: 'guideContactCentre', icon: 'chat', label: 'common:guideContactCentre', to: '/guides/contact-centre' },
-  ] },
-  { group: 'common:account', items: [
-    { key: 'settings', icon: 'dots', label: 'common:settings', disabled: true },
-    { key: 'support', icon: 'chat', label: 'common:support', to: '/support' },
   ] },
 ]
 

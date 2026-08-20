@@ -127,6 +127,13 @@ export default function UserMenu() {
           >
             <Icon name="lock" /> {t('profile:security')}
           </Link>
+          {/* Moved out of the sidebar (owner call 2026-08-07): it is a personal
+              setting, so it belongs with the other two. Still disabled — the
+              page does not exist yet, and a row that navigates nowhere is
+              worse than one that says so. */}
+          <span role="menuitem" aria-disabled="true" className={`${styles.item} ${styles.off}`} title={t('common:comingSoon')}>
+            <Icon name="door" /> {t('common:yourDevices')}
+          </span>
 
           <div className={styles.sep} />
 

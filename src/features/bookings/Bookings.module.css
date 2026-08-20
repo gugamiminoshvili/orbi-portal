@@ -1,0 +1,9 @@
+.page-head {
+  margin-bottom: var(--s6);
+}
+.page-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.4px;
+}

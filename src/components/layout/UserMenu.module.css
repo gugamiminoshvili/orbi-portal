@@ -253,3 +253,14 @@
     width: calc(100vw - 28px);
   }
 }
+
+/* A row that is present but not yet routable (Your Devices). Not a button —
+   there is nothing to press — so it also drops the hover affordance. */
+.off {
+  cursor: default;
+  opacity: 0.55;
+}
+.off:hover {
+  background: none;
+  color: var(--ink-2);
+}

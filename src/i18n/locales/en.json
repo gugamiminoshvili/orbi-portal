@@ -19,6 +19,7 @@
     "reports": "Reports",
     "settings": "Settings",
     "support": "Support",
+    "chat": "Chat",
     "home": "Home",
     "search": "Search…",
     "comingSoon": "Coming soon",
@@ -44,6 +45,10 @@
     "to": "To",
     "requestFailed": "Request failed. Please try again.",
     "retry": "Retry"
+  },
+  "bookings": {
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "Bookings and visits will appear here once the module is switched on."
   },
   "news": {
     "title": "News & Announcements",
