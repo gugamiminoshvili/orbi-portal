@@ -2,26 +2,32 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
-import { getCommunals, getRates, getContractsSummary, getUnpaidInvoices } from '../../api/endpoints/dashboard'
-import { fmt, fmtNum } from '../../utils/format'
+import { getCommunals, getRates } from '../../api/endpoints/dashboard'
+import { listApartments } from '../../api/endpoints/apartments'
+import { fmtNum } from '../../utils/format'
+import { internetDue } from './internetDue'
 import Card from '../../components/ui/Card'
-import Badge from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
 import Skeleton from '../../components/ui/Skeleton'
 import buttonStyles from '../../components/ui/Button.module.css'
 import styles from './Dashboard.module.css'
 
-// One combined fetch (rather than 4 separate useAsync calls) so the whole
-// page shows a single skeleton rather than 4 tiles popping in independently
-// as each request resolves at its own mock-latency roll.
+// One combined fetch so the page shows a single skeleton rather than tiles
+// popping in independently. The apartment list is needed for the internet
+// rule above: the per-flat agreement (days left / tariff / penalty) lives
+// there, not on the communals aggregate.
 async function loadDashboard() {
-  const [communals, rates, contracts, unpaid] = await Promise.all([
+  const [communals, rates, apartments] = await Promise.all([
     getCommunals(),
     getRates(),
-    getContractsSummary(),
-    getUnpaidInvoices(),
+    listApartments(),
   ])
-  return { communals, rates, contracts, unpaid }
+  return { communals, rates, apartments }
+}
+
+function usdGelRate(rates) {
+  const row = rates?.rates?.find((r) => r.pair === 'USD/GEL')
+  return row ? row.rate : null
 }
 
 export default function DashboardPage() {
@@ -32,9 +38,7 @@ export default function DashboardPage() {
 
   const head = (
     <div className={styles['page-head']}>
-      <div>
-        <h1>{t('dashboard:title')}</h1>
-      </div>
+      <h1>{t('dashboard:title')}</h1>
     </div>
   )
 
@@ -47,30 +51,65 @@ export default function DashboardPage() {
     )
   }
 
-  const { communals, rates, contracts, unpaid } = data
+  const { communals, rates, apartments } = data
+  const usdRate = usdGelRate(rates)
 
-  // Positive balances are what's owed (utils/balance.js), so the headline is
-  // maintenance.owed — adaptCommunals already renames the two flatBalance
-  // aggregates by meaning, since the backend's own names read inverted under
-  // this convention. Clamped at 0: a portfolio that is net in advance should
-  // show nothing owed, not a negative "debt".
-  const maintenanceDebt = Math.max(0, communals.maintenance.owed)
-  const utilitiesTotal = communals.utilities.electricitySum + communals.utilities.internetSum
+  // LIVE maintenance arrives in USD, mock in GEL — the same currency-
+  // conditional rule payFlowData.owedFor uses.
+  const serviceCurrency = communals.maintenance.currency || 'USD'
+  const serviceSymbol = serviceCurrency === 'GEL' ? '₾' : '$'
 
-  // Currency-conditional (same pattern as payFlowData.owedFor): LIVE
-  // maintenance arrives in USD, MOCK in GEL. Nothing on this card merges the
-  // two currencies (owner request 2026-07-21, reaffirmed 2026-07-30) — no
-  // summed figure, and no chart either: a donut states "one whole split into
-  // parts", which two unrelated currencies are not. Each currency gets its
-  // own headline figure, and the legend on the right names the lines.
-  const maintenanceCurrency = communals.maintenance.currency || 'USD'
-  const maintenanceSymbol = maintenanceCurrency === 'GEL' ? '₾' : '$'
+  const debts = [
+    {
+      key: 'service',
+      icon: 'doc',
+      tone: 'neg',
+      color: 'var(--neg)',
+      label: t('dashboard:serviceDebt'),
+      value: communals.maintenance.owed,
+      symbol: serviceSymbol,
+      // Only this line can be in a foreign currency, so it is the only one
+      // the donut has to convert (see chartValue below).
+      currency: serviceCurrency,
+    },
+    {
+      key: 'electricity',
+      icon: 'bolt',
+      tone: 'warn',
+      color: 'var(--warn)',
+      label: t('dashboard:electricityDebt'),
+      value: communals.utilities.electricitySum,
+      symbol: '₾',
+      currency: 'GEL',
+    },
+    {
+      key: 'internet',
+      icon: 'globe',
+      tone: 'info',
+      color: 'var(--info)',
+      label: t('dashboard:internetDebt'),
+      value: internetDue(apartments),
+      symbol: '₾',
+      currency: 'GEL',
+    },
+  ]
 
-  // No backend source for "other charges" yet — kept as an explicit 0 rather
-  // than a hardcoded literal in the JSX so the GEL headline stays correct
-  // the day it IS wired up.
-  const otherCharges = 0
-  const gelTotal = utilitiesTotal + otherCharges
+  // The donut states "one whole split into parts", so the parts have to be
+  // comparable: the USD line is converted to GEL for the geometry only. No
+  // converted figure is ever printed — the centre carries the word "Total"
+  // and nothing else (owner call 2026-08-07), precisely so the chart never
+  // has to claim a single cross-currency number.
+  const segments = debts
+    .map((d) => ({
+      key: d.key,
+      color: d.color,
+      // A credit is not a slice of a debt; only what is owed is drawn.
+      value: Math.max(
+        0,
+        d.currency !== 'GEL' && usdRate != null ? d.value * usdRate : d.value
+      ),
+    }))
+    .filter((s) => s.value > 0)
 
   return (
     <div>
@@ -78,52 +117,30 @@ export default function DashboardPage() {
 
       <div className={styles['top-grid']}>
         <Card className={styles['debt-card']}>
-          <Card.Head>
-            <div className={styles['head-titles']}>
-              <h3>{t('dashboard:totalDebtTitle')}</h3>
-              <span className={styles['head-sub']}>{t('dashboard:totalDebtSubtitle')}</span>
-            </div>
-            {unpaid.count > 0 && (
-              <Badge tone="neg">{t('dashboard:unpaidInvoicesCount', { count: unpaid.count })}</Badge>
-            )}
-          </Card.Head>
-          <Card.Pad>
-            <div className={styles['debt-body']}>
-              <div className={styles['debt-totals']}>
-                <Amount
-                  value={maintenanceDebt}
-                  symbol={maintenanceSymbol}
-                  label={t('dashboard:maintenanceLabel')}
-                />
-                <Amount value={gelTotal} symbol="₾" label={t('dashboard:utilitiesLabel')} />
-                <Link
-                  to="/pay"
-                  className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${styles['pay-btn']}`}
-                >
-                  <Icon name="wallet" /> {t('dashboard:payNow')}
-                </Link>
+          <Card.Pad className={styles['debt-pad']}>
+            <div className={styles['debt-main']}>
+              <div className={styles['debt-titles']}>
+                <h3>{t('dashboard:totalDebtTitle')}</h3>
+                <span className={styles['debt-sub']}>{t('dashboard:totalDebtSubtitle')}</span>
               </div>
-              <ul className={styles['debt-lines']}>
-                <DebtRow
-                  color="var(--indigo)"
-                  label={t('dashboard:maintenanceLabel')}
-                  value={maintenanceDebt}
-                  symbol={maintenanceSymbol}
-                />
-                <DebtRow
-                  color="var(--neg)"
-                  label={t('dashboard:utilitiesLabel')}
-                  value={utilitiesTotal}
-                  symbol="₾"
-                />
-                <DebtRow
-                  color="var(--line-2)"
-                  label={t('dashboard:otherChargesLabel')}
-                  value={otherCharges}
-                  symbol="₾"
-                  muted
-                />
+              <ul className={styles['debt-list']}>
+                {debts.map(({ key, ...d }) => (
+                  <DebtRow key={key} {...d} />
+                ))}
               </ul>
+            </div>
+
+            <div className={styles['debt-aside']}>
+              <Donut segments={segments} label={t('dashboard:donutTotal')} />
+              {/* Never disabled: paying into an account that owes nothing is
+                  a deliberate feature (advance payment, owner call
+                  2026-08-06), so a zero total is not a reason to block it. */}
+              <Link
+                to="/pay"
+                className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${styles['pay-btn']}`}
+              >
+                <Icon name="card" /> {t('dashboard:payNow')}
+              </Link>
             </div>
           </Card.Pad>
         </Card>
@@ -144,7 +161,7 @@ export default function DashboardPage() {
                   const up = r.delta >= 0
                   return (
                     <div key={r.pair} className={styles['rate-row']}>
-                      <span className={styles.k}>{r.pair.replace('/', ' / ')}</span>
+                      <span className={styles.k}>1 {r.pair.replace('/', ' / ')}</span>
                       <span className={styles.v}>{r.rate.toFixed(4)}</span>
                       <span className={`${styles.delta} ${up ? styles.pos : styles.neg}`}>
                         {up ? '▲' : '▼'} {Math.abs(r.delta).toFixed(4)}
@@ -162,181 +179,196 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className={styles['stats-grid']}>
-        <StatCard icon="doc" tone="indigo" title={t('dashboard:contractsTitle')}>
-          {contracts.empty ? (
-            <div className={styles['stat-empty']}>{t('dashboard:contractsEmpty')}</div>
-          ) : (
-            <div className={styles['stat-value']}>
-              {t('dashboard:contractsCount', { count: contracts.deals.length })}
-            </div>
-          )}
-        </StatCard>
-        <StatCard
-          icon="bolt"
-          tone="warn"
-          title={t('dashboard:utilitiesTileTitle')}
-          to="/pay"
-          sub={t('dashboard:utilitiesSub')}
-        >
-          <div className={styles['stat-value']}>{fmt(utilitiesTotal, '₾')}</div>
-        </StatCard>
-        <StatCard
-          icon="wrench"
-          tone="info"
-          title={t('dashboard:maintenanceTileTitle')}
-          to="/pay"
-          sub={t('dashboard:maintenanceSub')}
-        >
-          <div className={`${styles['stat-value']} ${styles.owed}`}>{fmt(maintenanceDebt, maintenanceSymbol)}</div>
-        </StatCard>
+      <div className={styles['links-grid']}>
+        <LinkCard to="/guides/service" tone="pos" icon="wrench"
+          title={t('dashboard:serviceCardTitle')} sub={t('dashboard:serviceCardSub')} />
+        <LinkCard to="/guides/handover" tone="info" icon="building"
+          title={t('dashboard:handoverCardTitle')} sub={t('dashboard:handoverCardSub')} />
+        <LinkCard to="/guides/power-of-attorney" tone="violet" icon="user"
+          title={t('dashboard:poaCardTitle')} sub={t('dashboard:poaCardSub')} />
       </div>
 
-      <div className={styles['soon-grid']}>
-        <Card className={styles['soon-card']}>
-          <div className={styles['soon-head']}>
-            <span className={styles['soon-titlewrap']}>
-              <span className={`${styles['soon-icon']} ${styles.indigo}`}>
-                <Icon name="tag" />
-              </span>
-              <h3>{t('dashboard:activeOffersTitle')}</h3>
-            </span>
-            <Badge tone="muted">{t('common:comingSoon')}</Badge>
-          </div>
-          <div className={styles['offer-sample']}>
-            <span className={styles['offer-badge']}>%</span>
-            <div>
-              <div className={styles['offer-title']}>{t('dashboard:offerSampleTitle')}</div>
-              <div className={styles['offer-body']}>{t('dashboard:offerSampleBody')}</div>
-            </div>
-          </div>
-        </Card>
-
-        <Card className={styles['soon-card']}>
-          <div className={styles['soon-head']}>
-            <span className={styles['soon-titlewrap']}>
-              <span className={`${styles['soon-icon']} ${styles.slate}`}>
-                <Icon name="doc" />
-              </span>
-              <h3>{t('dashboard:additionalContractsTitle')}</h3>
-            </span>
-            <Badge tone="muted">{t('common:comingSoon')}</Badge>
-          </div>
-          <div className={styles['addl-list']}>
-            <div className={styles['addl-row']}>
-              <span className={styles['addl-mark']}>P</span>
-              <div className={styles['addl-body']}>
-                <div className={styles['addl-title']}>{t('dashboard:addlParkingTitle')}</div>
-                <div className={styles['addl-sub']}>{t('dashboard:addlParkingSub')}</div>
-              </div>
-            </div>
-            <div className={styles['addl-row']}>
-              <span className={styles['addl-mark']}>
-                <Icon name="empty" />
-              </span>
-              <div className={styles['addl-body']}>
-                <div className={styles['addl-title']}>{t('dashboard:addlStorageTitle')}</div>
-                <div className={styles['addl-sub']}>{t('dashboard:addlStorageSub')}</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div className={styles['actions-grid']}>
-        <ActionCard
-          to="/pay"
+      <div className={styles['wide-grid']}>
+        {/* FLAG: the two actions here have no destination yet (owner,
+            2026-08-07: "nothing should happen on these buttons for now"),
+            so they are rendered as inert text rather than as links that
+            would go somewhere arbitrary. */}
+        <WideCard
           tone="pos"
-          icon="wallet"
-          title={t('dashboard:payNowAction')}
-          sub={t('dashboard:payNowActionSub')}
+          icon="doc"
+          title={t('dashboard:rulesTitle')}
+          body={t('dashboard:rulesBody')}
+          action={t('dashboard:rulesAction')}
+          viewAll={t('dashboard:viewAll')}
+          art={<RulesArt />}
         />
-        <ActionCard
-          to="/support/new"
-          tone="warn"
-          icon="wrench"
-          title={t('dashboard:requestMaintenanceAction')}
-          sub={t('dashboard:requestMaintenanceActionSub')}
-        />
-        <ActionCard
-          to="/support"
+        <WideCard
           tone="info"
           icon="chat"
-          title={t('dashboard:contactSupportAction')}
-          sub={t('dashboard:contactSupportActionSub')}
+          title={t('dashboard:contactTitle')}
+          body={t('dashboard:contactBody')}
+          action={t('dashboard:contactAction')}
+          actionTo="/support/new"
+          viewAll={t('dashboard:viewAll')}
+          viewAllTo="/support"
+          art={<ContactArt />}
         />
       </div>
     </div>
   )
 }
 
-// A headline balance: big grouped number with the currency symbol as its own
-// smaller element. The label is carried by a screen-reader-only string rather
-// than aria-label (which a generic <div> can't be named by) — visually the
-// legend beside it names the two figures, but a bare "637.12" read on its own
-// tells a screen-reader user nothing about WHICH balance it is.
-function Amount({ value, symbol, label }) {
+// One debt line: tinted icon tile, label, amount. The amount's colour states
+// what the number means — owed is red, settled is neutral, and a credit is
+// green (utils/balance.js's convention, applied to display here).
+function DebtRow({ icon, tone, label, value, symbol }) {
+  const owed = value > 0
+  const ahead = value < 0
   return (
-    <div className={styles.big}>
-      <span className="sr-only">{`${label}: ${fmt(value, symbol)}`}</span>
-      <span aria-hidden="true">
-        {fmtNum(value)}
-        <span className={styles.cur}>{symbol}</span>
+    <li className={styles['debt-row']}>
+      <span className={`${styles['debt-ic']} ${styles[tone]}`}>
+        <Icon name={icon} />
       </span>
-    </div>
-  )
-}
-
-function DebtRow({ color, label, value, symbol, muted }) {
-  return (
-    <li className={`${styles['debt-row']} ${muted ? styles.muted : ''}`}>
-      <span className={styles.dot} style={{ background: color }} />
-      <span className={styles.k}>{label}</span>
-      <span className={styles.v}>
-        {fmtNum(value)}
-        <span className={styles.cur}>{symbol}</span>
-      </span>
+      <div className={styles['debt-body']}>
+        <div className={styles['debt-label']}>{label}</div>
+        <div
+          // Also exposed as data, not only as colour: the state is then
+          // assertable in a test and readable in devtools without decoding
+          // a hashed class name.
+          data-state={owed ? 'owed' : ahead ? 'ahead' : 'settled'}
+          className={`${styles['debt-value']} ${owed ? styles.owed : ''} ${ahead ? styles.ahead : ''}`}
+        >
+          {fmtNum(value)}
+          <span className={styles.cur}>{symbol}</span>
+        </div>
+      </div>
     </li>
   )
 }
 
-function StatCard({ icon, tone, title, sub, to, children }) {
-  const inner = (
-    <>
-      <span className={`${styles['stat-icon']} ${styles[tone]}`}>
-        <Icon name={icon} />
-      </span>
-      <div className={styles['stat-body']}>
-        <div className={styles['stat-label']}>{title}</div>
-        {children}
-        {sub && <div className={styles['stat-sub']}>{sub}</div>}
-      </div>
-      {to && <Icon name="arrow" className={styles['stat-arrow']} />}
-    </>
-  )
-  return to ? (
-    <Card className={`${styles['stat-card']} ${styles.linkable}`}>
-      <Link to={to} className={styles['stat-hit']} aria-label={title}>
-        {inner}
-      </Link>
-    </Card>
-  ) : (
-    <Card className={styles['stat-card']}>{inner}</Card>
+// Donut split by debt type. Drawn with stroke-dasharray on a single circle
+// per segment rather than paths: no arc maths, and it degrades to a plain
+// ring when there is nothing to show.
+const R = 54
+const C = 2 * Math.PI * R
+
+function Donut({ segments, label }) {
+  const total = segments.reduce((sum, s) => sum + s.value, 0)
+  let offset = 0
+  return (
+    <div className={styles.donut}>
+      <svg viewBox="0 0 140 140" className={styles['donut-svg']} aria-hidden="true">
+        <circle cx="70" cy="70" r={R} className={styles['donut-track']} />
+        {total > 0 &&
+          segments.map((s) => {
+            const len = (s.value / total) * C
+            const dash = (
+              <circle
+                key={s.key}
+                cx="70"
+                cy="70"
+                r={R}
+                className={styles['donut-seg']}
+                stroke={s.color}
+                strokeDasharray={`${len} ${C - len}`}
+                strokeDashoffset={-offset}
+              />
+            )
+            offset += len
+            return dash
+          })}
+      </svg>
+      <span className={styles['donut-label']}>{label}</span>
+    </div>
   )
 }
 
-function ActionCard({ to, tone, icon, title, sub }) {
+function LinkCard({ to, tone, icon, title, sub }) {
   return (
-    <Link to={to} className={`${styles['action-card']} ${styles[tone]}`}>
-      <span className={styles['action-icon']}>
+    <Link to={to} className={`${styles['link-card']}`}>
+      <span className={`${styles['link-ic']} ${styles[tone]}`}>
         <Icon name={icon} />
       </span>
-      <div className={styles['action-body']}>
-        <div className={styles['action-title']}>{title}</div>
-        <div className={styles['action-sub']}>{sub}</div>
-      </div>
-      <Icon name="arrow" className={styles['action-arrow']} />
+      <span className={styles['link-body']}>
+        <span className={styles['link-title']}>{title}</span>
+        <span className={styles['link-sub']}>{sub}</span>
+      </span>
+      <Icon name="chevron-right" className={styles['link-go']} />
     </Link>
+  )
+}
+
+function WideCard({ tone, icon, title, body, action, actionTo, viewAll, viewAllTo, art }) {
+  return (
+    <Card className={styles['wide-card']}>
+      <div className={styles['wide-head']}>
+        <span className={styles['wide-titlewrap']}>
+          <span className={`${styles['wide-ic']} ${styles[tone]}`}>
+            <Icon name={icon} />
+          </span>
+          <h3>{title}</h3>
+        </span>
+        {viewAllTo ? (
+          <Link to={viewAllTo} className={styles['view-all']}>
+            {viewAll} <Icon name="chevron-right" size={14} />
+          </Link>
+        ) : (
+          <span className={`${styles['view-all']} ${styles.inert}`}>
+            {viewAll} <Icon name="chevron-right" size={14} />
+          </span>
+        )}
+      </div>
+      <div className={styles['wide-body']}>
+        <div className={styles['wide-text']}>
+          <p>{body}</p>
+          {actionTo ? (
+            <Link to={actionTo} className={`${buttonStyles.btn} ${buttonStyles['btn-soft']} ${buttonStyles['btn-sm']}`}>
+              {action}
+            </Link>
+          ) : (
+            <span className={`${buttonStyles.btn} ${buttonStyles['btn-soft']} ${buttonStyles['btn-sm']} ${styles.inert}`}>
+              {action}
+            </span>
+          )}
+        </div>
+        <div className={styles['wide-art']} aria-hidden="true">{art}</div>
+      </div>
+    </Card>
+  )
+}
+
+// Decorative art. Drawn here rather than shipped as image files: two flat
+// shapes in the theme's own tokens, so they follow light/dark like
+// everything else and cost no request.
+function RulesArt() {
+  return (
+    <svg viewBox="0 0 200 140" className={styles.art}>
+      <ellipse cx="100" cy="126" rx="72" ry="9" fill="var(--teal-soft)" />
+      <rect x="58" y="22" width="84" height="98" rx="8" fill="var(--card)" stroke="var(--teal-line)" strokeWidth="2" />
+      <rect x="72" y="40" width="42" height="5" rx="2.5" fill="var(--teal-line)" />
+      <rect x="72" y="54" width="56" height="5" rx="2.5" fill="var(--fill-2)" />
+      <rect x="72" y="68" width="50" height="5" rx="2.5" fill="var(--fill-2)" />
+      <path d="M104 82h36v22c0 12-18 18-18 18s-18-6-18-18z" fill="var(--teal-soft)" stroke="var(--teal)" strokeWidth="2" strokeLinejoin="round" />
+      <path d="m114 102 5.5 5.5L131 96" fill="none" stroke="var(--teal)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M40 108c-8-6-10-18-4-26 5 8 10 12 14 14-4 4-7 8-10 12z" fill="var(--teal-soft)" />
+      <path d="M164 110c8-6 10-18 4-26-5 8-10 12-14 14 4 4 7 8 10 12z" fill="var(--teal-soft)" />
+    </svg>
+  )
+}
+
+function ContactArt() {
+  return (
+    <svg viewBox="0 0 200 140" className={styles.art}>
+      <ellipse cx="100" cy="126" rx="72" ry="9" fill="var(--teal-soft)" />
+      <path d="M56 92V74a44 44 0 0 1 88 0v18" fill="none" stroke="var(--teal)" strokeWidth="7" strokeLinecap="round" />
+      <rect x="42" y="84" width="22" height="34" rx="10" fill="var(--teal)" />
+      <rect x="136" y="84" width="22" height="34" rx="10" fill="var(--teal)" />
+      <circle cx="118" cy="66" r="30" fill="var(--teal-soft)" stroke="var(--teal-line)" strokeWidth="2" />
+      <circle cx="106" cy="66" r="3.6" fill="var(--teal)" />
+      <circle cx="118" cy="66" r="3.6" fill="var(--teal)" />
+      <circle cx="130" cy="66" r="3.6" fill="var(--teal)" />
+      <path d="M100 92c0 6-4 12-10 15 9 1 16-3 20-9z" fill="var(--teal-soft)" stroke="var(--teal-line)" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
   )
 }
 
@@ -344,33 +376,12 @@ function DashboardSkeleton() {
   return (
     <>
       <div className={styles['top-grid']}>
-        <Card className={styles['debt-card']}>
-          <div style={{ padding: 22 }}>
-            <Skeleton h={16} w={140} style={{ marginBottom: 18 }} />
-            <Skeleton h={14} style={{ marginBottom: 10 }} />
-            <Skeleton h={14} style={{ marginBottom: 10 }} />
-            <Skeleton h={14} w="60%" style={{ marginBottom: 18 }} />
-            <Skeleton h={46} r={12} />
-          </div>
-        </Card>
-        <Card className={styles['rates-card']}>
-          <div style={{ padding: 22 }}>
-            <Skeleton h={16} w={140} style={{ marginBottom: 18 }} />
-            {Array.from({ length: 2 }, (_, i) => (
-              <Skeleton key={i} h={14} style={{ marginBottom: 10 }} />
-            ))}
-          </div>
-        </Card>
+        <Card><div style={{ padding: 22 }}><Skeleton h={150} r={14} /></div></Card>
+        <Card><div style={{ padding: 22 }}><Skeleton h={150} r={14} /></div></Card>
       </div>
-      <div className={styles['stats-grid']}>
-        {Array.from({ length: 3 }, (_, i) => (
-          <Card key={i} className={styles['stat-card']}>
-            <Skeleton w={44} h={44} r={13} />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Skeleton h={11} w="55%" />
-              <Skeleton h={18} w="40%" />
-            </div>
-          </Card>
+      <div className={styles['links-grid']}>
+        {[0, 1, 2].map((i) => (
+          <Card key={i}><div style={{ padding: 18 }}><Skeleton h={44} r={12} /></div></Card>
         ))}
       </div>
     </>

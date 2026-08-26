@@ -1,8 +1,5 @@
-/* Dashboard layout + local visual language. Uses the shared Card/Badge/Icon
-   primitives and global tokens (var(--…)); local classes cover the debt/rates
-   composition, the stat + action cards, and the coming-soon placeholders.
-   No side-stripe accents and no gradient text (impeccable BAN 1/2) — hierarchy
-   comes from tinted icon tiles, weight, and spacing. */
+/* Dashboard — rebuilt to the owner's 2026-08-07 design: one debt card with a
+   donut, the rates card beside it, three guide links, then two wide cards. */
 
 .page-head {
   margin-bottom: var(--s6);
@@ -10,16 +7,10 @@
 .page-head h1 {
   font-size: 26px;
   font-weight: 700;
-  margin: 0 0 3px;
+  margin: 0;
   letter-spacing: -0.4px;
 }
-.page-head p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
 
-/* ---------- Total debt + rates row ---------- */
 .top-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
@@ -27,108 +18,148 @@
   margin-bottom: var(--s5);
   align-items: start;
 }
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .top-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.head-titles {
+/* ---------- debt card ---------- */
+.debt-pad {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: var(--s6);
+  padding: var(--s6);
 }
-.head-sub {
+@media (max-width: 720px) {
+  .debt-pad {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+.debt-main {
+  flex: 1;
+  min-width: 0;
+}
+.debt-titles h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.debt-sub {
+  display: block;
+  margin-top: 2px;
   color: var(--muted);
   font-size: 12.5px;
-  font-weight: 500;
 }
 
-/* Two currencies, side by side: the headline figures + Pay on the left, the
-   named lines on the right. No chart — see DashboardPage's comment on why a
-   donut can't honestly hold two currencies. */
-.debt-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--s6) var(--s7);
-  align-items: start;
-}
-@media (max-width: 640px) {
-  .debt-body {
-    grid-template-columns: 1fr;
-  }
-}
-.debt-totals {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s4);
-  align-items: flex-start;
-}
-.big {
-  font-size: 34px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-.big .cur {
-  font-size: 0.68em;
-  font-weight: 700;
-  margin-left: 6px;
-  letter-spacing: -0.5px;
-}
-.debt-lines {
-  margin: 0;
-  padding: 0;
+.debt-list {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s4);
+  margin: var(--s5) 0 0;
+  padding: 0;
 }
 .debt-row {
   display: flex;
   align-items: center;
-  gap: var(--s3);
+  gap: var(--s4);
+  padding: var(--s4) 0;
 }
-.debt-row .k {
-  flex: 1;
-  color: var(--ink-2);
-  font-size: 14px;
-  font-weight: 500;
+.debt-row:not(:last-child) {
+  border-bottom: 1px solid var(--line);
 }
-.debt-row .v {
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.3px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.debt-row .v .cur {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  margin-left: 5px;
-}
-.debt-row.muted .k,
-.debt-row.muted .v {
-  color: var(--muted);
-}
-.dot {
-  width: 11px;
-  height: 11px;
+.debt-ic {
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
+  display: grid;
+  place-items: center;
   flex: none;
 }
+.debt-ic svg {
+  width: 22px;
+  height: 22px;
+}
+.debt-ic.neg { background: var(--neg-bg); color: var(--neg-ink); }
+.debt-ic.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.debt-ic.info { background: var(--info-bg); color: var(--info-ink); }
 
-.pay-btn {
-  margin-top: var(--s3);
-  width: 100%;
-  justify-content: center;
-  height: 48px;
-  font-size: 15px;
+.debt-body {
+  min-width: 0;
+}
+.debt-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+/* Settled reads neutral; only a real debt is red and only a real credit is
+   green, so colour never has to be decoded. */
+.debt-value {
+  margin-top: 1px;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.debt-value.owed { color: var(--neg-ink); }
+.debt-value.ahead { color: var(--pos-ink); }
+.debt-value .cur {
+  margin-left: 4px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
-/* ---------- Exchange rates ---------- */
+/* ---------- donut + pay ---------- */
+.debt-aside {
+  flex: none;
+  width: 208px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s5);
+}
+@media (max-width: 720px) {
+  .debt-aside {
+    width: auto;
+  }
+}
+.donut {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+}
+.donut-svg {
+  width: 168px;
+  height: 168px;
+  /* Start the first segment at 12 o'clock rather than 3. */
+  transform: rotate(-90deg);
+}
+.donut-track {
+  fill: none;
+  stroke: var(--fill);
+  stroke-width: 14;
+}
+.donut-seg {
+  fill: none;
+  stroke-width: 14;
+  stroke-linecap: butt;
+}
+.donut-label {
+  position: absolute;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.pay-btn {
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  font-size: 14.5px;
+}
+
+/* ---------- rates card (unchanged) ---------- */
 .rates-head {
   display: flex;
   align-items: center;
@@ -138,8 +169,8 @@
   width: 34px;
   height: 34px;
   border-radius: var(--r-sm);
-  background: var(--indigo-bg);
-  color: var(--indigo-ink);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
   display: grid;
   place-items: center;
   flex: none;
@@ -174,12 +205,8 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-.delta.pos {
-  color: var(--pos-ink);
-}
-.delta.neg {
-  color: var(--neg-ink);
-}
+.delta.pos { color: var(--pos-ink); }
+.delta.neg { color: var(--neg-ink); }
 .rates-foot {
   display: flex;
   justify-content: space-between;
@@ -191,281 +218,159 @@
   font-weight: 500;
 }
 
-/* ---------- Stat cards ---------- */
-.stats-grid {
+/* ---------- three guide links ---------- */
+.links-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s4);
+  gap: var(--s5);
   margin-bottom: var(--s5);
 }
-@media (max-width: 720px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 900px) {
+  .links-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-.stat-card {
+.link-card {
   display: flex;
   align-items: center;
   gap: var(--s4);
   padding: var(--s5);
+  background: var(--card);
+  border: 1px solid var(--card-line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  transition: border-color var(--t), transform var(--t), box-shadow var(--t);
 }
-.stat-card.linkable {
-  display: block;
-  padding: 0;
-  transition: box-shadow var(--t), transform var(--t);
-}
-.stat-card.linkable:hover {
-  box-shadow: var(--shadow-lg);
+.link-card:hover {
+  border-color: var(--teal-line);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
-.stat-hit {
-  display: flex;
-  align-items: center;
-  gap: var(--s4);
-  padding: var(--s5);
+.link-card:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
 }
-.stat-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
+.link-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
   flex: none;
 }
-.stat-icon.indigo {
-  background: var(--indigo-bg);
-  color: var(--indigo-ink);
-}
-.stat-icon.warn {
-  background: var(--warn-bg);
-  color: var(--warn-ink);
-}
-.stat-icon.info {
-  background: var(--info-bg);
-  color: var(--info-ink);
-}
-.stat-body {
+.link-ic svg { width: 22px; height: 22px; }
+.link-ic.pos { background: var(--teal-soft); color: var(--teal-ink); }
+.link-ic.info { background: var(--info-bg); color: var(--info-ink); }
+.link-ic.violet { background: var(--indigo-bg); color: var(--indigo-ink); }
+.link-body {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
 }
-.stat-label {
-  color: var(--muted);
-  font-size: 11px;
+.link-title {
+  display: block;
+  font-size: 15px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.2px;
 }
-.stat-value {
-  font-size: 21px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  font-variant-numeric: tabular-nums;
-}
-.stat-value.owed {
-  color: var(--neg-ink);
-}
-.stat-sub {
+.link-sub {
+  display: block;
+  margin-top: 2px;
   color: var(--muted);
   font-size: 12.5px;
+  line-height: 1.4;
 }
-.stat-empty {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
-}
-.stat-arrow {
-  color: var(--muted);
+.link-go {
   flex: none;
+  color: var(--muted);
 }
 
-/* ---------- Coming-soon cards ---------- */
-.soon-grid {
+/* ---------- two wide cards ---------- */
+.wide-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s4);
-  margin-bottom: var(--s5);
+  gap: var(--s5);
 }
-@media (max-width: 720px) {
-  .soon-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 900px) {
+  .wide-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-.soon-card {
-  padding: var(--s5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s4);
+.wide-card {
+  overflow: hidden;
 }
-.soon-head {
+.wide-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s3);
+  gap: var(--s4);
+  padding: var(--s5) var(--s5) 0;
 }
-.soon-titlewrap {
+.wide-titlewrap {
   display: flex;
   align-items: center;
   gap: var(--s3);
+  min-width: 0;
 }
-.soon-titlewrap h3 {
+.wide-titlewrap h3 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-}
-.soon-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-sm);
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-.soon-icon.indigo {
-  background: var(--indigo-bg);
-  color: var(--indigo-ink);
-}
-.soon-icon.slate {
-  background: var(--fill);
-  color: var(--muted);
-}
-.offer-sample {
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-  padding: var(--s4);
-  border-radius: var(--r-sm);
-  background: var(--teal-soft);
-}
-.offer-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--teal);
-  color: var(--on-accent);
-  display: grid;
-  place-items: center;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  flex: none;
+  letter-spacing: -0.2px;
 }
-.offer-title {
-  font-size: 14px;
-  font-weight: 600;
-}
-.offer-body {
-  color: var(--teal-ink);
-  font-size: 12.5px;
-  line-height: 1.45;
-  margin-top: 2px;
-}
-.addl-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s3);
-}
-.addl-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-}
-.addl-mark {
+.wide-ic {
   width: 40px;
   height: 40px;
-  border-radius: var(--r-sm);
-  background: var(--fill);
-  color: var(--muted);
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  font-size: 15px;
-  font-weight: 700;
   flex: none;
 }
-.addl-body {
+.wide-ic svg { width: 20px; height: 20px; }
+.wide-ic.pos { background: var(--teal-soft); color: var(--teal-ink); }
+.wide-ic.info { background: var(--info-bg); color: var(--info-ink); }
+.view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.view-all:hover { color: var(--teal-ink); }
+.wide-body {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s4);
+  padding: var(--s4) var(--s5) var(--s5);
+}
+.wide-text {
   flex: 1;
   min-width: 0;
 }
-.addl-title {
-  font-size: 14px;
-  font-weight: 600;
+.wide-text p {
+  margin: 0 0 var(--s4);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.5;
 }
-.addl-sub {
-  color: var(--muted);
-  font-size: 12.5px;
-  margin-top: 1px;
+.wide-art {
+  flex: none;
+  width: 170px;
+  align-self: flex-end;
+}
+@media (max-width: 560px) {
+  .wide-art { display: none; }
+}
+.art {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-/* ---------- Bottom action cards ---------- */
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s4);
-}
-@media (max-width: 720px) {
-  .actions-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.action-card {
-  display: flex;
-  align-items: center;
-  gap: var(--s4);
-  padding: var(--s5);
-  border-radius: var(--r);
-  border: 1px solid transparent;
-  transition: box-shadow var(--t), transform var(--t);
-}
-.action-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-.action-card.pos {
-  background: var(--pos-bg);
-  border-color: var(--teal-line);
-}
-.action-card.warn {
-  background: var(--warn-bg);
-  border-color: var(--warn-line);
-}
-.action-card.info {
-  background: var(--info-bg);
-  border-color: var(--info-line);
-}
-.action-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-  background: var(--card);
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-.action-card.pos .action-icon {
-  color: var(--pos-ink);
-}
-.action-card.warn .action-icon {
-  color: var(--warn-ink);
-}
-.action-card.info .action-icon {
-  color: var(--info-ink);
-}
-.action-body {
-  flex: 1;
-  min-width: 0;
-}
-.action-title {
-  font-weight: 700;
-  font-size: 14.5px;
-  color: var(--ink);
-}
-.action-sub {
-  color: var(--ink-2);
-  font-size: 12.5px;
-  margin-top: 2px;
-}
-.action-arrow {
-  color: var(--ink-2);
-  flex: none;
+/* Placeholders for actions that have no destination yet. Present so the
+   layout is final, visibly not clickable so nobody reports them as broken. */
+.inert {
+  opacity: 0.45;
+  pointer-events: none;
 }
