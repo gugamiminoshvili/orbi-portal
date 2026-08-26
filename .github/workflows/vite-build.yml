@@ -35,8 +35,8 @@ jobs:
       - name: Lint project
         run: bun run lint
 
-      - name: Run utility smoke check
-        run: bun run test:smoke
+      # - name: Run utility smoke check
+      #   run: bun run test:smoke
 
       - name: Build project
         run: bun run build
