@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Icon from '../ui/Icon'
+import logo from '../../assets/orbi-logo.svg'
 import styles from './Sidebar.module.css'
 
 const NAV = [
@@ -39,7 +40,10 @@ export default function Sidebar({ open, onNavigate }) {
       aria-label={t('common:ariaMainNav')}
     >
       <div className={styles.brand}>
-        <div className={styles.logo}>O</div>
+        {/* The real mark, not a lettered tile. alt is empty because the
+            wordmark beside it already says ORBI — a screen reader that read
+            both would say it twice. */}
+        <img src={logo} alt="" className={styles.logo} />
         <div>
           <b>ORBI</b>
           <span>{t('common:ownerPortal')}</span>
