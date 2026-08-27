@@ -29,7 +29,10 @@
 /* ---------- debt card ---------- */
 .debt-pad {
   display: flex;
-  align-items: center;
+  /* Both columns run the full height of the card, so the list and the
+     donut/Pay stack read as one layout rather than two blocks that happen
+     to sit side by side. */
+  align-items: stretch;
   gap: var(--s6);
   padding: var(--s6);
 }
@@ -42,6 +45,8 @@
 .debt-main {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 .debt-titles h3 {
   margin: 0;
@@ -60,6 +65,12 @@
   list-style: none;
   margin: var(--s5) 0 0;
   padding: 0;
+  /* Takes the slack so the rows spread over the card's height instead of
+     stacking under the title and leaving a gap below the last one. */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .debt-row {
   display: flex;
@@ -69,6 +80,14 @@
 }
 .debt-row:not(:last-child) {
   border-bottom: 1px solid var(--line);
+}
+/* The first and last rows sit flush with the column's ends, so the list
+   starts and finishes exactly where the aside beside it does. */
+.debt-row:first-child {
+  padding-top: 0;
+}
+.debt-row:last-child {
+  padding-bottom: 0;
 }
 .debt-ic {
   width: 46px;
@@ -120,6 +139,9 @@
   flex-direction: column;
   align-items: stretch;
   gap: var(--s5);
+  /* Donut centred in whatever room is left, Pay pinned to the bottom edge —
+     which is the same bottom edge the last debt row ends on. */
+  justify-content: space-between;
 }
 @media (max-width: 720px) {
   .debt-aside {
@@ -130,7 +152,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  margin: 0 auto;
+  flex: 1;
+  width: 100%;
 }
 .donut-svg {
   width: 168px;
