@@ -7,7 +7,10 @@ const VARIANT_CLASS = {
   warn: styles['btn-warn'],
 }
 
-export default function Button({ variant = 'primary', size = 'md', className, children, ...rest }) {
+// `as` lets the same button chrome render a router <Link> — a navigation
+// that looks like a button still has to BE a link, so it opens in a new tab,
+// shows its target, and reaches the keyboard the way links do.
+export default function Button({ as: Tag = 'button', variant = 'primary', size = 'md', className, children, ...rest }) {
   const classes = [
     styles.btn,
     VARIANT_CLASS[variant] || VARIANT_CLASS.primary,
@@ -16,8 +19,8 @@ export default function Button({ variant = 'primary', size = 'md', className, ch
   ].filter(Boolean).join(' ')
 
   return (
-    <button className={classes} {...rest}>
+    <Tag className={classes} {...rest}>
       {children}
-    </button>
+    </Tag>
   )
 }

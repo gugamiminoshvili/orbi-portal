@@ -93,7 +93,7 @@ describe('LoginPage', () => {
   test('renders username, password fields and a sign-in button', () => {
     renderLoginPage()
 
-    expect(screen.getByLabelText('Username')).toBeInTheDocument()
+    expect(screen.getByLabelText('Email')).toBeInTheDocument()
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument()
   })
@@ -104,11 +104,13 @@ describe('LoginPage', () => {
     )
     renderLoginPage()
 
-    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
+    // A real address, because the field is type="email" now: the browser
+    // blocks submission of a malformed one before any request is made.
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong' } })
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect username or password.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect e-mail or password.')
   })
 
   test('successful login hydrates the full profile via getUser', async () => {
@@ -131,7 +133,9 @@ describe('LoginPage', () => {
       </MemoryRouter>
     )
 
-    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
+    // A real address, because the field is type="email" now: the browser
+    // blocks submission of a malformed one before any request is made.
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
@@ -145,7 +149,9 @@ describe('LoginPage', () => {
     authApi.login.mockResolvedValueOnce({ status: 'verify', user: { user_id: 5 } })
     renderLoginPage()
 
-    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
+    // A real address, because the field is type="email" now: the browser
+    // blocks submission of a malformed one before any request is made.
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 

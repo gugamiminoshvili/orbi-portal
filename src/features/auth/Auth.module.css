@@ -1,0 +1,229 @@
+/* The signed-out shell: form on the left, brand panel on the right, matching
+   the layout of myorbi.orbi.ge. The panel is the first thing to go when the
+   window narrows — it carries no information, only atmosphere. */
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--bg);
+}
+
+/* ---------- left column ---------- */
+.side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--card);
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: var(--s4) var(--s6);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+/* Portrait mark: sized by height, width follows. */
+.brand .logo {
+  height: 44px;
+  width: auto;
+  flex: none;
+  display: block;
+}
+.brand b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.2px;
+}
+.brand span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.langs {
+  display: inline-flex;
+  gap: 2px;
+  flex: none;
+}
+.lang {
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: var(--t);
+}
+.lang:hover {
+  color: var(--ink);
+}
+.lang.on {
+  color: var(--teal-ink);
+  background: var(--teal-soft);
+}
+.lang:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* The form sits in the slack between top bar and footer. */
+.body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s7) var(--s6);
+  min-width: 0;
+}
+.card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.foot {
+  padding: var(--s5) var(--s6);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.foot a {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.foot a:hover {
+  color: var(--teal-ink);
+}
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+/* ---------- right panel ---------- */
+.panel {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: var(--s8);
+  background: linear-gradient(160deg, var(--teal) 0%, #00522F 100%);
+  color: #fff;
+}
+.panel-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 30ch;
+}
+.panel h2 {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+.panel p {
+  margin: var(--s4) 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+/* A single oversized mark, bled off the corner — decoration, not a logo
+   placement, so it stays low-contrast and is hidden from assistive tech. */
+.panel-mark {
+  position: absolute;
+  right: -60px;
+  bottom: -70px;
+  width: 380px;
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+/* ---------- the form itself ---------- */
+.title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.subtitle {
+  margin: 0 0 var(--s6);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+  font-size: 12.5px;
+}
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.submitBtn {
+  width: 100%;
+  justify-content: center;
+  height: 46px;
+  margin-top: var(--s2);
+}
+.resendBtn {
+  width: 100%;
+  justify-content: center;
+}
+.alt {
+  margin: var(--s5) 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.alt a {
+  color: var(--teal-ink);
+  font-weight: 600;
+}
+
+/* Kept at the end on purpose: `.panel` sets `display: grid` further up, and
+   an equally-specific rule only wins if it comes later. */
+@media (max-width: 1000px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .panel {
+    display: none;
+  }
+}

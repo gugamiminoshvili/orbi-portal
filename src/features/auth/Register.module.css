@@ -1,0 +1,152 @@
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  margin-bottom: 2px;
+}
+.stepline {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal-ink);
+}
+.dots {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  flex: none;
+}
+.dot {
+  width: 26px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-2);
+  transition: background var(--t);
+}
+.dot.past {
+  background: var(--teal-line);
+}
+.dot.on {
+  background: var(--teal);
+}
+
+/* ---------- passport upload ---------- */
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 26px 18px;
+  border: 1.5px dashed var(--line-2);
+  border-radius: 14px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: var(--t);
+}
+.drop:hover {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+.drop:focus-within {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.drop.filled {
+  border-style: solid;
+  border-color: var(--teal-line);
+  background: var(--teal-soft);
+}
+.drop-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  color: var(--teal-ink);
+  margin-bottom: 6px;
+}
+.drop-ic svg {
+  width: 22px;
+  height: 22px;
+}
+.drop-t {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.drop-s {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.reqs {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.reqs-t {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.reqs ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.reqs li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.reqs li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex: none;
+  margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-top: var(--s3);
+}
+
+/* ---------- the confirmation screen ---------- */
+.result {
+  text-align: center;
+}
+.result-ic {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  display: grid;
+  place-items: center;
+  margin: 0 auto var(--s5);
+}
+.result-ic svg {
+  width: 30px;
+  height: 30px;
+}

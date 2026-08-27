@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { sendVerify } from '../../api/auth'
 import { ApiError } from '../../api/errors'
 import Button from '../../components/ui/Button'
 import Field, { Input } from '../../components/ui/Field'
-import styles from './Login.module.css'
-import logo from '../../assets/orbi-logo.svg'
+import AuthLayout from './AuthLayout'
+import styles from './Auth.module.css'
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation()
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -44,7 +44,9 @@ export default function LoginPage() {
     setError('')
     setSubmitting(true)
     try {
-      await login(username, password)
+      // The backend's field is still `username`; what the user types into
+      // it is their e-mail (owner call 2026-08-27), matching the public site.
+      await login(email, password)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -79,19 +81,9 @@ export default function LoginPage() {
   if (status === 'authed') return null
 
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        <div className={styles.brand}>
-          {/* Same mark as the rail. alt is empty because the wordmark next
-              to it already says ORBI. */}
-          <img src={logo} alt="" className={styles.logo} />
-          <div>
-            <b>ORBI</b>
-            <span>{t('common:ownerPortal')}</span>
-          </div>
-        </div>
-
-        {status === 'verify' ? (
+    <AuthLayout>
+      <>
+      {status === 'verify' ? (
           <>
             <h1 className={styles.title}>{t('auth:verifyTitle')}</h1>
             <p className={styles.subtitle}>{t('auth:verifyBody')}</p>
@@ -131,13 +123,14 @@ export default function LoginPage() {
             <h1 className={styles.title}>{t('auth:title')}</h1>
             <p className={styles.subtitle}>{t('auth:subtitle')}</p>
             <form className={styles.form} onSubmit={handleSubmit}>
-              <Field label={t('auth:username')} htmlFor="login-username">
+              <Field label={t('auth:email')} htmlFor="login-email">
                 <Input
-                  id="login-username"
+                  id="login-email"
                   name="username"
+                  type="email"
                   autoComplete="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
               <Field label={t('auth:password')} htmlFor="login-password">
@@ -159,9 +152,12 @@ export default function LoginPage() {
                 {t('auth:signIn')}
               </Button>
             </form>
+            <p className={styles.alt}>
+              {t('auth:noAccount')} <Link to="/register">{t('auth:signUp')}</Link>
+            </p>
           </>
         )}
-      </div>
-    </div>
+      </>
+    </AuthLayout>
   )
 }

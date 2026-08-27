@@ -38,3 +38,14 @@
   transform: translateY(-50%);
   color: var(--muted);
 }
+
+/* Validation message under a field. The red border is a second signal for
+   the same fact, never the only one — the message carries it. */
+.field-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--neg-ink);
+}
+.field.invalid .input {
+  border-color: var(--neg);
+}
