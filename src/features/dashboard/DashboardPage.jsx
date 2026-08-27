@@ -10,6 +10,8 @@ import Card from '../../components/ui/Card'
 import Icon from '../../components/ui/Icon'
 import Skeleton from '../../components/ui/Skeleton'
 import buttonStyles from '../../components/ui/Button.module.css'
+import rulesArt from '../../assets/rules.png'
+import contactArt from '../../assets/contact.png'
 import styles from './Dashboard.module.css'
 
 // One combined fetch so the page shows a single skeleton rather than tiles
@@ -200,7 +202,7 @@ export default function DashboardPage() {
           body={t('dashboard:rulesBody')}
           action={t('dashboard:rulesAction')}
           viewAll={t('dashboard:viewAll')}
-          art={<RulesArt />}
+          art={rulesArt}
         />
         <WideCard
           tone="info"
@@ -211,7 +213,7 @@ export default function DashboardPage() {
           actionTo="/support/new"
           viewAll={t('dashboard:viewAll')}
           viewAllTo="/support"
-          art={<ContactArt />}
+          art={contactArt}
         />
       </div>
     </div>
@@ -331,44 +333,11 @@ function WideCard({ tone, icon, title, body, action, actionTo, viewAll, viewAllT
             </span>
           )}
         </div>
-        <div className={styles['wide-art']} aria-hidden="true">{art}</div>
+        {/* Decorative: it repeats what the title already says, so it is
+            hidden from assistive tech rather than given a description. */}
+        <img src={art} alt="" aria-hidden="true" className={styles['wide-art']} />
       </div>
     </Card>
-  )
-}
-
-// Decorative art. Drawn here rather than shipped as image files: two flat
-// shapes in the theme's own tokens, so they follow light/dark like
-// everything else and cost no request.
-function RulesArt() {
-  return (
-    <svg viewBox="0 0 200 140" className={styles.art}>
-      <ellipse cx="100" cy="126" rx="72" ry="9" fill="var(--teal-soft)" />
-      <rect x="58" y="22" width="84" height="98" rx="8" fill="var(--card)" stroke="var(--teal-line)" strokeWidth="2" />
-      <rect x="72" y="40" width="42" height="5" rx="2.5" fill="var(--teal-line)" />
-      <rect x="72" y="54" width="56" height="5" rx="2.5" fill="var(--fill-2)" />
-      <rect x="72" y="68" width="50" height="5" rx="2.5" fill="var(--fill-2)" />
-      <path d="M104 82h36v22c0 12-18 18-18 18s-18-6-18-18z" fill="var(--teal-soft)" stroke="var(--teal)" strokeWidth="2" strokeLinejoin="round" />
-      <path d="m114 102 5.5 5.5L131 96" fill="none" stroke="var(--teal)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M40 108c-8-6-10-18-4-26 5 8 10 12 14 14-4 4-7 8-10 12z" fill="var(--teal-soft)" />
-      <path d="M164 110c8-6 10-18 4-26-5 8-10 12-14 14 4 4 7 8 10 12z" fill="var(--teal-soft)" />
-    </svg>
-  )
-}
-
-function ContactArt() {
-  return (
-    <svg viewBox="0 0 200 140" className={styles.art}>
-      <ellipse cx="100" cy="126" rx="72" ry="9" fill="var(--teal-soft)" />
-      <path d="M56 92V74a44 44 0 0 1 88 0v18" fill="none" stroke="var(--teal)" strokeWidth="7" strokeLinecap="round" />
-      <rect x="42" y="84" width="22" height="34" rx="10" fill="var(--teal)" />
-      <rect x="136" y="84" width="22" height="34" rx="10" fill="var(--teal)" />
-      <circle cx="118" cy="66" r="30" fill="var(--teal-soft)" stroke="var(--teal-line)" strokeWidth="2" />
-      <circle cx="106" cy="66" r="3.6" fill="var(--teal)" />
-      <circle cx="118" cy="66" r="3.6" fill="var(--teal)" />
-      <circle cx="130" cy="66" r="3.6" fill="var(--teal)" />
-      <path d="M100 92c0 6-4 12-10 15 9 1 16-3 20-9z" fill="var(--teal-soft)" stroke="var(--teal-line)" strokeWidth="2" strokeLinejoin="round" />
-    </svg>
   )
 }
 

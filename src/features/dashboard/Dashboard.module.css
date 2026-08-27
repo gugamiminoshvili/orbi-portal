@@ -395,16 +395,17 @@
 }
 .wide-art {
   flex: none;
-  width: 170px;
+  width: 180px;
+  height: auto;
+  display: block;
   align-self: flex-end;
+  /* The artwork is a square with transparent margins, so it is pulled down
+     and out a little — otherwise the drawing inside reads as floating well
+     above the card's bottom edge. */
+  margin: -10px -6px -14px 0;
 }
 @media (max-width: 560px) {
   .wide-art { display: none; }
-}
-.art {
-  width: 100%;
-  height: auto;
-  display: block;
 }
 
 /* Placeholders for actions that have no destination yet. Present so the
