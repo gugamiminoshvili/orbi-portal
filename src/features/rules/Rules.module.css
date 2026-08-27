@@ -41,12 +41,19 @@
   line-height: 1.5;
   max-width: 46ch;
 }
+/* The artwork is a wide composition with the shield at its centre, so it is
+   sized by HEIGHT and left to take whatever width that needs — cropping it
+   to a fixed width would cut the shield in half. It sits flush with the
+   card's bottom-right corner. */
 .hero-art {
   position: absolute;
   right: 0;
-  bottom: 0;
-  height: 100%;
+  bottom: -2px;
+  height: 128%;
   width: auto;
+  max-width: 58%;
+  object-fit: contain;
+  object-position: right bottom;
   pointer-events: none;
 }
 /* Below this the art would sit under the text rather than beside it. */
