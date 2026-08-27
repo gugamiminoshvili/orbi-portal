@@ -196,6 +196,14 @@
   font-size: 12.5px;
   line-height: 1.5;
 }
+.forgot {
+  margin: -4px 0 0;
+  font-size: 12.5px;
+}
+.forgot a {
+  color: var(--teal-ink);
+  font-weight: 600;
+}
 .submitBtn {
   width: 100%;
   justify-content: center;

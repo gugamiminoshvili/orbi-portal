@@ -495,6 +495,44 @@
       "CUSTOMER_IS_BLOCKED": "This account has been blocked. Please contact support.",
       "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
       "generic": "Something went wrong. Please try again."
+    },
+    "forgot": {
+      "link": "Forgot your password?",
+      "title": "Password recovery",
+      "body": "Enter the e-mail address on your account and we will send you a link to set a new password.",
+      "submit": "Send the link",
+      "sending": "Sending…",
+      "sentTitle": "Check your e-mail",
+      "sentBody": "If an account exists for that address, a reset link is on its way.",
+      "expiry": "The link works for one hour. Requesting a new one cancels the previous link."
+    },
+    "reset": {
+      "title": "Set a new password",
+      "body": "Choose a password you have not used here before.",
+      "checking": "Checking the link…",
+      "newPassword": "New password",
+      "repeatPassword": "Repeat the new password",
+      "rulesTitle": "Password requirements",
+      "rules": {
+        "length": "At least 8 characters",
+        "upper": "One uppercase letter (A-Z)",
+        "lower": "One lowercase letter (a-z)",
+        "number": "One number (0-9)",
+        "nospace": "No spaces"
+      },
+      "submit": "Save the password",
+      "saving": "Saving…",
+      "errMismatch": "The passwords do not match.",
+      "errFailed": "The password could not be changed. Request a new link and try again.",
+      "doneTitle": "Password changed",
+      "doneBody": "You can sign in with your new password now.",
+      "badTitle": "This link no longer works",
+      "badBody": "Reset links last one hour, and a newer request cancels the older link.",
+      "requestAgain": "Request a new link",
+      "errors": {
+        "TOKEN_EXPIRED": "This link has expired.",
+        "TOKEN_NOT_VALID": "This link is not valid."
+      }
     }
   },
   "dashboard": {

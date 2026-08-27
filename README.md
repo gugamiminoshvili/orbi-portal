@@ -408,6 +408,22 @@ comments in `src/api/adapters/*.js` for the full detail on each):
       than guessing. And `file` is singular, so multiple files go as one
       request each.
 
+19. **Account status is not reported by `GET /user/`.** The card used to
+    derive it from `webAccess`, which is what lets you sign in at all — so
+    every signed-in user was told "Verified", including one whose passport
+    had been rejected. It now says nothing unless the backend does, and the
+    profile card is hidden in that case. The value exists on the customer
+    record (`/register2/` takes `is_passport_valid`: 1 pending, 2 valid,
+    3 invalid) — **ask for it on `/user/`** and every screen lights up with
+    no further change.
+20. **Password reset: the backend guide reports a bug in its own final
+    step.** After validating an unused token, the reset view looks the same
+    token up with `used=1` (`mobileApp/views/CustomerProfile/Profile.py:181`),
+    which can make setting the password fail right after the check passed.
+    The UI treats a successful token check as best-effort for that reason and
+    reports the failure with a "request a new link" way out, but the fix
+    belongs on the server.
+
 To wire up more of a real backend once these are answered:
 
 1. Set `VITE_API_BASE` (+ `VITE_USE_PROXY` in dev) and `VITE_USE_MOCK=false`.

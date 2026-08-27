@@ -82,17 +82,22 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        <Card className={styles.stat}>
-          <span className={`${styles['stat-ic']} ${styles[STATUS_TONE[status]]}`}>
-            <Icon name={status === 'valid' ? 'check' : 'warn'} />
-          </span>
-          <div className={styles['stat-body']}>
-            <div className={styles['stat-k']}>{t('profile:accountStatusShort')}</div>
-            <div className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
-              {t(`profile:status.${status}`)}
+        {/* Only when the backend actually told us. Printing "Verified" for
+            an account whose status is simply unknown is a claim the app is
+            not in a position to make. */}
+        {status && (
+          <Card className={styles.stat}>
+            <span className={`${styles['stat-ic']} ${styles[STATUS_TONE[status]]}`}>
+              <Icon name={status === 'valid' ? 'check' : 'warn'} />
+            </span>
+            <div className={styles['stat-body']}>
+              <div className={styles['stat-k']}>{t('profile:accountStatusShort')}</div>
+              <div className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
+                {t(`profile:status.${status}`)}
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
         <Card className={styles.stat}>
           <span className={`${styles['stat-ic']} ${styles.indigo}`}>

@@ -16,10 +16,21 @@ function renderApp(initialEntries) {
 }
 
 describe('accountStatus', () => {
-  test('derives valid/invalid from webAccess when no explicit status is sent', () => {
-    expect(accountStatus({ webAccess: true })).toBe('valid')
-    expect(accountStatus({ webAccess: false })).toBe('invalid')
-    expect(accountStatus(undefined)).toBe('invalid')
+  // The old behaviour derived this from `webAccess`, which is what lets you
+  // sign in at all — so every signed-in user was told "Verified", including
+  // one whose passport had been rejected. Silence is the honest answer.
+  test('says nothing when the backend sends no status', () => {
+    expect(accountStatus({ webAccess: true })).toBeNull()
+    expect(accountStatus({ webAccess: false })).toBeNull()
+    expect(accountStatus(undefined)).toBeNull()
+  })
+
+  test("reads is_passport_valid's own numbering when it arrives", () => {
+    expect(accountStatus({ is_passport_valid: 1 })).toBe('pending')
+    expect(accountStatus({ is_passport_valid: 2 })).toBe('valid')
+    expect(accountStatus({ is_passport_valid: 3 })).toBe('invalid')
+    // Sent as a string, as JSON payloads often do.
+    expect(accountStatus({ isPassportValid: '3' })).toBe('invalid')
   })
 
   test('an explicit backend status wins, in either spelling and any casing', () => {
@@ -28,10 +39,12 @@ describe('accountStatus', () => {
     expect(accountStatus({ webAccess: false, status: 'VALID' })).toBe('valid')
   })
 
-  test('only a non-valid status needs surfacing in the header', () => {
+  test('only a status that asks something of the owner reaches the header', () => {
     expect(needsAttention('valid')).toBe(false)
     expect(needsAttention('pending')).toBe(true)
     expect(needsAttention('invalid')).toBe(true)
+    // Unknown is not a problem to report — it is a question we cannot answer.
+    expect(needsAttention(null)).toBe(false)
   })
 })
 

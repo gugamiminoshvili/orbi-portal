@@ -143,6 +143,9 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Field>
+              <p className={styles.forgot}>
+                <Link to="/forgot-password">{t('auth:forgot.link')}</Link>
+              </p>
               {error && (
                 <p className={styles.error} role="alert">
                   {error}

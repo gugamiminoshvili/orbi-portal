@@ -3,6 +3,8 @@ import { AppShell } from './components/layout/AppShell'
 import { RequireAuth } from './context/AuthContext'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
+import ForgotPasswordPage from './features/auth/ForgotPasswordPage'
+import ResetPasswordPage from './features/auth/ResetPasswordPage'
 import DashboardPage from './features/dashboard/DashboardPage'
 import NewsListPage from './features/news/NewsListPage'
 import NewsDetailPage from './features/news/NewsDetailPage'
@@ -23,6 +25,9 @@ export function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      {/* The reset link mailed to the customer lands on /reset-password?token=… */}
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<RequireAuth><AppShell /></RequireAuth>}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
