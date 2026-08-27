@@ -39,7 +39,7 @@ test('the sidebar renders the three groups in order', () => {
   for (const label of [
     'Dashboard', 'My Apartments', 'News', 'Bookings and Visits',
     'Chat',
-    'Apartment handover', 'Power of Attorney', 'Service', 'Contact Centre',
+    'Apartment handover', 'Power of Attorney', 'Service', 'Contact Centre', 'Rules & Regulations',
   ]) {
     expect(within(nav).getByText(label)).toBeInTheDocument()
   }

@@ -28,6 +28,10 @@ const NAV = [
     { key: 'guidePowerOfAttorney', icon: 'doc', label: 'common:guidePowerOfAttorney', to: '/guides/power-of-attorney' },
     { key: 'guideService', icon: 'wrench', label: 'common:guideService', to: '/guides/service' },
     { key: 'guideContactCentre', icon: 'chat', label: 'common:guideContactCentre', to: '/guides/contact-centre' },
+    // Appended rather than slotted in at the top: the four above are an
+    // order the owner already approved, and this is a document library
+    // rather than another process rule.
+    { key: 'rules', icon: 'doc', label: 'rules:title', to: '/rules' },
   ] },
 ]
 

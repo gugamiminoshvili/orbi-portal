@@ -148,9 +148,11 @@ describe('DashboardPage — the rest of the page', () => {
 
   test('both Rules & Regulations actions open the documents page', async () => {
     renderApp()
-    await screen.findByText('Rules & Regulations')
+    await screen.findByText(/Important information about building rules/)
     // There is one place to read them, so both buttons go to the same place.
-    const card = screen.getByText('Rules & Regulations').closest('[class*="wide-card"]')
+    const card = screen
+      .getByText(/Important information about building rules/)
+      .closest('[class*="wide-card"]')
     expect(within(card).getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/rules')
     expect(screen.getByText('Read Now').closest('a')).toHaveAttribute('href', '/rules')
   })
