@@ -155,7 +155,7 @@ export default function DashboardPage() {
                 <h3>{t('dashboard:ratesTitle')}</h3>
               </div>
             </Card.Head>
-            <Card.Pad>
+            <Card.Pad className={styles['rates-pad']}>
               <div className={styles['rate-list']}>
                 {rates.rates.map((r) => {
                   const up = r.delta >= 0

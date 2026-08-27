@@ -16,7 +16,9 @@
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   gap: var(--s5);
   margin-bottom: var(--s5);
-  align-items: start;
+  /* Both cards share the row's height (the default `stretch`) rather than
+     each taking its own — the rates card is the shorter of the two, so it
+     is the one that grows, and its rows spread to fill the extra room. */
 }
 @media (max-width: 1000px) {
   .top-grid {
@@ -159,7 +161,16 @@
   font-size: 14.5px;
 }
 
-/* ---------- rates card (unchanged) ---------- */
+/* ---------- rates card ---------- */
+.rates-card {
+  display: flex;
+  flex-direction: column;
+}
+.rates-pad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 .rates-head {
   display: flex;
   align-items: center;
@@ -176,8 +187,12 @@
   flex: none;
 }
 .rate-list {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  /* Spread the three rows over whatever height the row gives us instead of
+     stacking them at the top and leaving a gap under the last one. */
+  justify-content: space-evenly;
 }
 .rate-row {
   display: grid;
@@ -211,6 +226,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: var(--s4);
+  flex: none;
   padding-top: var(--s3);
   border-top: 1px solid var(--line);
   color: var(--muted);
