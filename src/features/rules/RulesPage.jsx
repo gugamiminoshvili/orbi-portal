@@ -28,17 +28,19 @@ export default function RulesPage() {
       </Card>
 
       <div className={styles['list-head']}>
-        <div>
-          <h2>{t('rules:availableTitle')}</h2>
-          <p>{t('rules:availableSub')}</p>
-        </div>
-        <div className={styles.notice}>
-          <Icon name="help" />
-          <span>
-            <b>{t('rules:noticeTitle')}</b>
-            {t('rules:noticeBody')}
-          </span>
-        </div>
+        <h2>{t('rules:availableTitle')}</h2>
+        <p>{t('rules:availableSub')}</p>
+      </div>
+
+      {/* Its own full-width row rather than squeezed beside the heading: it
+          applies to both documents, so it reads in order — what this section
+          is, what to know before opening it, then the documents. */}
+      <div className={styles.notice}>
+        <Icon name="info" />
+        <span>
+          <b>{t('rules:noticeTitle')}</b>
+          {t('rules:noticeBody')}
+        </span>
       </div>
 
       <div className={styles.grid}>
