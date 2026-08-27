@@ -83,15 +83,9 @@ export default function Sidebar({ open, onNavigate }) {
           </div>
         ))}
       </nav>
-      {/* The identity/sign-out footer was removed: the header account menu
-          (UserMenu) is the single place the signed-in user is shown. The
-          rail's bottom slack now carries a route into Support instead. */}
-      <div className={styles['side-foot']}>
-        <NavLink to="/support" onClick={onNavigate} className={styles.help}>
-          <Icon name="help" />
-          {t('common:helpAndGuides')}
-        </NavLink>
-      </div>
+      {/* No footer: the header account menu (UserMenu) is the single place
+          the signed-in user is shown, and Support already has its own row in
+          the nav above, so a second route into it only duplicated the rail. */}
     </aside>
   )
 }

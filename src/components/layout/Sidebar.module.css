@@ -107,37 +107,6 @@
 }
 
 /* Footer help block — fills the rail's bottom slack with something useful. */
-.side-foot {
-  padding: 12px 14px 16px;
-  border-top: 1px solid var(--sidebar-line);
-}
-.help {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 11px 13px;
-  border: none;
-  border-radius: 12px;
-  background: var(--sidebar-hover);
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--sidebar-ink);
-  cursor: pointer;
-  text-align: left;
-  transition: var(--t);
-}
-.help:hover {
-  background: var(--teal-soft);
-  color: var(--teal-ink);
-}
-.help svg {
-  width: 17px;
-  height: 17px;
-  flex: none;
-}
-
 /* Ported from reference lines 684-687 (mobile sidebar slide-in) */
 @media (max-width: 880px) {
   .sidebar {
