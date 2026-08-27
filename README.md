@@ -424,6 +424,18 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     reports the failure with a "request a new link" way out, but the fix
     belongs on the server.
 
+21. **The Invalid-account gate is built but cannot fire yet.** An account the
+    back office marks Invalid keeps its read-only view but cannot act: the
+    dialog appears on sign-in, after a language change, on entering Support,
+    and in place of creating a ticket, opening the electricity statement, or
+    opening door access history (`src/context/VerificationContext.jsx`).
+    It needs two fields `/mobileApi/user/` does not send: the **status**
+    (§19) and the **reason** — one of Passport Not Attached, Identity
+    Verification Failed, User Data Mismatch, Personal Information Does Not
+    Match Company Records, No Active Ownership. Any spelling of those is
+    accepted; anything else falls back to a generic message that offers the
+    support route rather than guessing at a fix.
+
 To wire up more of a real backend once these are answered:
 
 1. Set `VITE_API_BASE` (+ `VITE_USE_PROXY` in dev) and `VITE_USE_MOCK=false`.

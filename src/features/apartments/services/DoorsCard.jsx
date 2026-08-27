@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
+import { useVerification } from '../../../context/VerificationContext'
 import Icon from '../../../components/ui/Icon'
 import buttonStyles from '../../../components/ui/Button.module.css'
 import cardStyles from '../../../components/ui/Card.module.css'
@@ -12,13 +13,14 @@ import styles from '../Detail.module.css'
 export default function DoorsCard({ apt }) {
   const { t } = useTranslation()
   const { openModal } = useModal()
+  const { guard } = useVerification()
 
   return (
     <article className={`${cardStyles.card} ${styles.svc}`}>
       <button
         type="button"
         className={styles['svc-head']}
-        onClick={() => openModal(<DoorsCalendarModal apartment={apt} />, { size: 'lg' })}
+        onClick={guard(() => openModal(<DoorsCalendarModal apartment={apt} />, { size: 'lg' }))}
       >
         <div className={styles['svc-ic']} style={{ background: 'var(--fill)', color: 'var(--ink-2)' }}>
           <Icon name="door" />

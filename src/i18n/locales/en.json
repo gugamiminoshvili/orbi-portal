@@ -610,5 +610,70 @@
       "NEW_PASSWORD_IS_THE_SAME": "The new password matches the current one.",
       "PASSWORD_LENGTH_TOO_SHORT": "Password is too short."
     }
+  },
+  "verification": {
+    "modalTitle": "Account verification",
+    "later": "Later",
+    "uploadAgain": "Upload the photo again",
+    "contactSupport": "Contact support",
+    "waMessage": "Hello! I need help with my account verification.",
+    "reasons": {
+      "not_attached": {
+        "title": "Passport not uploaded",
+        "desc": "You haven't uploaded the passport photo required for verification yet.",
+        "listTitle": "Upload requirements",
+        "items": [
+          "The passport page with your photo",
+          "Clear — all four edges visible",
+          "Allowed formats: jpg, jpeg, png, pdf, heic"
+        ]
+      },
+      "identity_failed": {
+        "title": "Identity not verified",
+        "desc": "Your identity could not be verified from the photo you uploaded. Please upload a clear photo of a valid passport.",
+        "listTitle": "What to check",
+        "items": [
+          "Face and details clearly visible",
+          "A valid, unexpired document",
+          "No glare and nothing blurred"
+        ]
+      },
+      "data_mismatch": {
+        "title": "Details don't match",
+        "desc": "The details you entered don't match the information in the passport.",
+        "listTitle": "Check",
+        "items": [
+          "First and last name",
+          "Date of birth",
+          "Document number"
+        ]
+      },
+      "company_mismatch": {
+        "title": "Details don't match company records",
+        "desc": "Your personal details don't match the management company's records. This can only be resolved by talking to us.",
+        "listTitle": "Prepare before contacting",
+        "items": [
+          "Identity document",
+          "Contract / ownership details",
+          "Contact information"
+        ]
+      },
+      "no_ownership": {
+        "title": "No property found",
+        "desc": "There's no property registered under your name. If you think this is a mistake, contact the management company.",
+        "listTitle": "Possible reasons",
+        "items": [
+          "Ownership not yet registered",
+          "Property registered to someone else",
+          "Records need updating"
+        ]
+      },
+      "generic": {
+        "title": "Your account is not verified",
+        "desc": "Until verification is complete, some actions stay unavailable. Contact us and we will sort it out.",
+        "listTitle": "",
+        "items": []
+      }
+    }
   }
 }

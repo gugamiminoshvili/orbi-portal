@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../../context/ModalContext'
+import { useVerification } from '../../../context/VerificationContext'
 import { fmt } from '../../../utils/format'
 import { amountOwed, balanceTone, owes } from '../../../utils/balance'
 import Icon from '../../../components/ui/Icon'
@@ -18,6 +19,7 @@ const STATUS_KEY = { Active: 'active', Suspended: 'suspended', Inactive: 'inacti
 export default function ElectricityCard({ apt }) {
   const { t } = useTranslation()
   const { openModal } = useModal()
+  const { guard } = useVerification()
   const s = apt.services.electricity
   // Positive balance = owed — see utils/balance.js.
   const due = owes(s.balance)
@@ -62,7 +64,7 @@ export default function ElectricityCard({ apt }) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => openModal(<ElectricityReportModal apartment={apt} />, { size: 'md' })}
+          onClick={guard(() => openModal(<ElectricityReportModal apartment={apt} />, { size: 'md' }))}
         >
           <Icon name="doc" /> {t('apartments:electricityReports')}
         </Button>

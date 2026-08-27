@@ -11,10 +11,12 @@ import { Badge } from '../../components/ui/Badge'
 import Skeleton from '../../components/ui/Skeleton'
 import buttonStyles from '../../components/ui/Button.module.css'
 import styles from './Support.module.css'
+import { useVerification } from '../../context/VerificationContext'
 
 // Left pane: search + status tabs + ticket rows. Mirrors supListHtml() /
 // supItemsHtml() at reference lines 1843-1895.
 export default function TicketList({ query, onQueryChange, filter, onFilterChange, activeId, refreshToken }) {
+  const { blocked, showBlockedModal } = useVerification()
   const { t } = useTranslation()
   const { data: tickets, loading } = useAsync(listTickets, [refreshToken])
 
@@ -48,6 +50,15 @@ export default function TicketList({ query, onQueryChange, filter, onFilterChang
             to="/support/new"
             className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${buttonStyles['btn-sm']}`}
             aria-label={t('support:newTicket')}
+            onClick={(e) => {
+              // A blocked account keeps the button — it is not the button
+              // that is unavailable, it is the account — but the click
+              // explains itself instead of opening a form that cannot send.
+              if (blocked) {
+                e.preventDefault()
+                showBlockedModal()
+              }
+            }}
           >
             <Icon name="plus" /> {t('support:new')}
           </Link>

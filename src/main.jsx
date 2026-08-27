@@ -8,6 +8,7 @@ import { ToastProvider } from './context/ToastContext'
 import { ModalProvider } from './context/ModalContext'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { VerificationProvider } from './context/VerificationContext'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -16,7 +17,10 @@ createRoot(document.getElementById('root')).render(
         <ToastProvider>
           <AuthProvider>
             <ModalProvider>
-              <App />
+              {/* Inside ModalProvider: the gate opens its dialog through it. */}
+              <VerificationProvider>
+                <App />
+              </VerificationProvider>
             </ModalProvider>
           </AuthProvider>
         </ToastProvider>
