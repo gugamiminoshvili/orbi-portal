@@ -43,13 +43,14 @@
 }
 /* The artwork is a wide composition with the shield at its centre, so it is
    sized by HEIGHT and left to take whatever width that needs — cropping it
-   to a fixed width would cut the shield in half. It sits flush with the
-   card's bottom-right corner. */
+   to a fixed width would cut the shield in half. The PNG was trimmed to its
+   own alpha bounds, so `bottom: 0` really does sit the grass on the card's
+   bottom edge rather than on invisible padding. */
 .hero-art {
   position: absolute;
   right: 0;
-  bottom: -2px;
-  height: 128%;
+  bottom: 0;
+  height: 96%;
   width: auto;
   max-width: 58%;
   object-fit: contain;
