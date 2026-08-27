@@ -14,6 +14,7 @@ import MultiPayFlow from './features/pay/MultiPayFlow'
 import PayRedirect from './features/pay/PayRedirect'
 import ProfilePage from './features/profile/ProfilePage'
 import BookingsPage from './features/bookings/BookingsPage'
+import RulesPage from './features/rules/RulesPage'
 import GuidePage from './features/guides/GuidePage'
 import SupportPage from './features/support/SupportPage'
 import EmptyPane from './features/support/EmptyPane'
@@ -43,6 +44,7 @@ export function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         {/* Empty shell for now — see BookingsPage. */}
         <Route path="/bookings" element={<BookingsPage />} />
+        <Route path="/rules" element={<RulesPage />} />
         {/* The company's process rules (handover / power of attorney /
             service / contact centre). One route, one page component; the
             content comes from features/guides/guidesContent.js. */}

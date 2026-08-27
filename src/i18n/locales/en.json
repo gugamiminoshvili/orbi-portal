@@ -675,5 +675,33 @@
         "items": []
       }
     }
+  },
+  "rules": {
+    "title": "Rules & Regulations",
+    "subtitle": "Important information about building rules, policies and your responsibilities.",
+    "availableTitle": "Available documents",
+    "availableSub": "You can read or download every document below.",
+    "noticeTitle": "Please read both documents carefully.",
+    "noticeBody": "They set out your rights and obligations.",
+    "langs": {
+      "ka": "GE",
+      "en": "EN"
+    },
+    "languageAria": "Language of {{doc}}",
+    "preview": "Preview",
+    "download": "Download",
+    "helpTitle": "Need help?",
+    "helpBody": "If you have questions about these documents, our support team is here to help.",
+    "contactCentre": "Contact Centre",
+    "docs": {
+      "hotel": {
+        "title": "Hotel Regulation",
+        "desc": "The rules of the building for residents and guests — what is expected, what is not allowed, and who to ask."
+      },
+      "service": {
+        "title": "Service Agreement Regulation",
+        "desc": "The regulations set out by the service agreement: what the management company provides and on what terms."
+      }
+    }
   }
 }

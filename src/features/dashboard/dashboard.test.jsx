@@ -140,18 +140,19 @@ describe('DashboardPage — the rest of the page', () => {
 
   test('Contact Centre: View All opens the ticket list, Contact Us a new ticket', async () => {
     renderApp()
-    await screen.findByText('Contact Centre')
-    expect(screen.getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/support')
+    await screen.findByText(/Our team is here to help you/)
+    const card = screen.getByText(/Our team is here to help you/).closest('[class*="wide-card"]')
+    expect(within(card).getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/support')
     expect(screen.getByRole('link', { name: 'Contact Us' })).toHaveAttribute('href', '/support/new')
   })
 
-  test('Rules & Regulations has no destination yet, so its actions are not links', async () => {
+  test('both Rules & Regulations actions open the documents page', async () => {
     renderApp()
     await screen.findByText('Rules & Regulations')
-    // Exactly one "View All" is a link (Contact Centre's); Rules' is inert.
-    expect(screen.getAllByText('View All')).toHaveLength(2)
-    expect(screen.getAllByRole('link', { name: /View All/ })).toHaveLength(1)
-    expect(screen.getByText('Read Now').closest('a')).toBeNull()
+    // There is one place to read them, so both buttons go to the same place.
+    const card = screen.getByText('Rules & Regulations').closest('[class*="wide-card"]')
+    expect(within(card).getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/rules')
+    expect(screen.getByText('Read Now').closest('a')).toHaveAttribute('href', '/rules')
   })
 
   test('what the redesign removed is gone', async () => {

@@ -28,7 +28,7 @@ i18n.use(initReactI18next).init({
   },
   lng: storedLang || 'en',
   fallbackLng: 'en',
-  ns: ['common', 'news', 'apartments', 'pay', 'support', 'auth', 'dashboard', 'profile', 'bookings', 'verification'],
+  ns: ['common', 'news', 'apartments', 'pay', 'support', 'auth', 'dashboard', 'profile', 'bookings', 'verification', 'rules'],
   defaultNS: 'common',
   interpolation: {
     escapeValue: false,

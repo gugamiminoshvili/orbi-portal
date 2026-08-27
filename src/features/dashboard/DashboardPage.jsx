@@ -191,17 +191,18 @@ export default function DashboardPage() {
       </div>
 
       <div className={styles['wide-grid']}>
-        {/* FLAG: the two actions here have no destination yet (owner,
-            2026-08-07: "nothing should happen on these buttons for now"),
-            so they are rendered as inert text rather than as links that
-            would go somewhere arbitrary. */}
+        {/* Both actions land on the same page — there is one place to read
+            these documents, so sending "View All" and "Read Now" anywhere
+            else would be inventing a distinction that does not exist. */}
         <WideCard
           tone="pos"
           icon="doc"
           title={t('dashboard:rulesTitle')}
           body={t('dashboard:rulesBody')}
           action={t('dashboard:rulesAction')}
+          actionTo="/rules"
           viewAll={t('dashboard:viewAll')}
+          viewAllTo="/rules"
           art={rulesArt}
         />
         <WideCard
