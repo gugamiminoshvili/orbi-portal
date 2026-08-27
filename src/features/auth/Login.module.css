@@ -23,18 +23,13 @@
   gap: 12px;
   margin-bottom: var(--s7);
 }
+/* Portrait mark: sized by height, width follows. Slightly larger than in
+   the rail — this is the first thing on the page, with room to be seen. */
 .brand .logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  height: 56px;
+  width: auto;
   flex: none;
-  background: linear-gradient(135deg, var(--teal), var(--teal-400));
-  display: grid;
-  place-items: center;
-  color: var(--on-accent);
-  font-weight: 700;
-  font-size: 20px;
-  box-shadow: 0 6px 16px var(--tint-teal-glow);
+  display: block;
 }
 .brand b {
   display: block;

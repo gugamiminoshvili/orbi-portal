@@ -7,6 +7,7 @@ import { ApiError } from '../../api/errors'
 import Button from '../../components/ui/Button'
 import Field, { Input } from '../../components/ui/Field'
 import styles from './Login.module.css'
+import logo from '../../assets/orbi-logo.svg'
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation()
@@ -81,7 +82,9 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.brand}>
-          <div className={styles.logo}>O</div>
+          {/* Same mark as the rail. alt is empty because the wordmark next
+              to it already says ORBI. */}
+          <img src={logo} alt="" className={styles.logo} />
           <div>
             <b>ORBI</b>
             <span>{t('common:ownerPortal')}</span>
