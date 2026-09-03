@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { getCommunals, getRates } from '../../api/endpoints/dashboard'
-import { listApartments } from '../../api/endpoints/apartments'
 import { fmtNum } from '../../utils/format'
-import { internetDue } from './internetDue'
 import Card from '../../components/ui/Card'
 import Icon from '../../components/ui/Icon'
 import Skeleton from '../../components/ui/Skeleton'
@@ -15,16 +13,10 @@ import contactArt from '../../assets/contact.png'
 import styles from './Dashboard.module.css'
 
 // One combined fetch so the page shows a single skeleton rather than tiles
-// popping in independently. The apartment list is needed for the internet
-// rule above: the per-flat agreement (days left / tariff / penalty) lives
-// there, not on the communals aggregate.
+// popping in independently.
 async function loadDashboard() {
-  const [communals, rates, apartments] = await Promise.all([
-    getCommunals(),
-    getRates(),
-    listApartments(),
-  ])
-  return { communals, rates, apartments }
+  const [communals, rates] = await Promise.all([getCommunals(), getRates()])
+  return { communals, rates }
 }
 
 function usdGelRate(rates) {
@@ -53,7 +45,7 @@ export default function DashboardPage() {
     )
   }
 
-  const { communals, rates, apartments } = data
+  const { communals, rates } = data
   const usdRate = usdGelRate(rates)
 
   // Owner call (2026-09-03): every figure on this card is shown in GEL, so
@@ -91,7 +83,13 @@ export default function DashboardPage() {
       tone: 'info',
       color: 'var(--info)',
       label: t('dashboard:internetDebt'),
-      value: internetDue(apartments),
+      // The backend's own figure (`internet_debt_sum`), on the owner's call
+      // (2026-09-03). This card used to derive it instead, walking the
+      // apartment list and charging tariff + penalty for any agreement with
+      // under 14 days left — a rule the aggregate does not apply. Reading
+      // the field means the dashboard now says whatever the backend says,
+      // and costs one request fewer.
+      value: communals.utilities.internetSum,
     },
   ]
 

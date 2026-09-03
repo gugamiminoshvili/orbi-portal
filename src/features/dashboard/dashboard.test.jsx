@@ -13,12 +13,7 @@ vi.mock('../../api/endpoints/dashboard', () => ({
   getContractsSummary: vi.fn(),
   getUnpaidInvoices: vi.fn(),
 }))
-vi.mock('../../api/endpoints/apartments', () => ({
-  listApartments: vi.fn(),
-}))
-
 import { getCommunals, getRates } from '../../api/endpoints/dashboard'
-import { listApartments } from '../../api/endpoints/apartments'
 
 const COMMUNALS = {
   utilities: { electricitySum: 71.38, internetSum: 50, currency: 'GEL' },
@@ -26,14 +21,6 @@ const COMMUNALS = {
   byApartment: [],
 }
 const RATES = { rates: [{ pair: 'USD/GEL', rate: 2.6333, delta: -0.0011 }], source: 'NBG' }
-
-// Internet is prepaid: only an agreement with under 14 days left is due, and
-// what falls due is its tariff plus any penalty.
-const APARTMENTS = [
-  { id: 'A1', services: { internet: { planId: 7, daysLeft: 3, tariff: 45, penalty: 5 } } },
-  { id: 'A2', services: { internet: { planId: 7, daysLeft: 20, tariff: 60, penalty: 0 } } },
-  { id: 'A3', services: { internet: { planId: null, daysLeft: 0, tariff: 0, penalty: 0 } } },
-]
 
 function renderApp(entries = ['/dashboard']) {
   return render(
@@ -50,7 +37,6 @@ const rowFor = (label) => screen.getByText(label).closest('li')
 beforeEach(() => {
   getCommunals.mockReset().mockResolvedValue(COMMUNALS)
   getRates.mockReset().mockResolvedValue(RATES)
-  listApartments.mockReset().mockResolvedValue(APARTMENTS)
 })
 
 describe('DashboardPage — the debt card', () => {
@@ -63,7 +49,7 @@ describe('DashboardPage — the debt card', () => {
     expect(within(rowFor('Service Debt')).getByText('1,731.95')).toBeInTheDocument()
     expect(screen.queryByText('$')).not.toBeInTheDocument()
     expect(within(rowFor('Electricity Debt')).getByText('71.38')).toBeInTheDocument()
-    // 45 + 5 from the apartment with 3 days left; the 20-day one owes nothing.
+    // The backend's own internet_debt_sum, read verbatim.
     expect(within(rowFor('Internet Debt')).getByText('50.00')).toBeInTheDocument()
   })
 
@@ -95,7 +81,6 @@ describe('DashboardPage — the debt card', () => {
       maintenance: { owed: -40, advance: 0, currency: 'USD' },
       byApartment: [],
     })
-    listApartments.mockResolvedValue([])
     renderApp()
     await screen.findByText('Service Debt')
 
@@ -112,7 +97,6 @@ describe('DashboardPage — the debt card', () => {
       utilities: { ...COMMUNALS.utilities, electricitySum: 0 },
       maintenance: { owed: -40, advance: 0, currency: 'USD' },
     })
-    listApartments.mockResolvedValue([])
     renderApp()
     await screen.findByText('Service Debt')
 
@@ -131,7 +115,6 @@ describe('DashboardPage — the debt card', () => {
       maintenance: { owed: 0, advance: 0, currency: 'USD' },
       byApartment: [],
     })
-    listApartments.mockResolvedValue([])
     renderApp()
 
     const pay = await screen.findByRole('link', { name: /Pay/ })
