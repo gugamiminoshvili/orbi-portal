@@ -32,7 +32,11 @@ function renderApp(entries = ['/dashboard']) {
   )
 }
 
-const rowFor = (label) => screen.getByText(label).closest('li')
+// Scoped to the debt card: "Service" and "Internet" now also appear in the
+// rail and in the guide link cards, so a bare getByText would be ambiguous.
+const rowFor = (label) =>
+  [...document.querySelectorAll('.debt-list li, ul li')]
+    .find((li) => li.textContent.startsWith(label))
 
 beforeEach(() => {
   getCommunals.mockReset().mockResolvedValue(COMMUNALS)
@@ -46,16 +50,16 @@ describe('DashboardPage — the debt card', () => {
 
     // 657.71 USD at 2.6333 = 1,731.95 GEL. The dollar sign is gone from the
     // card entirely — one currency, the owner's 2026-09-03 call.
-    expect(within(rowFor('Service Debt')).getByText('1,731.95')).toBeInTheDocument()
+    expect(within(rowFor('Service')).getByText('1,731.95')).toBeInTheDocument()
     expect(screen.queryByText('$')).not.toBeInTheDocument()
-    expect(within(rowFor('Electricity Debt')).getByText('71.38')).toBeInTheDocument()
+    expect(within(rowFor('Electricity')).getByText('71.38')).toBeInTheDocument()
     // The backend's own internet_debt_sum, read verbatim.
-    expect(within(rowFor('Internet Debt')).getByText('50.00')).toBeInTheDocument()
+    expect(within(rowFor('Internet')).getByText('50.00')).toBeInTheDocument()
   })
 
   test('the three lines add up to one stated total', async () => {
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
 
     // 1,731.95 + 71.38 + 50.00 — a sum that only exists because everything
     // is in GEL.
@@ -66,7 +70,7 @@ describe('DashboardPage — the debt card', () => {
 
   test('the bar carries one segment per debt that is actually owed', async () => {
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
 
     // Electricity and internet both owe here, so all three are drawn; their
     // widths are shares of what is owed, not of the signed total.
@@ -82,7 +86,7 @@ describe('DashboardPage — the debt card', () => {
       byApartment: [],
     })
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
 
     expect(document.querySelector('[data-bar]').children).toHaveLength(0)
     expect(document.querySelector('[data-total] [data-state]'))
@@ -98,12 +102,12 @@ describe('DashboardPage — the debt card', () => {
       maintenance: { owed: -40, advance: 0, currency: 'USD' },
     })
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
 
     // -40 USD at 2.6333 = -105.33 GEL.
-    expect(within(rowFor('Service Debt')).getByText('-105.33').closest('[data-state]'))
+    expect(within(rowFor('Service')).getByText('-105.33').closest('[data-state]'))
       .toHaveAttribute('data-state', 'ahead')
-    expect(within(rowFor('Electricity Debt')).getByText('0.00').closest('[data-state]'))
+    expect(within(rowFor('Electricity')).getByText('0.00').closest('[data-state]'))
       .toHaveAttribute('data-state', 'settled')
 
     getCommunals.mockResolvedValue(COMMUNALS)
@@ -137,13 +141,13 @@ describe('DashboardPage — the rest of the page', () => {
   test('hides the exchange-rates card when rates are unavailable', async () => {
     getRates.mockResolvedValue(null)
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
     expect(screen.queryByText("Today's Exchange Rates")).not.toBeInTheDocument()
   })
 
   test('the three link cards point at the existing guide pages', async () => {
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
     // /Service/ also matches the sidebar's own guide row, so scope to the card.
     expect(screen.getByText('Manage your service contracts and payments').closest('a'))
       .toHaveAttribute('href', '/guides/service')
@@ -176,7 +180,7 @@ describe('DashboardPage — the rest of the page', () => {
 
   test('what the redesign removed is gone', async () => {
     renderApp()
-    await screen.findByText('Service Debt')
+    await screen.findByText('All debts in one place')
     for (const gone of [
       'Contracts', 'Active offers', 'Additional contracts',
       'Request maintenance', 'Contact support', 'Unpaid invoices',

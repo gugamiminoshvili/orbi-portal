@@ -66,7 +66,7 @@ export default function DashboardPage() {
       icon: 'doc',
       tone: 'neg',
       color: 'var(--neg)',
-      label: t('dashboard:serviceDebt'),
+      label: t('dashboard:serviceLabel'),
       value: serviceOwed,
     },
     {
@@ -74,7 +74,7 @@ export default function DashboardPage() {
       icon: 'bolt',
       tone: 'warn',
       color: 'var(--warn)',
-      label: t('dashboard:electricityDebt'),
+      label: t('dashboard:electricityLabel'),
       value: communals.utilities.electricitySum,
     },
     {
@@ -82,7 +82,7 @@ export default function DashboardPage() {
       icon: 'wifi',
       tone: 'info',
       color: 'var(--info)',
-      label: t('dashboard:internetDebt'),
+      label: t('dashboard:internetLabel'),
       // The backend's own figure (`internet_debt_sum`), on the owner's call
       // (2026-09-03). This card used to derive it instead, walking the
       // apartment list and charging tariff + penalty for any agreement with
