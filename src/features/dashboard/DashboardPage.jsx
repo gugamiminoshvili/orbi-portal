@@ -204,16 +204,14 @@ export default function DashboardPage() {
       </div>
 
       <div className={styles['wide-grid']}>
-        {/* Both actions land on the same page — there is one place to read
-            these documents, so sending "View All" and "Read Now" anywhere
-            else would be inventing a distinction that does not exist. */}
+        {/* No second button: "Read Now" and "View All" both led to /rules,
+            which asked the reader to choose between two routes to the same
+            page (owner call 2026-09-03). One way in is enough. */}
         <WideCard
           tone="pos"
           icon="doc"
           title={t('dashboard:rulesTitle')}
           body={t('dashboard:rulesBody')}
-          action={t('dashboard:rulesAction')}
-          actionTo="/rules"
           viewAll={t('dashboard:viewAll')}
           viewAllTo="/rules"
           art={rulesArt}
@@ -313,15 +311,18 @@ function WideCard({ tone, icon, title, body, action, actionTo, viewAll, viewAllT
       <div className={styles['wide-body']}>
         <div className={styles['wide-text']}>
           <p>{body}</p>
-          {actionTo ? (
-            <Link to={actionTo} className={`${buttonStyles.btn} ${buttonStyles['btn-soft']} ${buttonStyles['btn-sm']}`}>
-              {action}
-            </Link>
-          ) : (
-            <span className={`${buttonStyles.btn} ${buttonStyles['btn-soft']} ${buttonStyles['btn-sm']} ${styles.inert}`}>
-              {action}
-            </span>
-          )}
+          {/* A card without an `action` carries none — its heading link is
+              the way in. */}
+          {action &&
+            (actionTo ? (
+              <Link to={actionTo} className={`${buttonStyles.btn} ${buttonStyles['btn-soft']} ${buttonStyles['btn-sm']}`}>
+                {action}
+              </Link>
+            ) : (
+              <span className={`${buttonStyles.btn} ${buttonStyles['btn-soft']} ${buttonStyles['btn-sm']} ${styles.inert}`}>
+                {action}
+              </span>
+            ))}
         </div>
         {/* Decorative: it repeats what the title already says, so it is
             hidden from assistive tech rather than given a description. */}
