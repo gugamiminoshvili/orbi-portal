@@ -21,17 +21,16 @@ const NAV = [
     { key: 'chat', icon: 'chat', label: 'common:chat', to: '/support' },
   ] },
   // The company's process rules, added at the owner's request (2026-07-30) as
-  // their own group rather than as one "Guides" index entry — four rules is a
-  // short, stable list, and one click beats two.
+  // their own group rather than as one index entry — five rules is a short,
+  // stable list, and one click beats two.
   { group: 'common:guides', items: [
+    // First, on the owner's call (2026-09-03): the binding documents come
+    // before the process walkthroughs that refer to them.
+    { key: 'rules', icon: 'doc', label: 'rules:title', to: '/rules' },
     { key: 'guideHandover', icon: 'building', label: 'common:guideHandover', to: '/guides/handover' },
     { key: 'guidePowerOfAttorney', icon: 'doc', label: 'common:guidePowerOfAttorney', to: '/guides/power-of-attorney' },
     { key: 'guideService', icon: 'wrench', label: 'common:guideService', to: '/guides/service' },
     { key: 'guideContactCentre', icon: 'chat', label: 'common:guideContactCentre', to: '/guides/contact-centre' },
-    // Appended rather than slotted in at the top: the four above are an
-    // order the owner already approved, and this is a document library
-    // rather than another process rule.
-    { key: 'rules', icon: 'doc', label: 'rules:title', to: '/rules' },
   ] },
 ]
 

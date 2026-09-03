@@ -34,15 +34,21 @@ test('the sidebar renders the three groups in order', () => {
   renderApp(['/news'])
   const nav = document.querySelector('nav')
   const groups = [...nav.children].map((g) => g.firstElementChild.textContent)
-  expect(groups).toEqual(['Main', 'Support', 'Guides'])
+  expect(groups).toEqual(['Main', 'Support', 'Instructions'])
 
-  for (const label of [
-    'Dashboard', 'My Apartments', 'News', 'Bookings and Visits',
-    'Chat',
-    'Apartment handover', 'Power of Attorney', 'Service', 'Contact Centre', 'Rules & Regulations',
-  ]) {
-    expect(within(nav).getByText(label)).toBeInTheDocument()
-  }
+  // Row order is asserted too, not just membership: Rules & Regulations
+  // leads the third group on the owner's call (2026-09-03).
+  const rowsOf = (i) =>
+    [...nav.children[i].children].slice(1).map((r) => r.textContent.trim())
+  expect(rowsOf(0)).toEqual(['Dashboard', 'My Apartments', 'News', 'Bookings and Visits'])
+  expect(rowsOf(1)).toEqual(['Chat'])
+  expect(rowsOf(2)).toEqual([
+    'Rules & Regulations',
+    'Apartment handover',
+    'Power of Attorney',
+    'Service',
+    'Contact Centre',
+  ])
 })
 
 test('what left the sidebar is not rendered there any more', () => {
