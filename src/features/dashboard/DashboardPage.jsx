@@ -56,10 +56,17 @@ export default function DashboardPage() {
   const { communals, rates, apartments } = data
   const usdRate = usdGelRate(rates)
 
-  // LIVE maintenance arrives in USD, mock in GEL — the same currency-
-  // conditional rule payFlowData.owedFor uses.
+  // Owner call (2026-09-03): every figure on this card is shown in GEL, so
+  // the one line that can arrive in another currency is converted here —
+  // by the same rule and from the same NBG rate payFlowData.owedFor already
+  // applies, so the dashboard and the pay flow can never disagree. LIVE
+  // maintenance is USD, mock is already GEL. With no rate to hand, the raw
+  // magnitude is shown rather than nothing.
   const serviceCurrency = communals.maintenance.currency || 'USD'
-  const serviceSymbol = serviceCurrency === 'GEL' ? '₾' : '$'
+  const serviceOwed =
+    serviceCurrency !== 'GEL' && usdRate != null
+      ? communals.maintenance.owed * usdRate
+      : communals.maintenance.owed
 
   const debts = [
     {
@@ -68,11 +75,7 @@ export default function DashboardPage() {
       tone: 'neg',
       color: 'var(--neg)',
       label: t('dashboard:serviceDebt'),
-      value: communals.maintenance.owed,
-      symbol: serviceSymbol,
-      // Only this line can be in a foreign currency, so it is the only one
-      // the donut has to convert (see chartValue below).
-      currency: serviceCurrency,
+      value: serviceOwed,
     },
     {
       key: 'electricity',
@@ -81,37 +84,33 @@ export default function DashboardPage() {
       color: 'var(--warn)',
       label: t('dashboard:electricityDebt'),
       value: communals.utilities.electricitySum,
-      symbol: '₾',
-      currency: 'GEL',
     },
     {
       key: 'internet',
-      icon: 'globe',
+      icon: 'wifi',
       tone: 'info',
       color: 'var(--info)',
       label: t('dashboard:internetDebt'),
       value: internetDue(apartments),
-      symbol: '₾',
-      currency: 'GEL',
     },
   ]
 
-  // The donut states "one whole split into parts", so the parts have to be
-  // comparable: the USD line is converted to GEL for the geometry only. No
-  // converted figure is ever printed — the centre carries the word "Total"
-  // and nothing else (owner call 2026-08-07), precisely so the chart never
-  // has to claim a single cross-currency number.
-  const segments = debts
-    .map((d) => ({
-      key: d.key,
-      color: d.color,
-      // A credit is not a slice of a debt; only what is owed is drawn.
-      value: Math.max(
-        0,
-        d.currency !== 'GEL' && usdRate != null ? d.value * usdRate : d.value
-      ),
-    }))
-    .filter((s) => s.value > 0)
+  // One currency means the three lines finally add up, so the card can state
+  // a single total. A credit counts against it, which is why this is a plain
+  // sum and not a sum of the positives.
+  const total = debts.reduce((sum, d) => sum + d.value, 0)
+
+  // The bar states "one whole split into parts", so only what is owed can be
+  // a part of it: a credit is not a slice of a debt. When nothing is owed
+  // the bar is left as an empty track rather than being hidden, so the card
+  // keeps its shape whatever the numbers do.
+  const owedTotal = debts.reduce((sum, d) => sum + Math.max(0, d.value), 0)
+  const segments =
+    owedTotal > 0
+      ? debts
+          .filter((d) => d.value > 0)
+          .map((d) => ({ key: d.key, color: d.color, pct: (d.value / owedTotal) * 100 }))
+      : []
 
   return (
     <div>
@@ -120,30 +119,44 @@ export default function DashboardPage() {
       <div className={styles['top-grid']}>
         <Card className={styles['debt-card']}>
           <Card.Pad className={styles['debt-pad']}>
-            <div className={styles['debt-main']}>
+            <div className={styles['debt-head']}>
               <div className={styles['debt-titles']}>
                 <h3>{t('dashboard:totalDebtTitle')}</h3>
                 <span className={styles['debt-sub']}>{t('dashboard:totalDebtSubtitle')}</span>
               </div>
-              <ul className={styles['debt-list']}>
-                {debts.map(({ key, ...d }) => (
-                  <DebtRow key={key} {...d} />
-                ))}
-              </ul>
+              <div className={styles['debt-total']} data-total>
+                <span className={styles['debt-total-lbl']}>{t('dashboard:totalLabel')}</span>
+                <span
+                  className={`${styles['debt-total-val']} ${total < 0 ? styles.ahead : ''}`}
+                  data-state={total > 0 ? 'owed' : total < 0 ? 'ahead' : 'settled'}
+                >
+                  {fmtNum(total)}
+                  <span className={styles.cur}>₾</span>
+                </span>
+              </div>
             </div>
 
-            <div className={styles['debt-aside']}>
-              <Donut segments={segments} label={t('dashboard:donutTotal')} />
-              {/* Never disabled: paying into an account that owes nothing is
-                  a deliberate feature (advance payment, owner call
-                  2026-08-06), so a zero total is not a reason to block it. */}
-              <Link
-                to="/pay"
-                className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${styles['pay-btn']}`}
-              >
-                <Icon name="card" /> {t('dashboard:payNow')}
-              </Link>
-            </div>
+            <Bar segments={segments} />
+
+            <ul className={styles['debt-list']}>
+              {debts.map(({ key, ...d }) => (
+                <DebtRow key={key} {...d} />
+              ))}
+            </ul>
+
+            {/* Never disabled: paying into an account that owes nothing is
+                a deliberate feature (advance payment, owner call
+                2026-08-06), so a zero total is not a reason to block it.
+                The button carries no amount — it opens the multi-pay flow,
+                where the owner picks apartments and services, so a figure
+                printed here would be a promise that flow does not keep
+                (owner call 2026-09-03). */}
+            <Link
+              to="/pay"
+              className={`${buttonStyles.btn} ${buttonStyles['btn-primary']} ${styles['pay-btn']}`}
+            >
+              <Icon name="card" /> {t('dashboard:payNow')}
+            </Link>
           </Card.Pad>
         </Card>
 
@@ -221,10 +234,10 @@ export default function DashboardPage() {
   )
 }
 
-// One debt line: tinted icon tile, label, amount. The amount's colour states
+// One debt cell: tinted icon tile, label, amount. The amount's colour states
 // what the number means — owed is red, settled is neutral, and a credit is
 // green (utils/balance.js's convention, applied to display here).
-function DebtRow({ icon, tone, label, value, symbol }) {
+function DebtRow({ icon, tone, label, value }) {
   const owed = value > 0
   const ahead = value < 0
   return (
@@ -232,56 +245,32 @@ function DebtRow({ icon, tone, label, value, symbol }) {
       <span className={`${styles['debt-ic']} ${styles[tone]}`}>
         <Icon name={icon} />
       </span>
-      <div className={styles['debt-body']}>
-        <div className={styles['debt-label']}>{label}</div>
-        <div
-          // Also exposed as data, not only as colour: the state is then
-          // assertable in a test and readable in devtools without decoding
-          // a hashed class name.
-          data-state={owed ? 'owed' : ahead ? 'ahead' : 'settled'}
-          className={`${styles['debt-value']} ${owed ? styles.owed : ''} ${ahead ? styles.ahead : ''}`}
-        >
-          {fmtNum(value)}
-          <span className={styles.cur}>{symbol}</span>
-        </div>
+      <div className={styles['debt-label']}>{label}</div>
+      <div
+        // Also exposed as data, not only as colour: the state is then
+        // assertable in a test and readable in devtools without decoding
+        // a hashed class name.
+        data-state={owed ? 'owed' : ahead ? 'ahead' : 'settled'}
+        className={`${styles['debt-value']} ${owed ? styles.owed : ''} ${ahead ? styles.ahead : ''}`}
+      >
+        {fmtNum(value)}
+        <span className={styles.cur}>₾</span>
       </div>
     </li>
   )
 }
 
-// Donut split by debt type. Drawn with stroke-dasharray on a single circle
-// per segment rather than paths: no arc maths, and it degrades to a plain
-// ring when there is nothing to show.
-const R = 54
-const C = 2 * Math.PI * R
-
-function Donut({ segments, label }) {
-  const total = segments.reduce((sum, s) => sum + s.value, 0)
-  let offset = 0
+// The debt split as one horizontal bar rather than a ring (owner call
+// 2026-09-03). Percentages are pre-computed by the caller, so this is pure
+// layout: an empty track when nothing is owed, otherwise one flex child per
+// paying segment. Decorative — the same numbers are read out by the cells
+// below it, so it is hidden from assistive tech.
+function Bar({ segments }) {
   return (
-    <div className={styles.donut}>
-      <svg viewBox="0 0 140 140" className={styles['donut-svg']} aria-hidden="true">
-        <circle cx="70" cy="70" r={R} className={styles['donut-track']} />
-        {total > 0 &&
-          segments.map((s) => {
-            const len = (s.value / total) * C
-            const dash = (
-              <circle
-                key={s.key}
-                cx="70"
-                cy="70"
-                r={R}
-                className={styles['donut-seg']}
-                stroke={s.color}
-                strokeDasharray={`${len} ${C - len}`}
-                strokeDashoffset={-offset}
-              />
-            )
-            offset += len
-            return dash
-          })}
-      </svg>
-      <span className={styles['donut-label']}>{label}</span>
+    <div className={styles.bar} aria-hidden="true" data-bar>
+      {segments.map((s) => (
+        <span key={s.key} style={{ width: `${s.pct}%`, background: s.color }} />
+      ))}
     </div>
   )
 }

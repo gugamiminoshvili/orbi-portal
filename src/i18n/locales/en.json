@@ -541,7 +541,7 @@
     "serviceDebt": "Service Debt",
     "electricityDebt": "Electricity Debt",
     "internetDebt": "Internet Debt",
-    "donutTotal": "Total",
+    "totalLabel": "Total",
     "payNow": "Pay",
     "ratesTitle": "Today's Exchange Rates",
     "ratesSource": "Source: {{source}}",

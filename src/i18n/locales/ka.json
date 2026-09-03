@@ -541,7 +541,7 @@
     "serviceDebt": "სერვისის დავალიანება",
     "electricityDebt": "ელექტროენერგიის დავალიანება",
     "internetDebt": "ინტერნეტის დავალიანება",
-    "donutTotal": "ჯამი",
+    "totalLabel": "ჯამი",
     "payNow": "გადახდა",
     "ratesTitle": "დღის კურსები",
     "ratesSource": "წყარო: {{source}}",

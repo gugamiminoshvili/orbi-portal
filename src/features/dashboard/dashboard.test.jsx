@@ -54,25 +54,56 @@ beforeEach(() => {
 })
 
 describe('DashboardPage — the debt card', () => {
-  test('shows one row per debt type, each in its own currency', async () => {
+  test('shows one cell per debt type, every figure converted to GEL', async () => {
     renderApp()
     expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
 
-    expect(within(rowFor('Service Debt')).getByText('657.71')).toBeInTheDocument()
-    expect(within(rowFor('Service Debt')).getByText('$')).toBeInTheDocument()
+    // 657.71 USD at 2.6333 = 1,731.95 GEL. The dollar sign is gone from the
+    // card entirely — one currency, the owner's 2026-09-03 call.
+    expect(within(rowFor('Service Debt')).getByText('1,731.95')).toBeInTheDocument()
+    expect(screen.queryByText('$')).not.toBeInTheDocument()
     expect(within(rowFor('Electricity Debt')).getByText('71.38')).toBeInTheDocument()
     // 45 + 5 from the apartment with 3 days left; the 20-day one owes nothing.
     expect(within(rowFor('Internet Debt')).getByText('50.00')).toBeInTheDocument()
   })
 
-  test('the donut states only the word Total — no cross-currency number', async () => {
+  test('the three lines add up to one stated total', async () => {
     renderApp()
     await screen.findByText('Service Debt')
 
-    expect(screen.getByText('Total')).toBeInTheDocument()
-    // 657.71 USD + 71.38 GEL has no meaningful sum, and none is printed.
-    expect(screen.queryByText('729.09')).not.toBeInTheDocument()
-    expect(screen.queryByText(/1,\d{3}\.\d{2}/)).not.toBeInTheDocument()
+    // 1,731.95 + 71.38 + 50.00 — a sum that only exists because everything
+    // is in GEL.
+    const total = document.querySelector('[data-total] [data-state]')
+    expect(total).toHaveTextContent('1,853.33')
+    expect(total).toHaveAttribute('data-state', 'owed')
+  })
+
+  test('the bar carries one segment per debt that is actually owed', async () => {
+    renderApp()
+    await screen.findByText('Service Debt')
+
+    // Electricity and internet both owe here, so all three are drawn; their
+    // widths are shares of what is owed, not of the signed total.
+    const bar = document.querySelector('[data-bar]')
+    expect(bar.children).toHaveLength(3)
+    expect(Number(bar.children[0].style.width.replace('%', ''))).toBeCloseTo(93.45, 2)
+  })
+
+  test('a credit leaves the bar empty rather than drawing a negative slice', async () => {
+    getCommunals.mockResolvedValue({
+      utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+      maintenance: { owed: -40, advance: 0, currency: 'USD' },
+      byApartment: [],
+    })
+    listApartments.mockResolvedValue([])
+    renderApp()
+    await screen.findByText('Service Debt')
+
+    expect(document.querySelector('[data-bar]').children).toHaveLength(0)
+    expect(document.querySelector('[data-total] [data-state]'))
+      .toHaveAttribute('data-state', 'ahead')
+
+    getCommunals.mockResolvedValue(COMMUNALS)
   })
 
   test('colour states: owed, settled, and paid ahead', async () => {
@@ -85,7 +116,8 @@ describe('DashboardPage — the debt card', () => {
     renderApp()
     await screen.findByText('Service Debt')
 
-    expect(within(rowFor('Service Debt')).getByText('-40.00').closest('[data-state]'))
+    // -40 USD at 2.6333 = -105.33 GEL.
+    expect(within(rowFor('Service Debt')).getByText('-105.33').closest('[data-state]'))
       .toHaveAttribute('data-state', 'ahead')
     expect(within(rowFor('Electricity Debt')).getByText('0.00').closest('[data-state]'))
       .toHaveAttribute('data-state', 'settled')

@@ -555,7 +555,7 @@
     "serviceDebt": "Задолженность за обслуживание",
     "electricityDebt": "Задолженность за электроэнергию",
     "internetDebt": "Задолженность за интернет",
-    "donutTotal": "Итого",
+    "totalLabel": "Итого",
     "payNow": "Оплатить",
     "ratesTitle": "Курсы валют на сегодня",
     "ratesSource": "Источник: {{source}}",

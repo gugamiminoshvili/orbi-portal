@@ -1,5 +1,6 @@
-/* Dashboard — rebuilt to the owner's 2026-08-07 design: one debt card with a
-   donut, the rates card beside it, three guide links, then two wide cards. */
+/* Dashboard — one debt card (total, split bar, three cells, Pay), the rates
+   card beside it, three guide links, then two wide cards. The debt card was
+   a two-column donut layout until the owner picked the bar on 2026-09-03. */
 
 .page-head {
   margin-bottom: var(--s6);
@@ -27,26 +28,20 @@
 }
 
 /* ---------- debt card ---------- */
+/* Stacked, not two columns: the whole card reads top to bottom — total,
+   the split, the three cells, the action. */
 .debt-pad {
   display: flex;
-  /* Both columns run the full height of the card, so the list and the
-     donut/Pay stack read as one layout rather than two blocks that happen
-     to sit side by side. */
-  align-items: stretch;
-  gap: var(--s6);
+  flex-direction: column;
+  gap: var(--s5);
   padding: var(--s6);
 }
-@media (max-width: 720px) {
-  .debt-pad {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-.debt-main {
-  flex: 1;
-  min-width: 0;
+.debt-head {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
 }
 .debt-titles h3 {
   margin: 0;
@@ -60,123 +55,124 @@
   color: var(--muted);
   font-size: 12.5px;
 }
+.debt-total {
+  text-align: right;
+  margin-left: auto;
+}
+.debt-total-lbl {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.debt-total-val {
+  display: block;
+  margin-top: 1px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+/* The headline total is ink even when money is owed: it is the card's
+   subject, not its alarm. Only a credit changes colour, because that is the
+   one state the reader would otherwise misread as a debt. */
+.debt-total-val.ahead { color: var(--pos-ink); }
+.debt-total-val .cur {
+  margin-left: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* One whole split into parts. An empty track when nothing is owed, so the
+   card keeps its shape whatever the numbers do. */
+.bar {
+  display: flex;
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--fill);
+  overflow: hidden;
+}
+.bar span {
+  display: block;
+  height: 100%;
+}
 
 .debt-list {
   list-style: none;
-  margin: var(--s5) 0 0;
+  margin: 0;
   padding: 0;
-  /* Takes the slack so the rows spread over the card's height instead of
-     stacking under the title and leaving a gap below the last one. */
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s4);
 }
 .debt-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s4);
-  padding: var(--s4) 0;
+  border: 1px solid var(--card-line);
+  border-radius: var(--r-sm);
+  padding: var(--s4);
 }
-.debt-row:not(:last-child) {
-  border-bottom: 1px solid var(--line);
-}
-/* The first and last rows sit flush with the column's ends, so the list
-   starts and finishes exactly where the aside beside it does. */
-.debt-row:first-child {
-  padding-top: 0;
-}
-.debt-row:last-child {
-  padding-bottom: 0;
+/* One column below 720px — and once a cell has the full width, stacking the
+   icon above the label wastes it: each cell lays out as a row instead, which
+   is a third of the height for the same three facts. */
+@media (max-width: 720px) {
+  .debt-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s3);
+  }
+  .debt-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s4);
+  }
+  .debt-label {
+    margin-top: 0;
+    flex: 1;
+    min-width: 0;
+  }
+  .debt-value {
+    margin-top: 0;
+  }
 }
 .debt-ic {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
   display: grid;
   place-items: center;
-  flex: none;
 }
 .debt-ic svg {
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
 }
 .debt-ic.neg { background: var(--neg-bg); color: var(--neg-ink); }
 .debt-ic.warn { background: var(--warn-bg); color: var(--warn-ink); }
 .debt-ic.info { background: var(--info-bg); color: var(--info-ink); }
 
-.debt-body {
-  min-width: 0;
-}
 .debt-label {
-  font-size: 13.5px;
+  margin-top: var(--s3);
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--ink-2);
 }
 /* Settled reads neutral; only a real debt is red and only a real credit is
    green, so colour never has to be decoded. */
 .debt-value {
-  margin-top: 1px;
-  font-size: 23px;
+  margin-top: 2px;
+  font-size: 19px;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--muted);
 }
 .debt-value.owed { color: var(--neg-ink); }
 .debt-value.ahead { color: var(--pos-ink); }
 .debt-value .cur {
-  margin-left: 4px;
-  font-size: 16px;
+  margin-left: 3px;
+  font-size: 14px;
   font-weight: 600;
 }
 
-/* ---------- donut + pay ---------- */
-.debt-aside {
-  flex: none;
-  width: 208px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--s5);
-  /* Donut centred in whatever room is left, Pay pinned to the bottom edge —
-     which is the same bottom edge the last debt row ends on. */
-  justify-content: space-between;
-}
-@media (max-width: 720px) {
-  .debt-aside {
-    width: auto;
-  }
-}
-.donut {
-  position: relative;
-  display: grid;
-  place-items: center;
-  flex: 1;
-  width: 100%;
-}
-.donut-svg {
-  width: 168px;
-  height: 168px;
-  /* Start the first segment at 12 o'clock rather than 3. */
-  transform: rotate(-90deg);
-}
-.donut-track {
-  fill: none;
-  stroke: var(--fill);
-  stroke-width: 14;
-}
-.donut-seg {
-  fill: none;
-  stroke-width: 14;
-  stroke-linecap: butt;
-}
-.donut-label {
-  position: absolute;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink-2);
-}
 .pay-btn {
   justify-content: center;
   width: 100%;
