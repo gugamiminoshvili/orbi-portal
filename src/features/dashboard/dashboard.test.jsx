@@ -165,17 +165,15 @@ describe('DashboardPage — the rest of the page', () => {
     expect(screen.getByRole('link', { name: 'Contact Us' })).toHaveAttribute('href', '/support/new')
   })
 
-  test('Rules & Regulations offers one way in, not two', async () => {
+  test('both Rules & Regulations actions open the documents page', async () => {
     renderApp()
     await screen.findByText(/Important information about building rules/)
     const card = screen
       .getByText(/Important information about building rules/)
       .closest('[class*="wide-card"]')
+    // There is one place to read them, so both routes lead there.
     expect(within(card).getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/rules')
-    // "Read Now" pointed at /rules too, so it was a second route to the same
-    // page and nothing else (owner call 2026-09-03).
-    expect(screen.queryByText('Read Now')).not.toBeInTheDocument()
-    expect(within(card).getAllByRole('link')).toHaveLength(1)
+    expect(within(card).getByRole('link', { name: 'Read more' })).toHaveAttribute('href', '/rules')
   })
 
   test('what the redesign removed is gone', async () => {

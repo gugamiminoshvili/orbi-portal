@@ -202,14 +202,17 @@ export default function DashboardPage() {
       </div>
 
       <div className={styles['wide-grid']}>
-        {/* No second button: "Read Now" and "View All" both led to /rules,
-            which asked the reader to choose between two routes to the same
-            page (owner call 2026-09-03). One way in is enough. */}
+        {/* Both actions land on the same page, deliberately (owner call
+            2026-09-03): the button is what makes this card look and behave
+            like the Contact Centre card beside it, and without it the body
+            copy sits alone against the artwork. */}
         <WideCard
           tone="pos"
           icon="doc"
           title={t('dashboard:rulesTitle')}
           body={t('dashboard:rulesBody')}
+          action={t('dashboard:rulesAction')}
+          actionTo="/rules"
           viewAll={t('dashboard:viewAll')}
           viewAllTo="/rules"
           art={rulesArt}
