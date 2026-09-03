@@ -12,11 +12,14 @@
   flex-direction: column;
 }
 
+/* Full-bleed: no max-width and no auto margins. The rail already takes its
+   fixed column, so capping the rest at 1240px left the page floating in two
+   grey gutters on any monitor wider than ~1500px (owner call 2026-09-03).
+   Every page here is grid-based and reflows, so the width is usable rather
+   than just wider. */
 .page {
   padding: 28px;
-  max-width: 1240px;
   width: 100%;
-  margin: 0 auto;
   animation: fade .35s ease;
 }
 
