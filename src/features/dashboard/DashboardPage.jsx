@@ -233,7 +233,7 @@ export default function DashboardPage() {
 // One debt cell: tinted icon tile, label, amount. The amount's colour states
 // what the number means — owed is red, settled is neutral, and a credit is
 // green (utils/balance.js's convention, applied to display here).
-function DebtRow({ icon, tone, label, value }) {
+function DebtRow({ icon, tone, color, label, value }) {
   const owed = value > 0
   const ahead = value < 0
   return (
@@ -241,7 +241,14 @@ function DebtRow({ icon, tone, label, value }) {
       <span className={`${styles['debt-ic']} ${styles[tone]}`}>
         <Icon name={icon} />
       </span>
-      <div className={styles['debt-label']}>{label}</div>
+      <div className={styles['debt-label']}>
+        {/* The one thing tying this cell to its slice of the bar above:
+            same solid colour, so the reader can match them at a glance.
+            Decorative — the label beside it already names the service, and
+            nothing here is stated by colour alone. */}
+        <span className={styles['debt-dot']} style={{ background: color }} aria-hidden="true" />
+        {label}
+      </div>
       <div
         // Also exposed as data, not only as colour: the state is then
         // assertable in a test and readable in devtools without decoding
