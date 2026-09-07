@@ -7,6 +7,7 @@ import { LANGS, setLang } from '../../i18n'
 import { accountStatus, needsAttention, STATUS_TONE } from '../../utils/accountStatus'
 import Badge from '../ui/Badge'
 import Tooltip from '../ui/Tooltip'
+import { useStatusHint } from '../../features/verification/statusHint'
 import Icon from '../ui/Icon'
 import { SwitchVisual } from '../ui/Switch'
 import styles from './UserMenu.module.css'
@@ -69,11 +70,9 @@ export default function UserMenu() {
   // is a fixed-height chip and must never wrap. The profile page's status card
   // has the room for the full wording.
   const shortStatusLabel = t([`profile:status.${status}Short`, `profile:status.${status}`])
-  // Why the account carries this status. This is the general line for the
-  // state; the specific cause lives in the verification dialog, which reads
-  // `passport_invalidity_reason` and has the room to say what to do about
-  // it. A tooltip is not the place for five different remedies.
-  const statusHint = needsAttention(status) ? t(`profile:statusHint.${status}`) : null
+  // Why the account carries this status — the dialog's own wording for the
+  // operator's actual reason, not a second sentence written beside it.
+  const statusHint = useStatusHint(status)
 
   async function handleLogout() {
     setOpen(false)

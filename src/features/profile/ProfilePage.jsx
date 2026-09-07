@@ -6,12 +6,13 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { changePassword } from '../../api/auth'
 import { USE_MOCK } from '../../api/client'
-import { accountStatus, needsAttention, STATUS_TONE } from '../../utils/accountStatus'
+import { accountStatus, STATUS_TONE } from '../../utils/accountStatus'
 import { fmtDate } from '../../utils/format'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
 import Tooltip from '../../components/ui/Tooltip'
+import { useStatusHint } from '../verification/statusHint'
 import { Seg } from '../../components/ui/Badge'
 import fieldStyles from '../../components/ui/Field.module.css'
 import styles from './Profile.module.css'
@@ -49,6 +50,7 @@ export default function ProfilePage() {
 
   const name = user?.fullname || user?.username || '-'
   const status = accountStatus(user)
+  const statusHint = useStatusHint(status)
 
   // Each detail row carries its own icon (Variant 2 layout) — the icon is
   // decorative, the label is the accessible name.
@@ -96,11 +98,14 @@ export default function ProfilePage() {
               {/* A status that needs attention says why on hover, and on tap
                   where there is no hover. A verified account has nothing to
                   explain, so it is left as plain text. */}
-              <Tooltip
-                text={needsAttention(status) ? t(`profile:statusHint.${status}`) : null}
-                align="start"
-              >
-                <span className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
+              <Tooltip text={statusHint} align="start">
+                <span
+                  // Exposed as data, not only as colour: assertable in a
+                  // test and readable in devtools without decoding a hashed
+                  // class name.
+                  data-account-status={status}
+                  className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}
+                >
                   {t(`profile:status.${status}`)}
                 </span>
               </Tooltip>

@@ -186,6 +186,39 @@ describe('the gate', () => {
     expect(link).toHaveAttribute('target', '_blank')
   })
 
+  // The tooltip on the status shows the dialog's own wording for the actual
+  // reason (owner call 2026-09-04) — not a second, vaguer sentence written
+  // beside it, which is how the Pending tooltip came to claim actions were
+  // unavailable while its dialog said nothing further was needed.
+  test('the status tooltip carries the dialog wording for the actual reason', () => {
+    mockUser = {
+      is_passport_valid: 3,
+      passport_invalidity_reason: 'identity_verification_failed',
+    }
+    renderApp('/profile')
+
+    // Close the dialog the arrival opened, then hover the status card.
+    fireEvent.click(screen.getAllByRole('button', { name: /close/i })[0])
+    const status = document.querySelector('[data-account-status="invalid"]').closest('button')
+    fireEvent.mouseEnter(status)
+
+    const tip = screen.getByRole('tooltip')
+    expect(tip).toHaveTextContent('Identity not verified')
+    expect(tip).toHaveTextContent(/could not be verified from the uploaded passport/)
+  })
+
+  test('a pending account gets the pending dialog wording, not a debt of its own', () => {
+    mockUser = { is_passport_valid: 1 }
+    renderApp('/profile')
+
+    fireEvent.click(screen.getAllByRole('button', { name: /close/i })[0])
+    fireEvent.mouseEnter(document.querySelector('[data-account-status="pending"]').closest('button'))
+
+    const tip = screen.getByRole('tooltip')
+    expect(tip).toHaveTextContent('Verification in progress')
+    expect(tip).toHaveTextContent(/being reviewed/)
+  })
+
   // The status the owner asked to be announced too (2026-09-04). It is not a
   // block: nothing is guarded by it, and its own copy says so.
   test('a pending account is announced but not restricted', () => {
