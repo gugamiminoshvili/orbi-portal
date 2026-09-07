@@ -62,6 +62,10 @@ export function reasonKey(raw) {
 // between the modal, the prototype and whatever comes next.
 export const SUPPORT_WHATSAPP = '995595071931'
 
+// The same number as a human reads it. Kept beside the dialling form so the
+// two can never drift apart.
+export const SUPPORT_DISPLAY = '+995 595 071 931'
+
 export function whatsappLink(message) {
   return `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(message)}`
 }

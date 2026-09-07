@@ -151,3 +151,301 @@
   .title { font-size: 17.5px; }
   .desc { font-size: 13.5px; }
 }
+
+/* ============================================================
+   Uploader and support surfaces — both open inside the same modal,
+   both keep the prototype's header/body/footer split so the footer
+   never scrolls away from a long body.
+   ============================================================ */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+  transition: var(--t);
+}
+.back:hover { background: var(--surface-2); }
+.back:focus-visible { outline: none; box-shadow: var(--ring); }
+.head-t {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.head-s {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.up-body {
+  padding: 20px 22px 6px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Drag and drop is a desktop affordance; a touch screen has the two buttons
+   below instead, which is why the prototype hides this there. */
+.dropzone {
+  border: 1.5px dashed var(--line-2);
+  border-radius: 15px;
+  padding: 26px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--card);
+  margin-bottom: 14px;
+  transition: var(--t);
+}
+.dropzone:hover,
+.dropzone.drag {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+.dropzone:focus-visible { outline: none; box-shadow: var(--ring); }
+.dz-ic {
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  color: var(--teal-ink);
+}
+.dz-ic svg { width: 26px; height: 26px; }
+.dz-t { font-size: 14.5px; font-weight: 600; margin-bottom: 3px; }
+.dz-s { font-size: 12.5px; color: var(--muted); }
+
+.dz-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.ab {
+  flex: 1;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 13px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--t);
+}
+.ab:hover { border-color: var(--teal); color: var(--teal-ink); }
+.ab svg { width: 17px; height: 17px; }
+
+.pv-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.pv-thumb {
+  width: 72px;
+  height: 54px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  flex: none;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.pv-thumb img { width: 100%; height: 100%; object-fit: cover; }
+/* PDF and HEIC cannot be drawn by <img> in every browser, so the thumbnail
+   falls back to the extension rather than an empty grey box. */
+.pv-doc {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pv-meta { flex: 1; min-width: 0; display: block; }
+.pv-name {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pv-size { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.pv-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+  transition: var(--t);
+}
+.pv-remove:hover { background: var(--neg-bg); color: var(--neg-ink); border-color: var(--neg-bg); }
+.pv-remove svg { width: 16px; height: 16px; }
+
+/* Only shown when the picked file fails format or size — the three tips
+   below are guidance and stay put either way. */
+.uperr {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--neg-bg);
+  color: var(--neg-ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.uperr svg { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+
+.tips {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  counter-reset: t;
+}
+.tips li {
+  counter-increment: t;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.tips li::before {
+  content: counter(t);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.progress { margin: 8px 0 4px; }
+.progress .bar {
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--line);
+  overflow: hidden;
+}
+.progress .fill {
+  height: 100%;
+  background: var(--teal);
+  border-radius: var(--r-pill);
+  transition: width .2s linear;
+}
+.progress .pt {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ---------------- support ---------------- */
+.sup-body {
+  padding: 30px 26px 10px;
+  text-align: center;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.wa-ic {
+  width: 66px;
+  height: 66px;
+  border-radius: 19px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+  background: var(--pos-bg);
+  color: var(--pos-ink);
+}
+.wa-ic svg { width: 34px; height: 34px; }
+.numcard {
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+.nl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.nv {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.wa-mini {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--pos-bg);
+  color: var(--pos-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.wa-mini svg { width: 22px; height: 22px; }
+.sup-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 14px 4px 0;
+}
+
+@media (max-width: 520px) {
+  .up-body { padding: 16px 18px 6px; }
+  .sup-body { padding: 24px 20px 10px; }
+  /* Drag and drop needs a pointer; a phone gets the two buttons instead,
+     laid out as tiles with the icon above the label. */
+  .dropzone { display: none; }
+  .ab { flex-direction: column; gap: 6px; padding: 15px 12px; }
+  .wa-ic { width: 58px; height: 58px; border-radius: 17px; }
+}

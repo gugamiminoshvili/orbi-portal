@@ -140,7 +140,15 @@ describe('the gate', () => {
   test('the reason decides the way out: a photo problem offers a re-upload', () => {
     mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'passport_not_attached' }
     renderAt()
-    expect(screen.getByRole('link', { name: /Upload passport/ })).toBeInTheDocument()
+    // The button opens the uploader inside the same dialog, the way the
+    // prototype's `view` switch does — it is not a link out of it.
+    fireEvent.click(screen.getByRole('button', { name: /Upload passport/ }))
+    expect(screen.getByText('Upload passport photo')).toBeInTheDocument()
+    expect(screen.getByText(/max 50MB/)).toBeInTheDocument()
+
+    // And back again, without losing the reason it came from.
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.getByText('Passport not uploaded')).toBeInTheDocument()
   })
 
   test('the button order follows the reason, not a fixed layout', () => {
@@ -168,9 +176,27 @@ describe('the gate', () => {
   test('a problem no photo can fix offers WhatsApp instead', () => {
     mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'no_active_ownership' }
     renderAt()
-    const link = screen.getByRole('link', { name: /Contact support/ })
+    fireEvent.click(screen.getByRole('button', { name: /Contact support/ }))
+
+    // The number is shown before it is dialled, so the owner can read it,
+    // copy it, or use another phone.
+    expect(screen.getByText('+995 595 071 931')).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: /Connect on WhatsApp/ })
     expect(link).toHaveAttribute('href', expect.stringContaining('wa.me/995595071931'))
     expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  // The status the owner asked to be announced too (2026-09-04). It is not a
+  // block: nothing is guarded by it, and its own copy says so.
+  test('a pending account is announced but not restricted', () => {
+    mockUser = { is_passport_valid: 1 }
+    renderAt()
+    expect(screen.getByText('Verification in progress')).toBeInTheDocument()
+    expect(screen.getByText('blocked:false')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Got it/ }))
+    fireEvent.click(screen.getByText('do the thing'))
+    expect(screen.getByText('ran:true')).toBeInTheDocument()
   })
 
   test('entering Support states why nothing can be sent', () => {

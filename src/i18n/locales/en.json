@@ -619,7 +619,7 @@
     "later": "Later",
     "uploadAgain": "Upload the photo again",
     "contactSupport": "Contact support",
-    "waMessage": "Hello! I need help with my account verification.",
+    "waMessage": "Hello! I need help with my passport verification.",
     "reasons": {
       "not_attached": {
         "title": "Passport not uploaded",
@@ -726,6 +726,35 @@
           "Later"
         ]
       }
+    },
+    "up": {
+      "title": "Upload passport photo",
+      "sub": "Upload a good-quality photo",
+      "dzT": "Drop a file or click to choose",
+      "dzH": "jpg, jpeg, png, pdf, heic · max 50MB",
+      "cam": "Take photo",
+      "gal": "From gallery",
+      "tips": [
+        "Take or upload a photo",
+        "The photo must be clear and fully visible",
+        "The photo must not be blurry or cropped"
+      ],
+      "eType": "Allowed formats: jpg, jpeg, png, pdf, heic.",
+      "eSize": "The file must be no larger than 50MB.",
+      "submit": "Send for verification",
+      "loading": "Uploading…",
+      "done": "Uploaded ✓",
+      "remove": "Remove",
+      "back": "Back",
+      "eFailed": "The upload did not go through. Please try again."
+    },
+    "sup": {
+      "title": "Contact support",
+      "heading": "Message us on WhatsApp",
+      "desc": "Reach us on WhatsApp at the number below - our team will help with your verification issue.",
+      "numLbl": "WhatsApp number",
+      "note": "Tapping the button opens WhatsApp with a ready message.",
+      "connect": "Connect on WhatsApp"
     }
   },
   "rules": {

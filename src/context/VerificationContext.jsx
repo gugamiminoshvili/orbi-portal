@@ -29,14 +29,22 @@ export function VerificationProvider({ children }) {
   const { i18n } = useTranslation()
   const location = useLocation()
 
-  const blocked = accountStatus(user) === 'invalid'
+  const status = accountStatus(user)
+  // Invalid is the only status that RESTRICTS anything — that was the spec.
+  // Pending restricts nothing: its dialog says "nothing further is needed
+  // from you", so guarding an action with it would contradict the words on
+  // the screen.
+  const blocked = status === 'invalid'
+  // ...but both are ANNOUNCED. A review in progress is news the owner has
+  // not necessarily seen yet.
+  const announceable = status === 'invalid' || status === 'pending'
   // `passport_invalidity_reason` is the live field name (owner 2026-09-04);
   // the others are earlier guesses, kept so a rename cannot silently blank
   // the dialog. Read ONLY when the status is 3 — the backend leaves stale or
   // meaningless content there for every other status, so trusting it would
   // put a rejection reason on an account that has none.
   const reason = useMemo(() => {
-    if (!blocked) return 'generic'
+    if (status !== 'invalid') return 'generic'
     return reasonKey(
       user?.passport_invalidity_reason ??
         user?.passportInvalidityReason ??
@@ -44,11 +52,14 @@ export function VerificationProvider({ children }) {
         user?.verificationReason ??
         user?.invalid_reason
     )
-  }, [blocked, user])
+  }, [status, user])
 
+  // The dialog's face: the operator's reason when the account was rejected,
+  // and the pending state's own copy while it is still under review.
+  const face = status === 'pending' ? 'pending' : reason
   const showBlockedModal = useCallback(() => {
-    openModal(<VerificationModal reason={reason} />, { size: '' })
-  }, [openModal, reason])
+    openModal(<VerificationModal reason={face} />, { size: '' })
+  }, [openModal, face])
 
   // Wraps an action: blocked accounts get the dialog instead of the action.
   const guard = useCallback(
@@ -70,11 +81,11 @@ export function VerificationProvider({ children }) {
       announced.current = false
       return
     }
-    if (blocked && !announced.current) {
+    if (announceable && !announced.current) {
       announced.current = true
       showBlockedModal()
     }
-  }, [authStatus, blocked, showBlockedModal])
+  }, [authStatus, announceable, showBlockedModal])
 
   // On a language change — the owner asked for it, and it is defensible: the
   // dialog is the one thing they most need to have understood, so it is
@@ -85,17 +96,17 @@ export function VerificationProvider({ children }) {
       firstLang.current = false
       return
     }
-    if (blocked) showBlockedModal()
-  }, [i18n.language, blocked, showBlockedModal])
+    if (announceable) showBlockedModal()
+  }, [i18n.language, announceable, showBlockedModal])
 
   // On entering Support. The page itself stays reachable — the owner can
   // read what is already there — but arriving states why nothing can be sent.
   const lastSupport = useRef(false)
   useEffect(() => {
     const onSupport = location.pathname.startsWith('/support')
-    if (onSupport && !lastSupport.current && blocked) showBlockedModal()
+    if (onSupport && !lastSupport.current && announceable) showBlockedModal()
     lastSupport.current = onSupport
-  }, [location.pathname, blocked, showBlockedModal])
+  }, [location.pathname, announceable, showBlockedModal])
 
   const value = useMemo(
     () => ({ blocked, reason, showBlockedModal, guard }),
