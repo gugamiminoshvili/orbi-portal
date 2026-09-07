@@ -16,11 +16,20 @@
 // raw HTML to dangerouslySetInnerHTML.
 //
 // Block types a section may carry: `text`, `list`, `pairs`, `steps`, `split`,
-// `footnote`. A guide may additionally carry `stats`, `note` and `banner`.
+// `footnote`. A guide may additionally carry `stats`, `note`, `banner` and
+// `contacts` (the WhatsApp lines for that department).
 
 export const GUIDES = [
   {
     slug: 'handover',
+    // Every number is a WhatsApp line: tapping one opens that chat (owner
+    // 2026-09-07). `wa` is digits only — wa.me rejects spaces and a leading
+    // plus — while `display` is how a person reads it.
+    contacts: [
+      { wa: '995595078133', display: '+995 595 078 133' },
+      { wa: '995595078134', display: '+995 595 078 134' },
+      { wa: '995595078135', display: '+995 595 078 135' },
+    ],
     columns: 3,
     navKey: 'guideHandover',
     icon: 'building',
@@ -226,6 +235,7 @@ export const GUIDES = [
 
   {
     slug: 'power-of-attorney',
+    contacts: [{ wa: '995595507432', display: '+995 595 50 74 32' }],
     columns: 2,
     navKey: 'guidePowerOfAttorney',
     icon: 'doc',
@@ -436,6 +446,10 @@ export const GUIDES = [
 
   {
     slug: 'service',
+    contacts: [
+      { wa: '995591994861', display: '+995 591 99 48 61' },
+      { wa: '995591994864', display: '+995 591 99 48 64' },
+    ],
     columns: 2,
     navKey: 'guideService',
     icon: 'wrench',
@@ -569,6 +583,14 @@ export const GUIDES = [
 
   {
     slug: 'contact-centre',
+    // The only guide whose numbers are not interchangeable — each one is a
+    // different block, so each carries its label.
+    contacts: [
+      { wa: '995595218530', display: '+995 595 21 85 30', label: { ka: 'A ბლოკი', en: 'Block A', ru: 'Блок A' } },
+      { wa: '995591128100', display: '+995 591 12 81 00', label: { ka: 'C ბლოკი', en: 'Block C', ru: 'Блок C' } },
+      { wa: '995595078138', display: '+995 595 07 81 38', label: { ka: 'D1 ბლოკი', en: 'Block D1', ru: 'Блок D1' } },
+      { wa: '995591706563', display: '+995 591 70 65 63', label: { ka: 'D2 ბლოკი', en: 'Block D2', ru: 'Блок D2' } },
+    ],
     columns: 2,
     navKey: 'guideContactCentre',
     icon: 'chat',

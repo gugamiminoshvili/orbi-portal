@@ -780,5 +780,8 @@
         "desc": "The regulations set out by the service agreement: what the management company provides and on what terms."
       }
     }
+  },
+  "guides": {
+    "whatsapp": "WhatsApp"
   }
 }

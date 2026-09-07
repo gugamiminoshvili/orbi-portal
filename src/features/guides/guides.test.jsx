@@ -84,6 +84,44 @@ describe('guide pages', () => {
     ).toBeInTheDocument()
   })
 
+  // Every number is a WhatsApp line and a tap must land in that chat (owner
+  // 2026-09-07). wa.me rejects a leading plus and any spaces, so the dialling
+  // form and the printed form are two different fields — and this is what
+  // catches a typo in either.
+  test('each guide links its own WhatsApp numbers', async () => {
+    for (const guide of GUIDES) {
+      const { unmount } = renderApp([`/guides/${guide.slug}`])
+      await screen.findByRole('heading', { level: 1 })
+
+      const links = [...document.querySelectorAll('a[href^="https://wa.me/"]')]
+      expect(links).toHaveLength(guide.contacts.length)
+
+      guide.contacts.forEach((c, i) => {
+        expect(links[i]).toHaveAttribute('href', `https://wa.me/${c.wa}`)
+        expect(links[i]).toHaveAttribute('target', '_blank')
+        expect(links[i]).toHaveAttribute('rel', expect.stringContaining('noopener'))
+        // The dialled digits are the printed number with the plus and the
+        // spaces taken out — nothing else.
+        expect(c.wa).toBe(c.display.replace(/[^0-9]/g, ''))
+        expect(links[i]).toHaveTextContent(c.display)
+      })
+      unmount()
+    }
+  })
+
+  test('only the contact centre labels its numbers — its blocks are not interchangeable', async () => {
+    renderApp(['/guides/contact-centre'])
+    await screen.findByRole('heading', { level: 1 })
+    for (const label of ['Block A', 'Block C', 'Block D1', 'Block D2']) {
+      expect(screen.getByText(label)).toBeInTheDocument()
+    }
+
+    const others = GUIDES.filter((g) => g.slug !== 'contact-centre')
+    for (const g of others) {
+      expect(g.contacts.every((c) => !c.label)).toBe(true)
+    }
+  })
+
   test('an unknown slug redirects to the first guide instead of erroring', async () => {
     renderApp(['/guides/nope'])
     expect(await screen.findByRole('heading', { level: 1, name: 'Apartment handover' })).toBeInTheDocument()

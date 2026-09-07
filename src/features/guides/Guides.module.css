@@ -505,3 +505,78 @@
     }
   }
 }
+
+/* ---------- Department WhatsApp lines ---------- */
+/* Auto-fit columns rather than a count-per-breakpoint rule: two numbers
+   split the row, three fill it, four wrap to 2x2, one stretches — and a
+   fifth would need no CSS change at all. */
+.contacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s4);
+  padding: var(--s4);
+  border-radius: var(--r);
+  background: var(--teal-soft);
+}
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--card);
+  color: inherit;
+  text-decoration: none;
+  transition: var(--t);
+}
+.contact:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+.contact:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.contact-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--pos-bg);
+  color: var(--pos-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.contact-ic svg {
+  width: 20px;
+  height: 20px;
+}
+.contact-body {
+  flex: 1;
+  min-width: 0;
+}
+.contact-lbl {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.contact-num {
+  display: block;
+  margin-top: 1px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+.contact-go {
+  flex: none;
+  color: var(--muted);
+}
+/* A department with one number would otherwise get a card stretched across
+   the whole strip, which reads as a banner rather than as one of a set.
+   Two or more still divide the row evenly. */
+.contact:only-child {
+  max-width: 420px;
+}

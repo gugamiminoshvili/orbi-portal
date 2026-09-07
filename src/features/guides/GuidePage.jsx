@@ -149,6 +149,8 @@ export default function GuidePage() {
         </div>
       )}
 
+      {guide.contacts && <Contacts contacts={guide.contacts} lang={lang} />}
+
       {guide.banner && (
         <div className={styles.banner}>
           <Icon name="chat" />
@@ -160,6 +162,41 @@ export default function GuidePage() {
         <Icon name="help" />
         <span>{pick(guide.footer, lang)}</span>
       </div>
+    </div>
+  )
+}
+
+// The department's WhatsApp lines. A strip of cards rather than a list
+// (owner call 2026-09-07): auto-fit columns, so two numbers split the row,
+// three fill it and four wrap to 2x2 without a breakpoint per count.
+//
+// Each card is a real <a> to wa.me, so long-press, middle-click and "copy
+// link" all behave — a div with an onClick would swallow every one of them.
+// `wa` is digits only; wa.me rejects a leading plus and any spaces.
+function Contacts({ contacts, lang }) {
+  const { t } = useTranslation()
+  return (
+    <div className={styles.contacts}>
+      {contacts.map((c) => (
+        <a
+          key={c.wa}
+          className={styles.contact}
+          href={`https://wa.me/${c.wa}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className={styles['contact-ic']}>
+            <Icon name="whatsapp" />
+          </span>
+          <span className={styles['contact-body']}>
+            <span className={styles['contact-lbl']}>
+              {c.label ? pick(c.label, lang) : t('guides:whatsapp')}
+            </span>
+            <span className={styles['contact-num']}>{c.display}</span>
+          </span>
+          <Icon name="chevron-right" className={styles['contact-go']} />
+        </a>
+      ))}
     </div>
   )
 }
