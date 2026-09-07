@@ -574,7 +574,11 @@
       "valid": "Verified",
       "pending": "Pending verification",
       "pendingShort": "Pending",
-      "invalid": "Invalid"
+      "invalid": "Not valid"
+    },
+    "statusHint": {
+      "invalid": "Verification wasn't completed, so some actions stay unavailable. Contact support to resolve it.",
+      "pending": "Your documents are being checked. Some actions stay unavailable until that is finished."
     },
     "fields": {
       "firstName": "First name",

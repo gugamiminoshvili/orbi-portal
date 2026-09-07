@@ -1,0 +1,76 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+/* The trigger adds no look of its own — it wraps whatever it is given (a
+   badge, a status value) and keeps that element's own styling. */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: help;
+  border-radius: var(--r-pill);
+}
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.bubble {
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 80;
+  width: max-content;
+  max-width: 260px;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-ink);
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  cursor: default;
+  /* Only opacity is animated: the centred variant carries a translateX of
+     its own, and a transform in the keyframes would fight it. */
+  animation: tip-in .13s ease;
+}
+/* Anchored to whichever edge has room — the header pill sits at the right
+   of the screen, so a centred bubble would run off it. */
+.start { left: 0; }
+.center { left: 50%; transform: translateX(-50%); }
+.end { right: 0; }
+
+/* The arrow is the bubble's own corner, rotated — one element, and it
+   inherits the background so a theme swap cannot leave it behind. */
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+.start::before { left: 16px; }
+.center::before { left: calc(50% - 4.5px); }
+.end::before { right: 16px; }
+
+@keyframes tip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble { animation: none; }
+}
+
+@media (max-width: 420px) {
+  .bubble { max-width: 220px; }
+}

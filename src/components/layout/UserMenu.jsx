@@ -6,6 +6,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { LANGS, setLang } from '../../i18n'
 import { accountStatus, needsAttention, STATUS_TONE } from '../../utils/accountStatus'
 import Badge from '../ui/Badge'
+import Tooltip from '../ui/Tooltip'
 import Icon from '../ui/Icon'
 import { SwitchVisual } from '../ui/Switch'
 import styles from './UserMenu.module.css'
@@ -68,6 +69,10 @@ export default function UserMenu() {
   // is a fixed-height chip and must never wrap. The profile page's status card
   // has the room for the full wording.
   const shortStatusLabel = t([`profile:status.${status}Short`, `profile:status.${status}`])
+  // Why the account carries this status. The backend does not send the
+  // operator's reason yet (README §21), so the line is the general one for
+  // the state rather than the specific cause.
+  const statusHint = needsAttention(status) ? t(`profile:statusHint.${status}`) : null
 
   async function handleLogout() {
     setOpen(false)
@@ -90,9 +95,15 @@ export default function UserMenu() {
             status that needs attention is surfaced here. The profile page
             shows the status either way. */}
         {needsAttention(status) && (
-          <Badge tone={STATUS_TONE[status]} className={styles.badge}>
-            {shortStatusLabel}
-          </Badge>
+          // Not interactive here: this badge already sits inside the menu's
+          // own button, so it explains itself on hover and leaves the tap to
+          // the menu. The tap route is the same badge one level down, in the
+          // menu head.
+          <Tooltip text={statusHint} align="end" interactive={false}>
+            <Badge tone={STATUS_TONE[status]} className={styles.badge}>
+              {shortStatusLabel}
+            </Badge>
+          </Tooltip>
         )}
         <Icon name="chevron" className={styles.chev} />
       </button>
@@ -108,7 +119,9 @@ export default function UserMenu() {
                   account shows the email instead of a redundant "verified". */}
               {needsAttention(status) ? (
                 <div className={styles['head-status']}>
-                  <Badge tone={STATUS_TONE[status]}>{shortStatusLabel}</Badge>
+                  <Tooltip text={statusHint} align="start">
+                    <Badge tone={STATUS_TONE[status]}>{shortStatusLabel}</Badge>
+                  </Tooltip>
                 </div>
               ) : (
                 user?.mail && <div className={styles['head-mail']}>{user.mail}</div>

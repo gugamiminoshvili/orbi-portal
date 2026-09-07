@@ -6,11 +6,12 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { changePassword } from '../../api/auth'
 import { USE_MOCK } from '../../api/client'
-import { accountStatus, STATUS_TONE } from '../../utils/accountStatus'
+import { accountStatus, needsAttention, STATUS_TONE } from '../../utils/accountStatus'
 import { fmtDate } from '../../utils/format'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Icon from '../../components/ui/Icon'
+import Tooltip from '../../components/ui/Tooltip'
 import { Seg } from '../../components/ui/Badge'
 import fieldStyles from '../../components/ui/Field.module.css'
 import styles from './Profile.module.css'
@@ -92,9 +93,17 @@ export default function ProfilePage() {
             </span>
             <div className={styles['stat-body']}>
               <div className={styles['stat-k']}>{t('profile:accountStatusShort')}</div>
-              <div className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
-                {t(`profile:status.${status}`)}
-              </div>
+              {/* A status that needs attention says why on hover, and on tap
+                  where there is no hover. A verified account has nothing to
+                  explain, so it is left as plain text. */}
+              <Tooltip
+                text={needsAttention(status) ? t(`profile:statusHint.${status}`) : null}
+                align="start"
+              >
+                <span className={`${styles['stat-v']} ${styles[`ink-${STATUS_TONE[status]}`]}`}>
+                  {t(`profile:status.${status}`)}
+                </span>
+              </Tooltip>
             </div>
           </Card>
         )}
