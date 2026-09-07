@@ -3,6 +3,7 @@ import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from '../../hooks/useAsync'
 import { useToast } from '../../context/ToastContext'
+import { useVerification } from '../../context/VerificationContext'
 import { getTicket, sendMessage, uploadTicketFile } from '../../api/endpoints/support'
 import { TSTATUS, topicById } from '../../api/mock/tickets'
 import { ATTACHMENT_ACCEPT, partitionFiles } from '../../utils/attachments'
@@ -21,6 +22,7 @@ export default function TicketChatPane() {
   const { t } = useTranslation()
   const toast = useToast()
   const { bumpTicketsRefresh } = useOutletContext()
+  const { blocked, showBlockedModal } = useVerification()
   const { data: ticket, loading, setData } = useAsync(() => getTicket(ticketId), [ticketId])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -51,6 +53,14 @@ export default function TicketChatPane() {
   // attachments. Files go after the message so they land on the thread in the
   // order they were composed.
   async function handleSend() {
+    // The thread is readable while the account is blocked; replying to it is
+    // an action, and every action inside Tickets runs into the dialog
+    // instead (owner spec). Guarding the send rather than disabling the box
+    // means the owner is told why, not left wondering.
+    if (blocked) {
+      showBlockedModal()
+      return
+    }
     const value = text.trim()
     if ((!value && pending.length === 0) || sending) return
     setSending(true)

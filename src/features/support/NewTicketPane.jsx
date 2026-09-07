@@ -3,6 +3,7 @@ import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '../../context/ToastContext'
 import { useModal } from '../../context/ModalContext'
+import { useVerification } from '../../context/VerificationContext'
 import { useAsync } from '../../hooks/useAsync'
 import { createTicket, uploadTicketFile } from '../../api/endpoints/support'
 import { listApartments } from '../../api/endpoints/apartments'
@@ -72,6 +73,7 @@ export default function NewTicketPane() {
   const toast = useToast()
   const navigate = useNavigate()
   const { openModal } = useModal()
+  const { blocked, showBlockedModal } = useVerification()
   const { bumpTicketsRefresh } = useOutletContext()
 
   const { data: apartments } = useAsync(() => listApartments(), [])
@@ -112,6 +114,12 @@ export default function NewTicketPane() {
   }
 
   async function handleSubmit() {
+    // Reached by typing the URL as well as by the button, and the button is
+    // only guarded where it is rendered — so the guard belongs here too.
+    if (blocked) {
+      showBlockedModal()
+      return
+    }
     if (!canSubmit || submitting) return
     setSubmitting(true)
     const ticket = await createTicket({ topic, apts: selectedApts, text: text.trim() })

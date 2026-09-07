@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { vi, describe, test, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import '../../i18n'
 import { setLang } from '../../i18n'
 import { ToastProvider } from '../../context/ToastContext'
+import { AppRoutes } from '../../routes'
 import { ModalProvider } from '../../context/ModalContext'
 import { VerificationProvider, useVerification } from '../../context/VerificationContext'
 import { reasonKey, SUPPORT_WHATSAPP } from './reasons'
@@ -12,7 +13,10 @@ import { reasonKey, SUPPORT_WHATSAPP } from './reasons'
 // The gate reads the signed-in user, so the auth context is stubbed rather
 // than the network: what matters here is what it does with a given status.
 let mockUser = null
-vi.mock('../../context/AuthContext', () => ({
+vi.mock('../../context/AuthContext', async (importOriginal) => ({
+  ...(await importOriginal()),
+  // Only the reader is stubbed: RequireAuth and the provider stay real, so
+  // the routes below mount exactly as they do in the app.
   useAuth: () => ({ user: mockUser, status: 'authed' }),
 }))
 
@@ -127,5 +131,79 @@ describe('the gate', () => {
     mockUser = { is_passport_valid: 3 }
     renderAt('/support')
     expect(screen.getByText('Your account is not verified')).toBeInTheDocument()
+  })
+
+  // The owner asked for this explicitly: the dialog is the one thing they
+  // most need to have understood, so it is restated in the language just
+  // picked. It must not fire on the first render, or every page load would
+  // open it twice.
+  test('a language change restates it — but the first render does not', () => {
+    mockUser = { is_passport_valid: 3 }
+    renderAt()
+    // Once, from sign-in.
+    expect(screen.getAllByText('Your account is not verified')).toHaveLength(1)
+
+    act(() => setLang('ka'))
+    expect(screen.getByText('თქვენი ანგარიში ვერიფიცირებული არ არის')).toBeInTheDocument()
+  })
+
+  test('a verified account is left alone when the language changes', () => {
+    mockUser = { is_passport_valid: 2 }
+    renderAt()
+    act(() => setLang('ka'))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})
+
+// The spec is "the module opens, but every action inside it is blocked", so
+// the entry points are not enough: /support/new is reachable by typing the
+// URL, and an existing thread can be replied to without passing a button
+// that was guarded where it was rendered.
+function renderApp(path) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <ToastProvider>
+        <ModalProvider>
+          <VerificationProvider>
+            <AppRoutes />
+          </VerificationProvider>
+        </ModalProvider>
+      </ToastProvider>
+    </MemoryRouter>
+  )
+}
+
+describe('Tickets: readable, but not actionable', () => {
+  test('submitting a new ticket opens the dialog and creates nothing', async () => {
+    mockUser = { is_passport_valid: 3 }
+    renderApp('/support/new')
+
+    fireEvent.click(await screen.findByText('Select topic'))
+    const picker = await screen.findByRole('dialog')
+    fireEvent.click(within(picker).getByText('Other Request'))
+    fireEvent.change(screen.getByPlaceholderText(/Describe your issue/), {
+      target: { value: 'Help' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Submit/ }))
+
+    expect(await screen.findByText('Your account is not verified')).toBeInTheDocument()
+    // The submit did not go through, so the chat it would have opened is not
+    // on screen: the typed text is still sitting in the composer.
+    expect(screen.getByPlaceholderText(/Describe your issue/)).toHaveValue('Help')
+  })
+
+  test('a verified account still gets through', async () => {
+    mockUser = { is_passport_valid: 2 }
+    renderApp('/support/new')
+
+    fireEvent.click(await screen.findByText('Select topic'))
+    const picker = await screen.findByRole('dialog')
+    fireEvent.click(within(picker).getByText('Other Request'))
+    fireEvent.change(screen.getByPlaceholderText(/Describe your issue/), {
+      target: { value: 'Help' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Submit/ }))
+
+    expect(await screen.findByText('Help')).toBeInTheDocument()
   })
 })
