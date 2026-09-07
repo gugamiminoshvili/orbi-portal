@@ -207,6 +207,29 @@ describe('the gate', () => {
     expect(tip).toHaveTextContent(/could not be verified from the uploaded passport/)
   })
 
+  // A torn passport for a rejected verification, a clock while one is under
+  // way (owner call 2026-09-04). A general warning triangle says something
+  // is wrong; the torn document says what.
+  test('the status wears the glyph its state calls for', () => {
+    mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'no_active_ownership' }
+    const { unmount } = renderApp('/profile')
+    fireEvent.click(screen.getAllByRole('button', { name: /close/i })[0])
+    const card = document
+      .querySelector('[data-account-status="invalid"]')
+      .closest('[class*="card"]')
+    expect(card.querySelector('svg circle')).toBeInTheDocument() // the photo
+    const invalidPath = card.querySelector('svg path').getAttribute('d')
+    unmount()
+
+    mockUser = { is_passport_valid: 1 }
+    renderApp('/profile')
+    fireEvent.click(screen.getAllByRole('button', { name: /close/i })[0])
+    const pending = document
+      .querySelector('[data-account-status="pending"]')
+      .closest('[class*="card"]')
+    expect(pending.querySelector('svg path').getAttribute('d')).not.toBe(invalidPath)
+  })
+
   test('a pending account gets the pending dialog wording, not a debt of its own', () => {
     mockUser = { is_passport_valid: 1 }
     renderApp('/profile')

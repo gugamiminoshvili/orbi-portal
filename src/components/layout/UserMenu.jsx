@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { LANGS, setLang } from '../../i18n'
-import { accountStatus, needsAttention, STATUS_TONE } from '../../utils/accountStatus'
+import { accountStatus, needsAttention, STATUS_ICON, STATUS_TONE } from '../../utils/accountStatus'
 import Badge from '../ui/Badge'
 import Tooltip from '../ui/Tooltip'
 import { useStatusHint } from '../../features/verification/statusHint'
@@ -101,6 +101,7 @@ export default function UserMenu() {
           // menu head.
           <Tooltip text={statusHint} align="end" interactive={false}>
             <Badge tone={STATUS_TONE[status]} className={styles.badge}>
+              <Icon name={STATUS_ICON[status]} className={styles['badge-ic']} />
               {shortStatusLabel}
             </Badge>
           </Tooltip>
@@ -120,7 +121,10 @@ export default function UserMenu() {
               {needsAttention(status) ? (
                 <div className={styles['head-status']}>
                   <Tooltip text={statusHint} align="start">
-                    <Badge tone={STATUS_TONE[status]}>{shortStatusLabel}</Badge>
+                    <Badge tone={STATUS_TONE[status]}>
+                      <Icon name={STATUS_ICON[status]} className={styles['badge-ic']} />
+                      {shortStatusLabel}
+                    </Badge>
                   </Tooltip>
                 </div>
               ) : (

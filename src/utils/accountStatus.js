@@ -40,3 +40,8 @@ export function needsAttention(status) {
 }
 
 export const STATUS_TONE = { valid: 'pos', pending: 'warn', invalid: 'neg' }
+
+// The glyph each status wears. A rejected verification gets the torn
+// passport rather than a general warning triangle: the triangle says
+// "something is wrong", the torn document says what.
+export const STATUS_ICON = { valid: 'check', pending: 'clock', invalid: 'passport-torn' }

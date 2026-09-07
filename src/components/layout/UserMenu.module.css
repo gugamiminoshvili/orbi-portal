@@ -264,3 +264,13 @@
   background: none;
   color: var(--ink-2);
 }
+
+/* The status glyph inside the badge — a torn passport for a rejected
+   verification, a clock while one is under way. Sized to the cap height of
+   the label beside it so the chip keeps its height. */
+.badge-ic {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  margin-right: 1px;
+}

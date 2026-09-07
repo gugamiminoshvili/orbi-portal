@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { changePassword } from '../../api/auth'
 import { USE_MOCK } from '../../api/client'
-import { accountStatus, STATUS_TONE } from '../../utils/accountStatus'
+import { accountStatus, STATUS_ICON, STATUS_TONE } from '../../utils/accountStatus'
 import { fmtDate } from '../../utils/format'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
@@ -91,7 +91,7 @@ export default function ProfilePage() {
         {status && (
           <Card className={styles.stat}>
             <span className={`${styles['stat-ic']} ${styles[STATUS_TONE[status]]}`}>
-              <Icon name={status === 'valid' ? 'check' : 'warn'} />
+              <Icon name={STATUS_ICON[status] || 'warn'} />
             </span>
             <div className={styles['stat-body']}>
               <div className={styles['stat-k']}>{t('profile:accountStatusShort')}</div>
