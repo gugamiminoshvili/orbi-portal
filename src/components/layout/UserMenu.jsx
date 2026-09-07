@@ -69,9 +69,10 @@ export default function UserMenu() {
   // is a fixed-height chip and must never wrap. The profile page's status card
   // has the room for the full wording.
   const shortStatusLabel = t([`profile:status.${status}Short`, `profile:status.${status}`])
-  // Why the account carries this status. The backend does not send the
-  // operator's reason yet (README §21), so the line is the general one for
-  // the state rather than the specific cause.
+  // Why the account carries this status. This is the general line for the
+  // state; the specific cause lives in the verification dialog, which reads
+  // `passport_invalidity_reason` and has the room to say what to do about
+  // it. A tooltip is not the place for five different remedies.
   const statusHint = needsAttention(status) ? t(`profile:statusHint.${status}`) : null
 
   async function handleLogout() {

@@ -3,11 +3,12 @@
 // out genuinely differs: two are fixed by re-uploading a photo, three can
 // only be resolved by talking to someone.
 //
-// FLAG: `/mobileApi/user/` does not send the reason yet (it does not even
-// send the status — README §19). The names below are the back-office labels
-// as supplied, normalised, so whichever spelling arrives lands on the right
-// entry; anything unrecognised falls back to `generic`, which offers the
-// support route rather than guessing at a fix.
+// `/mobileApi/user/` sends the reason as `passport_invalidity_reason`, in
+// snake_case (`identity_verification_failed`), beside `is_passport_valid`.
+// The names below are the back-office labels as supplied, normalised, so
+// whichever spelling arrives lands on the right entry; anything
+// unrecognised falls back to `generic`, which offers the support route
+// rather than guessing at a fix.
 export const REASONS = {
   not_attached: { tone: 'warn', icon: 'doc', action: 'upload' },
   identity_failed: { tone: 'neg', icon: 'idcard', action: 'upload' },

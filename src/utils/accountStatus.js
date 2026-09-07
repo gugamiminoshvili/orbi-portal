@@ -8,18 +8,18 @@
 // status. When the backend says nothing, this now says nothing either
 // (`null`) and the UI leaves the question alone.
 //
-// The backend DOES track this: /mobileApi/register2/ takes
-// `is_passport_valid` (1 pending, 2 valid, 3 invalid), so the value exists
-// on the customer record. It is simply not on GET /mobileApi/user/ yet —
-// whose captured keys are id, username, mail, fName, lName, fNameEng,
-// lNameEng, personalId, lang, phone, regDate, webAccess, crmId, billingId,
-// lastSync, privileged. The moment it appears under any of the spellings
-// below, every screen lights up with no further change.
+// GET /mobileApi/user/ now sends `is_passport_valid` (confirmed by the owner
+// 2026-09-04), alongside `passport_invalidity_reason` — read only when the
+// status is 3, since it carries nothing meaningful otherwise.
 const KNOWN = new Set(['valid', 'pending', 'invalid'])
 
-// `is_passport_valid`'s own numbering, so the field can be passed straight
-// through if that is the name it arrives under.
-const BY_CODE = { 1: 'pending', 2: 'valid', 3: 'invalid' }
+// `is_passport_valid`'s own numbering, confirmed by the owner 2026-09-04:
+// 1 active, 2 pending, 3 invalid.
+//
+// This read 1 pending / 2 valid until then, inferred from /register2/'s doc
+// and never checked against a live payload — so an active account was shown
+// "Pending" and an account still in review was told "Verified".
+const BY_CODE = { 1: 'valid', 2: 'pending', 3: 'invalid' }
 
 export function accountStatus(user) {
   const code = user?.is_passport_valid ?? user?.isPassportValid

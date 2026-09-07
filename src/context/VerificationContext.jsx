@@ -19,10 +19,10 @@ const VerificationContext = createContext({
 // leaves the owner guessing why — the action runs into a dialog that names
 // the reason and offers the one way out that fits it.
 //
-// FLAG: this can only fire once /mobileApi/user/ starts sending the status
-// (README §19) and, for the right wording, the reason. Until then
-// accountStatus() returns null, `blocked` is false, and nothing here is
-// reachable — by design, since inventing a block would be worse.
+// Live since the backend started sending `is_passport_valid` (3 = invalid)
+// and `passport_invalidity_reason` alongside it. When the payload says
+// nothing, accountStatus() returns null, `blocked` is false, and nothing
+// here is reachable — inventing a block would be worse.
 export function VerificationProvider({ children }) {
   const { user, status: authStatus } = useAuth()
   const { openModal } = useModal()
@@ -30,10 +30,21 @@ export function VerificationProvider({ children }) {
   const location = useLocation()
 
   const blocked = accountStatus(user) === 'invalid'
-  const reason = useMemo(
-    () => reasonKey(user?.verification_reason ?? user?.verificationReason ?? user?.invalid_reason),
-    [user]
-  )
+  // `passport_invalidity_reason` is the live field name (owner 2026-09-04);
+  // the others are earlier guesses, kept so a rename cannot silently blank
+  // the dialog. Read ONLY when the status is 3 — the backend leaves stale or
+  // meaningless content there for every other status, so trusting it would
+  // put a rejection reason on an account that has none.
+  const reason = useMemo(() => {
+    if (!blocked) return 'generic'
+    return reasonKey(
+      user?.passport_invalidity_reason ??
+        user?.passportInvalidityReason ??
+        user?.verification_reason ??
+        user?.verificationReason ??
+        user?.invalid_reason
+    )
+  }, [blocked, user])
 
   const showBlockedModal = useCallback(() => {
     openModal(<VerificationModal reason={reason} />, { size: '' })

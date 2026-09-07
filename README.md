@@ -408,14 +408,17 @@ comments in `src/api/adapters/*.js` for the full detail on each):
       than guessing. And `file` is singular, so multiple files go as one
       request each.
 
-19. **Account status is not reported by `GET /user/`.** The card used to
-    derive it from `webAccess`, which is what lets you sign in at all — so
-    every signed-in user was told "Verified", including one whose passport
-    had been rejected. It now says nothing unless the backend does, and the
-    profile card is hidden in that case. The value exists on the customer
-    record (`/register2/` takes `is_passport_valid`: 1 pending, 2 valid,
-    3 invalid) — **ask for it on `/user/`** and every screen lights up with
-    no further change.
+19. **Account status — ANSWERED (owner, 2026-09-04).** `GET /user/` sends
+    `is_passport_valid` and, beside it, `passport_invalidity_reason`
+    (e.g. `identity_verification_failed`). The numbering is **1 active,
+    2 pending, 3 invalid** — NOT the 1 pending / 2 valid this repo had
+    inferred from `/register2/`'s doc and never checked against a live
+    payload, which told an active account it was pending and an account
+    still in review that it was verified. The reason is read **only when the
+    status is 3**; on any other status its content is stale or meaningless.
+    The card used to derive the status from `webAccess`, which is what lets
+    you sign in at all — so every signed-in user was told "Verified". It now
+    says nothing unless the backend does.
 20. **Password reset: the backend guide reports a bug in its own final
     step.** After validating an unused token, the reset view looks the same
     token up with `used=1` (`mobileApp/views/CustomerProfile/Profile.py:181`),

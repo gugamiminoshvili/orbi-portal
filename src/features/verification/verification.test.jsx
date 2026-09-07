@@ -65,6 +65,17 @@ describe('reasonKey', () => {
     expect(reasonKey('No Active Ownership')).toBe('no_ownership')
   })
 
+  // The live spelling, confirmed 2026-09-04: snake_case, lower case.
+  test("the backend's own spelling lands on the right reason", () => {
+    expect(reasonKey('identity_verification_failed')).toBe('identity_failed')
+    expect(reasonKey('passport_not_attached')).toBe('not_attached')
+    expect(reasonKey('user_data_mismatch')).toBe('data_mismatch')
+    expect(reasonKey('personal_information_does_not_match_company_records')).toBe(
+      'company_mismatch'
+    )
+    expect(reasonKey('no_active_ownership')).toBe('no_ownership')
+  })
+
   test('anything unrecognised falls back to the generic reason', () => {
     // Better a message that offers support than one that guesses at a fix.
     expect(reasonKey('something new the back office added')).toBe('generic')
@@ -88,14 +99,24 @@ describe('the gate', () => {
     expect(screen.getByText('ran:true')).toBeInTheDocument()
   })
 
+  // The reason field carries stale or meaningless content on any status but
+  // 3, so a pending or active account must never be given a rejection
+  // reason to display.
+  test('the reason is only read when the status is invalid', () => {
+    mockUser = { is_passport_valid: 2, passport_invalidity_reason: 'no_active_ownership' }
+    renderAt()
+    expect(screen.getByText('blocked:false')).toBeInTheDocument()
+    expect(screen.queryByText('No property found')).not.toBeInTheDocument()
+  })
+
   test('a verified account is not blocked', () => {
-    mockUser = { is_passport_valid: 2 }
+    mockUser = { is_passport_valid: 1 }
     renderAt()
     expect(screen.getByText('blocked:false')).toBeInTheDocument()
   })
 
   test('an invalid account is blocked, and the dialog opens on sign-in', () => {
-    mockUser = { is_passport_valid: 3, verification_reason: 'No Active Ownership' }
+    mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'no_active_ownership' }
     renderAt()
 
     expect(screen.getByText('blocked:true')).toBeInTheDocument()
@@ -104,7 +125,7 @@ describe('the gate', () => {
   })
 
   test('a guarded action opens the dialog instead of running', () => {
-    mockUser = { is_passport_valid: 3, verification_reason: 'User Data Mismatch' }
+    mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'user_data_mismatch' }
     renderAt()
     fireEvent.click(screen.getByRole('button', { name: /close/i }))
 
@@ -114,13 +135,13 @@ describe('the gate', () => {
   })
 
   test('the reason decides the way out: a photo problem offers a re-upload', () => {
-    mockUser = { is_passport_valid: 3, verification_reason: 'Passport Not Attached' }
+    mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'passport_not_attached' }
     renderAt()
     expect(screen.getByRole('link', { name: /Upload the photo again/ })).toBeInTheDocument()
   })
 
   test('a problem no photo can fix offers WhatsApp instead', () => {
-    mockUser = { is_passport_valid: 3, verification_reason: 'No Active Ownership' }
+    mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'no_active_ownership' }
     renderAt()
     const link = screen.getByRole('link', { name: /Contact support/ })
     expect(link).toHaveAttribute('href', expect.stringContaining('wa.me/995595071931'))
@@ -148,7 +169,7 @@ describe('the gate', () => {
   })
 
   test('a verified account is left alone when the language changes', () => {
-    mockUser = { is_passport_valid: 2 }
+    mockUser = { is_passport_valid: 1 }
     renderAt()
     act(() => setLang('ka'))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -193,7 +214,7 @@ describe('Tickets: readable, but not actionable', () => {
   })
 
   test('a verified account still gets through', async () => {
-    mockUser = { is_passport_valid: 2 }
+    mockUser = { is_passport_valid: 1 }
     renderApp('/support/new')
 
     fireEvent.click(await screen.findByText('Select topic'))
