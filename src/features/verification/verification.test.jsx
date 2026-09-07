@@ -103,14 +103,14 @@ describe('the gate', () => {
   // 3, so a pending or active account must never be given a rejection
   // reason to display.
   test('the reason is only read when the status is invalid', () => {
-    mockUser = { is_passport_valid: 2, passport_invalidity_reason: 'no_active_ownership' }
+    mockUser = { is_passport_valid: 1, passport_invalidity_reason: 'no_active_ownership' }
     renderAt()
     expect(screen.getByText('blocked:false')).toBeInTheDocument()
     expect(screen.queryByText('No property found')).not.toBeInTheDocument()
   })
 
   test('a verified account is not blocked', () => {
-    mockUser = { is_passport_valid: 1 }
+    mockUser = { is_passport_valid: 2 }
     renderAt()
     expect(screen.getByText('blocked:false')).toBeInTheDocument()
   })
@@ -134,10 +134,35 @@ describe('the gate', () => {
     expect(screen.getByText("Details don't match")).toBeInTheDocument()
   })
 
+  // The labels are per state, from the prototype: the same "Contact support"
+  // is the ghost under a re-upload for one reason and the primary for
+  // another, so both the wording and the order are asserted.
   test('the reason decides the way out: a photo problem offers a re-upload', () => {
     mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'passport_not_attached' }
     renderAt()
-    expect(screen.getByRole('link', { name: /Upload the photo again/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Upload passport/ })).toBeInTheDocument()
+  })
+
+  test('the button order follows the reason, not a fixed layout', () => {
+    // data_mismatch: re-upload on top, support beneath.
+    mockUser = { is_passport_valid: 3, passport_invalidity_reason: 'user_data_mismatch' }
+    const { unmount } = renderAt()
+    let acts = [...document.querySelectorAll('[role=dialog] a, [role=dialog] button')]
+      .map((el) => el.textContent.trim())
+      .filter((x) => x && !/close/i.test(x))
+    expect(acts).toEqual(['Re-upload photo', 'Contact support'])
+    unmount()
+
+    // company_mismatch: support on top, "Later" beneath — no photo helps.
+    mockUser = {
+      is_passport_valid: 3,
+      passport_invalidity_reason: 'personal_information_does_not_match_company_records',
+    }
+    renderAt()
+    acts = [...document.querySelectorAll('[role=dialog] a, [role=dialog] button')]
+      .map((el) => el.textContent.trim())
+      .filter((x) => x && !/close/i.test(x))
+    expect(acts).toEqual(['Contact support', 'Later'])
   })
 
   test('a problem no photo can fix offers WhatsApp instead', () => {
@@ -169,7 +194,7 @@ describe('the gate', () => {
   })
 
   test('a verified account is left alone when the language changes', () => {
-    mockUser = { is_passport_valid: 1 }
+    mockUser = { is_passport_valid: 2 }
     renderAt()
     act(() => setLang('ka'))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -214,7 +239,7 @@ describe('Tickets: readable, but not actionable', () => {
   })
 
   test('a verified account still gets through', async () => {
-    mockUser = { is_passport_valid: 1 }
+    mockUser = { is_passport_valid: 2 }
     renderApp('/support/new')
 
     fireEvent.click(await screen.findByText('Select topic'))

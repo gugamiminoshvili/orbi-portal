@@ -1,52 +1,101 @@
-.body {
-  text-align: center;
+/* Sizes taken from the approved prototype
+   (orbi-passport-verification-v2-refined): 66px icon tile at radius 19, a
+   19/600 title, 14.5px body copy, and a footer that is a column of
+   full-width buttons rather than a row. */
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
-.icon {
-  width: 62px;
-  height: 62px;
-  border-radius: 18px;
+
+/* No title bar: the dialog opens on its own icon, and the close control
+   floats over the body's top-right corner. */
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--muted);
   display: grid;
   place-items: center;
-  margin: 2px auto 16px;
+  cursor: pointer;
+  transition: var(--t);
+}
+.close svg {
+  width: 16px;
+  height: 16px;
+}
+.close:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.close:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.body {
+  padding: 32px 28px 8px;
+  text-align: center;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.icon {
+  width: 66px;
+  height: 66px;
+  border-radius: 19px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 20px;
 }
 .icon svg {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
 }
 .warn .icon { background: var(--warn-bg); color: var(--warn-ink); }
 .neg .icon { background: var(--neg-bg); color: var(--neg-ink); }
+.pos .icon { background: var(--pos-bg); color: var(--pos-ink); }
 
 .title {
-  margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 700;
+  margin: 0 0 10px;
+  font-size: 19px;
+  font-weight: 600;
   letter-spacing: -0.2px;
+  line-height: 1.32;
 }
 .desc {
   margin: 0 auto;
   max-width: 38ch;
   color: var(--ink-2);
-  font-size: 13.5px;
-  line-height: 1.55;
+  font-size: 14.5px;
+  line-height: 1.5;
 }
 
 /* The list is tinted with the reason's own tone, so the dialog reads as one
    object rather than a grey box dropped into a coloured screen. */
 .list {
-  margin-top: 20px;
+  margin: 22px 0 6px;
   padding: 14px 16px;
   border-radius: 14px;
   text-align: left;
 }
 .warn .list { background: var(--warn-bg); }
 .neg .list { background: var(--neg-bg); }
+.pos .list { background: var(--pos-bg); }
 .list-t {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .list ul {
   margin: 0;
@@ -57,8 +106,8 @@
   display: flex;
   gap: 11px;
   align-items: flex-start;
-  padding: 6px 0;
-  font-size: 13px;
+  padding: 7px 0;
+  font-size: 13.5px;
   color: var(--ink-2);
   line-height: 1.45;
 }
@@ -72,3 +121,33 @@
 }
 .warn .list li::before { background: var(--warn-ink); }
 .neg .list li::before { background: var(--neg-ink); }
+.pos .list li::before { background: var(--pos-ink); }
+
+/* A column, not a row: the primary sits on top at full width, the way out
+   beneath it. Two side-by-side buttons would give them equal weight, and
+   they do not have it — one resolves the reason, the other postpones it. */
+.foot {
+  padding: 18px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
+}
+.act {
+  width: 100%;
+  justify-content: center;
+  padding: 13px 18px;
+  font-size: 14.5px;
+}
+.act svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 520px) {
+  .body { padding: 24px 20px 8px; }
+  .foot { padding: 14px 20px 20px; }
+  .icon { width: 58px; height: 58px; border-radius: 17px; margin-bottom: 16px; }
+  .title { font-size: 17.5px; }
+  .desc { font-size: 13.5px; }
+}

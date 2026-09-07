@@ -9,13 +9,30 @@
 // whichever spelling arrives lands on the right entry; anything
 // unrecognised falls back to `generic`, which offers the support route
 // rather than guessing at a fix.
+// Tone, glyph and the two actions per state — transcribed from the approved
+// prototype's META so the dialog's faces match it exactly. `actions` is
+// ordered: the first is the primary button, the second the ghost beneath it.
+// The wording for each comes from `verification:reasons.<key>.buttons`, in
+// the same order.
 export const REASONS = {
-  not_attached: { tone: 'warn', icon: 'doc', action: 'upload' },
-  identity_failed: { tone: 'neg', icon: 'idcard', action: 'upload' },
-  data_mismatch: { tone: 'neg', icon: 'warn', action: 'upload' },
-  company_mismatch: { tone: 'neg', icon: 'building', action: 'support' },
-  no_ownership: { tone: 'neg', icon: 'home', action: 'support' },
-  generic: { tone: 'neg', icon: 'warn', action: 'support' },
+  not_attached: { tone: 'warn', icon: 'doc-up', actions: [
+    { act: 'upload', icon: 'doc-up' }, { act: 'close' }] },
+  // Verification is under way. No upload action: a document is already in
+  // the queue and a second one would only duplicate the review. The way out
+  // is support, for the case where it has genuinely stalled.
+  pending: { tone: 'warn', icon: 'clock', actions: [
+    { act: 'close' }, { act: 'support', icon: 'headset' }] },
+  identity_failed: { tone: 'neg', icon: 'scan', actions: [
+    { act: 'upload', icon: 'reload' }, { act: 'close' }] },
+  data_mismatch: { tone: 'neg', icon: 'neq', actions: [
+    { act: 'upload', icon: 'reload' }, { act: 'support', icon: 'headset' }] },
+  company_mismatch: { tone: 'neg', icon: 'building', actions: [
+    { act: 'support', icon: 'headset' }, { act: 'close' }] },
+  no_ownership: { tone: 'neg', icon: 'home', actions: [
+    { act: 'support', icon: 'headset' }, { act: 'close' }] },
+  submitted: { tone: 'pos', icon: 'check-circle', actions: [{ act: 'close' }] },
+  generic: { tone: 'neg', icon: 'warn', actions: [
+    { act: 'support', icon: 'headset' }, { act: 'close' }] },
 }
 
 // Back-office label -> key. Matching is done on a squashed, lower-cased form

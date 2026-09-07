@@ -623,42 +623,72 @@
     "reasons": {
       "not_attached": {
         "title": "Passport not uploaded",
-        "desc": "You haven't uploaded the passport photo required for verification yet.",
+        "desc": "You haven't uploaded the passport photo required for verification yet. Upload the main passport page showing your photo and details.",
         "listTitle": "Upload requirements",
         "items": [
           "The passport page with your photo",
-          "Clear — all four edges visible",
-          "Allowed formats: jpg, jpeg, png, pdf, heic"
+          "Clear — edges fully visible",
+          "Allowed formats jpg, jpeg, png, pdf, heic."
+        ],
+        "buttons": [
+          "Upload passport",
+          "Later"
+        ]
+      },
+      "pending": {
+        "title": "Verification in progress",
+        "desc": "Your document is being reviewed. You will get a notification by e-mail once it is done.",
+        "listTitle": "What happens now",
+        "items": [
+          "The document has been sent for review",
+          "Nothing further is needed from you",
+          "The result arrives by e-mail"
+        ],
+        "buttons": [
+          "Got it",
+          "Contact support"
         ]
       },
       "identity_failed": {
         "title": "Identity not verified",
-        "desc": "Your identity could not be verified from the photo you uploaded. Please upload a clear photo of a valid passport.",
+        "desc": "Your identity could not be verified from the uploaded passport. Please upload a clear photo of a valid passport.",
         "listTitle": "What to check",
         "items": [
           "Face and details clearly visible",
-          "A valid, unexpired document",
-          "No glare and nothing blurred"
+          "Valid document",
+          "No glare or blur"
+        ],
+        "buttons": [
+          "Re-upload photo",
+          "Later"
         ]
       },
       "data_mismatch": {
         "title": "Details don't match",
-        "desc": "The details you entered don't match the information in the passport.",
+        "desc": "The details you entered don't match the information in the passport. Check your details or upload the correct document.",
         "listTitle": "Check",
         "items": [
           "First and last name",
           "Date of birth",
           "Document number"
+        ],
+        "buttons": [
+          "Re-upload photo",
+          "Contact support"
         ]
       },
       "company_mismatch": {
         "title": "Details don't match company records",
-        "desc": "Your personal details don't match the management company's records. This can only be resolved by talking to us.",
+        "desc": "Your personal details don't match the management company's records. Please contact support to resolve this.",
         "listTitle": "Prepare before contacting",
         "items": [
           "Identity document",
           "Contract / ownership details",
           "Contact information"
+        ],
+        "buttons": [
+          "Contact support",
+          "Later"
         ]
       },
       "no_ownership": {
@@ -668,14 +698,33 @@
         "items": [
           "Ownership not yet registered",
           "Property registered to someone else",
-          "Records need updating"
+          "Data needs updating"
+        ],
+        "buttons": [
+          "Contact support",
+          "Later"
+        ]
+      },
+      "submitted": {
+        "title": "Photo submitted",
+        "desc": "Your new photo was uploaded successfully. Please wait for the verification to finish — you'll get a notification by e-mail.",
+        "buttons": [
+          "Got it"
         ]
       },
       "generic": {
         "title": "Your account is not verified",
         "desc": "Until verification is complete, some actions stay unavailable. Contact us and we will sort it out.",
-        "listTitle": "",
-        "items": []
+        "listTitle": "What you can do now",
+        "items": [
+          "You can read your information",
+          "Payment stays available",
+          "Actions are temporarily limited"
+        ],
+        "buttons": [
+          "Contact support",
+          "Later"
+        ]
       }
     }
   },

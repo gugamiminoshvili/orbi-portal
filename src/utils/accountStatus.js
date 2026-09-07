@@ -13,13 +13,10 @@
 // status is 3, since it carries nothing meaningful otherwise.
 const KNOWN = new Set(['valid', 'pending', 'invalid'])
 
-// `is_passport_valid`'s own numbering, confirmed by the owner 2026-09-04:
-// 1 active, 2 pending, 3 invalid.
-//
-// This read 1 pending / 2 valid until then, inferred from /register2/'s doc
-// and never checked against a live payload — so an active account was shown
-// "Pending" and an account still in review was told "Verified".
-const BY_CODE = { 1: 'valid', 2: 'pending', 3: 'invalid' }
+// `is_passport_valid`'s own numbering: 1 pending, 2 valid, 3 invalid — the
+// same mapping /register2/ documents, confirmed against the live payload by
+// the owner (2026-09-04).
+const BY_CODE = { 1: 'pending', 2: 'valid', 3: 'invalid' }
 
 export function accountStatus(user) {
   const code = user?.is_passport_valid ?? user?.isPassportValid

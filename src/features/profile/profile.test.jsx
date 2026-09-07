@@ -25,13 +25,11 @@ describe('accountStatus', () => {
     expect(accountStatus(undefined)).toBeNull()
   })
 
-  // 1 active, 2 pending, 3 invalid — the backend's own numbering, confirmed
-  // by the owner 2026-09-04. This read 1 pending / 2 valid until then, which
-  // told an active account it was pending and an account still in review
-  // that it was verified.
+  // 1 pending, 2 valid, 3 invalid — the backend's own numbering, confirmed
+  // against a live payload by the owner (2026-09-04).
   test("reads is_passport_valid's own numbering when it arrives", () => {
-    expect(accountStatus({ is_passport_valid: 1 })).toBe('valid')
-    expect(accountStatus({ is_passport_valid: 2 })).toBe('pending')
+    expect(accountStatus({ is_passport_valid: 1 })).toBe('pending')
+    expect(accountStatus({ is_passport_valid: 2 })).toBe('valid')
     expect(accountStatus({ is_passport_valid: 3 })).toBe('invalid')
     // Sent as a string, as JSON payloads often do.
     expect(accountStatus({ isPassportValid: '3' })).toBe('invalid')

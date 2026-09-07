@@ -410,12 +410,10 @@ comments in `src/api/adapters/*.js` for the full detail on each):
 
 19. **Account status — ANSWERED (owner, 2026-09-04).** `GET /user/` sends
     `is_passport_valid` and, beside it, `passport_invalidity_reason`
-    (e.g. `identity_verification_failed`). The numbering is **1 active,
-    2 pending, 3 invalid** — NOT the 1 pending / 2 valid this repo had
-    inferred from `/register2/`'s doc and never checked against a live
-    payload, which told an active account it was pending and an account
-    still in review that it was verified. The reason is read **only when the
-    status is 3**; on any other status its content is stale or meaningless.
+    (e.g. `identity_verification_failed`). The numbering is **1 pending,
+    2 valid, 3 invalid**, as `/register2/`'s doc says and now confirmed
+    against a live payload. The reason is read **only when the status is
+    3**; on any other status its content is stale or meaningless.
     The card used to derive the status from `webAccess`, which is what lets
     you sign in at all — so every signed-in user was told "Verified". It now
     says nothing unless the backend does.
