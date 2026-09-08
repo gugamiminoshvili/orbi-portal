@@ -5,6 +5,7 @@ const VARIANT_CLASS = {
   ghost: styles['btn-ghost'],
   soft: styles['btn-soft'],
   warn: styles['btn-warn'],
+  danger: styles['btn-danger'],
 }
 
 // `as` lets the same button chrome render a router <Link> — a navigation

@@ -68,11 +68,13 @@ test('Bookings and Visits opens its own (still empty) page', () => {
   expect(screen.getByText('Nothing here yet')).toBeInTheDocument()
 })
 
-test('Your Devices now lives in the account menu, below Change password, still disabled', () => {
+test('Your Devices lives in the account menu, below Change password, and opens', () => {
   renderApp(['/news'])
   openAccountMenu()
-  const devices = screen.getByText('Your Devices')
-  expect(devices.closest('[aria-disabled="true"]')).toBeTruthy()
+  const devices = screen.getByText('Your Devices').closest('a')
+  // Live since 2026-09-08: it was disabled while the page did not exist.
+  expect(devices).toHaveAttribute('href', '/devices')
+  expect(devices).not.toHaveAttribute('aria-disabled')
 
   // Order matters: profile, change password, then devices.
   const menu = screen.getByRole('menu')

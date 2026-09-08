@@ -54,6 +54,8 @@ const ICONS = {
   // point: a plain document icon reads as "a document", this one reads as
   // "a document that did not pass".
   'passport-torn': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h10l3 2.25-3 2.25 3 2.25-3 2.25 3 2.25-3 2.25 3 2.25-3 2.25H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><circle cx="9.6" cy="9.2" r="2.2"/><path d="M7.4 14.6h6M7.4 17.6h4.2"/></svg>',
+  mobile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 5.5h3"/><path d="M10.8 18.4h2.4"/></svg>',
+  laptop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="10.5" rx="1.8"/><path d="M2.5 19h19"/></svg>',
   close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   // Verification-dialog glyphs, taken verbatim from the approved prototype
   // (orbi-passport-verification-v2-refined) so the dialog's faces match it.

@@ -783,5 +783,22 @@
   },
   "guides": {
     "whatsapp": "WhatsApp"
+  },
+  "devices": {
+    "title": "Your devices",
+    "subtitle": "The devices you have confirmed a sign-in from. Remove any you no longer recognise.",
+    "thisDevice": "This device",
+    "unverified": "Not confirmed",
+    "unnamed": "Unnamed device",
+    "added": "Added {{date}}",
+    "remove": "Remove",
+    "removeTitle": "Remove device",
+    "removeBody": "The next sign-in from this device will need a confirmation code again.",
+    "removeCurrentBody": "This is the device you are signed in from. After removing it, signing in from here will need a confirmation code again.",
+    "removed": "Device removed",
+    "removeFailed": "The device could not be removed. Please try again.",
+    "emptyTitle": "No confirmed devices",
+    "emptyBody": "Once you confirm a sign-in with a code, that device appears here.",
+    "note": "A confirmed device does not ask for a code when you sign in. If you see a device you do not recognise, remove it and change your password."
   }
 }

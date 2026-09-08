@@ -13,6 +13,7 @@ import ApartmentDetailPage from './features/apartments/ApartmentDetailPage'
 import MultiPayFlow from './features/pay/MultiPayFlow'
 import PayRedirect from './features/pay/PayRedirect'
 import ProfilePage from './features/profile/ProfilePage'
+import DevicesPage from './features/devices/DevicesPage'
 import BookingsPage from './features/bookings/BookingsPage'
 import RulesPage from './features/rules/RulesPage'
 import GuidePage from './features/guides/GuidePage'
@@ -42,6 +43,7 @@ export function AppRoutes() {
         <Route path="/pay" element={<MultiPayFlow />} />
         <Route path="/pay/:id" element={<PayRedirect />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/devices" element={<DevicesPage />} />
         {/* Empty shell for now — see BookingsPage. */}
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/rules" element={<RulesPage />} />

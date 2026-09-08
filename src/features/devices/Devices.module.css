@@ -1,0 +1,130 @@
+.head {
+  margin-bottom: var(--s6);
+}
+.head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 0;
+}
+.head p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  max-width: 72ch;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s5);
+}
+.ic {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  background: var(--fill);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ic svg {
+  width: 22px;
+  height: 22px;
+}
+/* The browser being read right now is the one the owner needs to be able to
+   pick out at a glance — it is the only row whose removal affects them
+   immediately. */
+.now {
+  background: var(--pos-bg);
+  color: var(--pos-ink);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.tag {
+  font-size: 10.5px;
+}
+.meta {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.remove {
+  flex: none;
+  color: var(--neg-ink);
+}
+.remove:hover {
+  background: var(--neg-bg);
+}
+.remove svg {
+  width: 15px;
+  height: 15px;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  margin-top: var(--s5);
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.note svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--muted);
+}
+
+.dlg-name {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.dlg-body {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* The action stops being a trailing button and becomes the row's own last
+   line: at this width the three columns leave the name nowhere to wrap. */
+@media (max-width: 560px) {
+  .row {
+    flex-wrap: wrap;
+    padding: var(--s4);
+  }
+  .remove {
+    width: 100%;
+    justify-content: center;
+  }
+}

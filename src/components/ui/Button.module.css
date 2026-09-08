@@ -52,6 +52,15 @@
 .btn-warn:hover {
   background: var(--warn-600);
 }
+/* Destructive, and it looks it. Reserved for an action that cannot be
+   undone from the screen that offers it. */
+.btn-danger {
+  background: var(--neg);
+  color: var(--on-accent);
+}
+.btn-danger:hover {
+  filter: brightness(1.06);
+}
 .btn-sm {
   height: 36px;
   padding: 0 14px;
