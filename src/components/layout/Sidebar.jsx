@@ -7,7 +7,7 @@ import styles from './Sidebar.module.css'
 const NAV = [
   { group: 'common:main', items: [
     { key: 'dashboard', icon: 'home', label: 'common:dashboard', to: '/dashboard' },
-    { key: 'apartments', icon: 'apartment', label: 'common:myApartments', to: '/apartments' },
+    { key: 'apartments', icon: 'building', label: 'common:myApartments', to: '/apartments' },
     { key: 'news', icon: 'doc', label: 'common:news', to: '/news' },
     // Owner call 2026-08-07: back in the rail, now as a real route. The page
     // itself is an empty shell until the module is specified.
