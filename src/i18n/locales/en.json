@@ -633,7 +633,7 @@
       },
       "pending": {
         "title": "Verification in progress",
-        "desc": "Your document is being reviewed. You will get a notification by e-mail once it is done.",
+        "desc": "Your document is being reviewed. Please wait for the e-mail notification, which you will receive within 3 working days.",
         "listTitle": "What happens now",
         "items": [
           "The document has been sent for review",

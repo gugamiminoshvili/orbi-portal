@@ -239,7 +239,7 @@ describe('the gate', () => {
 
     const tip = screen.getByRole('tooltip')
     expect(tip).toHaveTextContent('Verification in progress')
-    expect(tip).toHaveTextContent(/being reviewed/)
+    expect(tip).toHaveTextContent(/within 3 working days/)
   })
 
   // The status the owner asked to be announced too (2026-09-04). It is not a
