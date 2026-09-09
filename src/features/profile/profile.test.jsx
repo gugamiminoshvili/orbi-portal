@@ -123,13 +123,13 @@ describe('profile page', () => {
     expect(rule('Uppercase Latin letters (A-Z)')).toHaveTextContent('not met yet')
 
     fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'abcdefgh' } })
-    expect(rule(LENGTH)).toHaveTextContent('— met')
-    expect(rule('Lowercase Latin letters (a-z)')).toHaveTextContent('— met')
+    expect(rule(LENGTH)).toHaveTextContent('- met')
+    expect(rule('Lowercase Latin letters (a-z)')).toHaveTextContent('- met')
     expect(rule('Numbers (0-9)')).toHaveTextContent('not met yet')
 
     fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'Abcdefg1' } })
     for (const name of [LENGTH, 'Numbers (0-9)', 'Lowercase Latin letters (a-z)', 'Uppercase Latin letters (A-Z)']) {
-      expect(rule(name)).toHaveTextContent('— met')
+      expect(rule(name)).toHaveTextContent('- met')
     }
   })
 

@@ -295,7 +295,7 @@
     "tableOutstandingHeader": "Outstanding",
     "tableAmountHeader": "Amount",
     "selectionFooter": "{{n}} of {{m}} selected · Total {{total}}",
-    "advanceNote": "Apartments with nothing outstanding can be paid too — the amount is credited to the account as an advance.",
+    "advanceNote": "Apartments with nothing outstanding can be paid too - the amount is credited to the account as an advance.",
     "summaryTitle": "Summary",
     "summaryComplex": "Complex",
     "summaryUtility": "Utility",
@@ -430,7 +430,7 @@
     "signUp": "Sign up",
     "noAccount": "Don't have an account?",
     "panelTitle": "Manage your apartment remotely",
-    "panelBody": "Balances, payments, services and support — in one place, whenever it suits you.",
+    "panelBody": "Balances, payments, services and support - in one place, whenever it suits you.",
     "verifyTitle": "Verify your device",
     "verifyBody": "We've sent a 6-digit code to your registered phone. Enter it below to continue.",
     "codePlaceholder": "6-digit code",
@@ -596,8 +596,8 @@
       "lower": "Lowercase Latin letters (a-z)",
       "upper": "Uppercase Latin letters (A-Z)"
     },
-    "ruleMet": "— met",
-    "ruleUnmet": "— not met yet",
+    "ruleMet": "- met",
+    "ruleUnmet": "- not met yet",
     "passwordChanged": "Password changed successfully.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -623,7 +623,7 @@
         "listTitle": "Upload requirements",
         "items": [
           "The passport page with your photo",
-          "Clear — edges fully visible",
+          "Clear - edges fully visible",
           "Allowed formats jpg, jpeg, png, pdf, heic."
         ],
         "buttons": [
@@ -703,7 +703,7 @@
       },
       "submitted": {
         "title": "Photo submitted",
-        "desc": "Your new photo was uploaded successfully. Please wait for the verification to finish — you'll get a notification by e-mail.",
+        "desc": "Your new photo was uploaded successfully. Please wait for the verification to finish - you'll get a notification by e-mail.",
         "buttons": [
           "Got it"
         ]
@@ -773,7 +773,7 @@
     "docs": {
       "hotel": {
         "title": "Hotel Regulation",
-        "desc": "The rules of the building for residents and guests — what is expected, what is not allowed, and who to ask."
+        "desc": "The rules of the building for residents and guests - what is expected, what is not allowed, and who to ask."
       },
       "service": {
         "title": "Service Agreement Regulation",
