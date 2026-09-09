@@ -12,9 +12,9 @@ const ICONS = {
   home: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>',
   building: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-2.5h4V21"/></svg>',
   // An apartment is a plan, not a tower: the tower glyph above is the
-  // complex, this one is a single unit — outer walls, a door gap, one
-  // interior wall.
-  apartment: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14.5v4a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-13a2 2 0 0 0-2-2h-13a2 2 0 0 0-2 2v4"/><path d="M14 3.5V12h6.5"/></svg>',
+  // complex, this one is a single unit — outer walls, a door (gap plus
+  // leaf) and two interior walls. Traced from the icon the owner supplied.
+  apartment: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.7 3.25H5.25a2 2 0 0 0-2 2v13.5a2 2 0 0 0 2 2h13.5a2 2 0 0 0 2-2V5.25a2 2 0 0 0-2-2H15"/><path d="M8.7 3.25 11.85 6.45"/><path d="M7.1 12.65h6.65M16.9 12.65h3.85"/><path d="M10.7 12.65v8.1"/></svg>',
   chevron: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>',
   wrench: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 005.4-5.4l-2.3 2.3-2.3-.6-.6-2.3z"/></svg>',
   drop: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3s6 6.5 6 10a6 6 0 01-12 0c0-3.5 6-10 6-10z"/></svg>',
