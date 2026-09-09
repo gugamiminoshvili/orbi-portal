@@ -19,7 +19,7 @@ export default function ApartmentCard({ apt }) {
     >
       <div className={styles.top}>
         <div className={styles.bicon} style={{ background: blockGrad(apt) }}>
-          <Icon name="building" />
+          <Icon name="apartment" />
         </div>
         <div className={styles.hd}>
           <div className={styles.code}>{apt.code}</div>

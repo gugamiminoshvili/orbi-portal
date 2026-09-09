@@ -103,7 +103,7 @@ export default function ApartmentDetailPage() {
 
       <div className={styles.head}>
         <div className={styles['head-icon']} style={{ background: blockGrad(apt) }}>
-          <Icon name="building" size={26} />
+          <Icon name="apartment" size={26} />
         </div>
         <div>
           <h1 className={styles['head-title']}>

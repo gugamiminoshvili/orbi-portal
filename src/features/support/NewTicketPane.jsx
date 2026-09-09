@@ -224,7 +224,7 @@ export default function NewTicketPane() {
                   <div className={styles['combo-chips']}>
                     {selectedApts.map((a) => (
                       <span key={a.id} className={styles['apt-chip']}>
-                        <Icon name="building" />
+                        <Icon name="apartment" />
                         {a.code}
                         <button
                           type="button"
@@ -266,7 +266,7 @@ export default function NewTicketPane() {
                           onClick={() => toggleApt(a.id)}
                         >
                           <span className={styles['co-ic']} style={{ background: blockGrad(a) }}>
-                            <Icon name="building" />
+                            <Icon name="apartment" />
                           </span>
                           <div className={styles['co-t']}>{a.code}</div>
                           <span className={`${styles['opt-check']} ${on ? styles.on : ''}`}>
