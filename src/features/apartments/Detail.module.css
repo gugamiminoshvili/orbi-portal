@@ -36,6 +36,12 @@
   flex: none;
   box-shadow: 0 8px 18px var(--tint-drop);
 }
+/* Sized here rather than on the <Icon size> prop so the glyph shrinks with
+   the tile at the breakpoint below instead of floating in it. */
+.head-icon svg {
+  width: 38px;
+  height: 38px;
+}
 .head-title {
   display: flex;
   align-items: center;
@@ -527,6 +533,10 @@
     width: 52px;
     height: 52px;
     border-radius: 13px;
+  }
+  .head-icon svg {
+    width: 28px;
+    height: 28px;
   }
   .head-title {
     font-size: 20px;
