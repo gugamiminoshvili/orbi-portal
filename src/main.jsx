@@ -9,6 +9,7 @@ import { ModalProvider } from './context/ModalContext'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { VerificationProvider } from './context/VerificationContext'
+import { NotificationsProvider } from './context/NotificationsContext'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')).render(
             <ModalProvider>
               {/* Inside ModalProvider: the gate opens its dialog through it. */}
               <VerificationProvider>
-                <App />
+                <NotificationsProvider>
+                  <App />
+                </NotificationsProvider>
               </VerificationProvider>
             </ModalProvider>
           </AuthProvider>

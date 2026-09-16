@@ -1,0 +1,120 @@
+.wrap {
+  position: relative;
+  flex: none;
+}
+
+/* Anchored to the bell, not to the header: the panel's right edge lines up
+   with the button so it reads as belonging to it. */
+.panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 28px);
+  background: var(--card);
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  z-index: 70;
+  overflow: hidden;
+  animation: pop .16s ease;
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.head h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: none;
+  padding: 4px 6px;
+  border-radius: 8px;
+  color: var(--teal-ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mark:hover { background: var(--teal-soft); }
+.mark svg { width: 14px; height: 14px; }
+
+/* Eight rows is about 420px; past that the panel scrolls rather than growing
+   until it meets the bottom of the window. */
+.list {
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+}
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 30px 24px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.empty svg {
+  width: 26px;
+  height: 26px;
+  color: var(--fill-2);
+  margin-bottom: 4px;
+}
+.empty b {
+  color: var(--ink);
+  font-size: 13.5px;
+}
+
+.all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.all:hover { color: var(--teal-ink); background: var(--surface-2); }
+
+/* A phone has no room to hang a 380px panel off a button that sits ~60px
+   from the right edge - anchored that way it runs off the left of the
+   screen. Below this width the panel stops belonging to the bell and
+   belongs to the window instead. */
+@media (max-width: 560px) {
+  .panel {
+    position: fixed;
+    top: 62px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+  }
+  .list {
+    max-height: min(70vh, 460px);
+  }
+}

@@ -437,6 +437,20 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     accepted; anything else falls back to a generic message that offers the
     support route rather than guessing at a fix.
 
+22. **Notification `type` — the vocabulary is undocumented.** `GET
+    /mobileApi/notification/` returns a `type` string per row, and
+    docs/api-reference.md gives no list of its values. The portal treats it
+    as an open set: known values pick an icon and a tint
+    (`src/features/notifications/notificationMeta.js`), anything unknown
+    keeps its text and gets the neutral bell. Nothing is dropped or
+    relabelled on an unknown type — but a confirmed list would let the rows
+    be filtered and grouped by kind rather than only by age.
+    Two smaller ones alongside it: does a row ever carry `ticket`,
+    `reservation` and `flat` at once (the UI links to the most specific, in
+    that order), and is `msg` already the human sentence in the requested
+    `lang` while `note` is the longer body? The panel renders them as title
+    and body on that assumption, and hides `note` when it repeats `msg`.
+
 To wire up more of a real backend once these are answered:
 
 1. Set `VITE_API_BASE` (+ `VITE_USE_PROXY` in dev) and `VITE_USE_MOCK=false`.

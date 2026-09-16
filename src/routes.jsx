@@ -14,6 +14,7 @@ import MultiPayFlow from './features/pay/MultiPayFlow'
 import PayRedirect from './features/pay/PayRedirect'
 import ProfilePage from './features/profile/ProfilePage'
 import DevicesPage from './features/devices/DevicesPage'
+import NotificationsPage from './features/notifications/NotificationsPage'
 import BookingsPage from './features/bookings/BookingsPage'
 import RulesPage from './features/rules/RulesPage'
 import GuidePage from './features/guides/GuidePage'
@@ -44,6 +45,7 @@ export function AppRoutes() {
         <Route path="/pay/:id" element={<PayRedirect />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/devices" element={<DevicesPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         {/* Empty shell for now — see BookingsPage. */}
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/rules" element={<RulesPage />} />

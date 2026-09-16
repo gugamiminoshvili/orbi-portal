@@ -800,5 +800,24 @@
     "emptyTitle": "No confirmed devices",
     "emptyBody": "Once you confirm a sign-in with a code, that device appears here.",
     "note": "A confirmed device does not ask for a code when you sign in. If you see a device you do not recognise, remove it and change your password."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Everything that happened on your apartments, payments and tickets.",
+    "markAll": "Mark all as read",
+    "viewAll": "View all",
+    "all": "All",
+    "unreadTab": "Unread ({{count}})",
+    "unread": "Unread",
+    "untitled": "Notification",
+    "emptyTitle": "No notifications",
+    "emptyBody": "When something happens on your apartments, it appears here.",
+    "allReadTitle": "All caught up",
+    "allReadBody": "Nothing is left unread.",
+    "groups": {
+      "today": "Today",
+      "week": "This week",
+      "older": "Earlier"
+    }
   }
 }

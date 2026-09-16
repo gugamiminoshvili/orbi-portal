@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import Breadcrumbs from './Breadcrumbs'
 import UserMenu from './UserMenu'
-import Icon from '../ui/Icon'
+import NotificationsMenu from './NotificationsMenu'
 import styles from './Header.module.css'
 
 export default function Header({ crumbs, onBurger }) {
@@ -17,10 +17,7 @@ export default function Header({ crumbs, onBurger }) {
       {/* Owner calls 2026-08-04: language moved into UserMenu, and the help
           "?" button is gone — the sidebar's own Help & guides footer covers
           it. The header is the bell plus the account cluster. */}
-      <button className={styles['icon-btn']} aria-label={t('common:ariaNotifications')}>
-        <span className={styles.dot} />
-        <Icon name="bell" />
-      </button>
+      <NotificationsMenu />
       <UserMenu />
     </header>
   )
