@@ -5,8 +5,34 @@
    so these pages follow the theme like the rest of the app. */
 
 .page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s5);
   margin-bottom: var(--s6);
+}
+/* The measure belongs to the prose, not to the row: capping the whole head
+   would pull the share button in to sit against the text. */
+.head-text {
   max-width: 78ch;
+  min-width: 0;
+}
+.share {
+  flex: none;
+  margin-top: 2px;
+}
+/* On a phone the button stops being a corner affordance and becomes the
+   head's last line - at this width it would otherwise squeeze the title
+   into two or three lines to make room for itself. */
+@media (max-width: 560px) {
+  .page-head {
+    flex-wrap: wrap;
+    gap: var(--s4);
+  }
+  .share {
+    width: 100%;
+    justify-content: center;
+  }
 }
 /* Editorial eyebrow rather than a Badge: the muted badge's own grey sits a
    shade off the page background and read as plain text. */

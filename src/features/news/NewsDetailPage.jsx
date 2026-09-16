@@ -9,6 +9,7 @@ import { USE_MOCK } from '../../api/client'
 import { ph } from '../../utils/placeholder'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import ShareButton from '../../components/ui/ShareButton'
 import EmptyState from '../../components/ui/EmptyState'
 import { Chip } from '../../components/ui/Badge'
 import Icon from '../../components/ui/Icon'
@@ -101,9 +102,15 @@ export default function NewsDetailPage() {
             <span><Icon name="cal" /> {item.date}</span>
             <span><Icon name="clock" /> {t('news:minRead', { count: minutes })}</span>
             <span style={{ flex: 1 }} />
-            <Button variant="ghost" size="sm" onClick={() => toast(t('news:shareToast'))}>
-              <Icon name="share" /> {t('news:share')}
-            </Button>
+            {/* This used to toast "Link copied to clipboard" while copying
+                nothing. It now shares the article's own URL - which is a
+                portal URL, so whoever receives it still has to sign in;
+                there is no public copy of an article yet (README §23). */}
+            <ShareButton
+              url={typeof window !== 'undefined' ? window.location.href : ''}
+              title={item.title}
+              label={t('news:share')}
+            />
           </div>
           <h1>{item.title}</h1>
         </header>

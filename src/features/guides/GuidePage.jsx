@@ -2,9 +2,10 @@ import { Fragment } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useCrumbs } from '../../components/layout/AppShell'
-import { guideBySlug } from './guidesContent'
+import { guideBySlug, publicGuideUrl } from './guidesContent'
 import Card from '../../components/ui/Card'
 import Icon from '../../components/ui/Icon'
+import ShareButton from '../../components/ui/ShareButton'
 import styles from './Guides.module.css'
 
 // The posters this content came from carried their own ქარ/ENG/РУС pills; here
@@ -53,9 +54,19 @@ export default function GuidePage() {
     // the content column rather than the viewport.
     <div className={styles.wrap}>
       <div className={styles['page-head']}>
-        <div className={styles.kicker}>{pick(guide.category, lang)}</div>
-        <h1>{pick(guide.title, lang)}</h1>
-        <p className={styles.lead}>{pick(guide.intro, lang)}</p>
+        <div className={styles['head-text']}>
+          <div className={styles.kicker}>{pick(guide.category, lang)}</div>
+          <h1>{pick(guide.title, lang)}</h1>
+          <p className={styles.lead}>{pick(guide.intro, lang)}</p>
+        </div>
+        {/* Every guide has a public twin that needs no account, so the link
+            being shared is that one - sending the portal URL would land a
+            tenant or a buyer on a sign-in screen. */}
+        <ShareButton
+          className={styles.share}
+          url={publicGuideUrl(guide.slug)}
+          title={pick(guide.title, lang)}
+        />
       </div>
 
       {guide.stats && (

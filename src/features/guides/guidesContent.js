@@ -721,6 +721,17 @@ export const GUIDES = [
   },
 ]
 
+// The public, sign-in-free copy of each guide (owner, 2026-09-16). The four
+// slugs are the same ones this app routes on, so one function covers all of
+// them and a new guide needs no new constant. The host is env-overridable so
+// a staging build can point somewhere else without a code change.
+const PUBLIC_BASE =
+  import.meta.env.VITE_PUBLIC_GUIDE_BASE || 'https://myorbi.orbi.ge:14643/guest'
+
+export function publicGuideUrl(slug) {
+  return slug ? `${PUBLIC_BASE}/${slug}` : null
+}
+
 export function guideBySlug(slug) {
   return GUIDES.find((g) => g.slug === slug)
 }

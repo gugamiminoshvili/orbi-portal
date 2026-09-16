@@ -451,6 +451,17 @@ comments in `src/api/adapters/*.js` for the full detail on each):
     `lang` while `note` is the longer body? The panel renders them as title
     and body on that assumption, and hides `note` when it repeats `msg`.
 
+23. **Public links: guides yes, news no.** The four guides have a
+    sign-in-free copy at `https://myorbi.orbi.ge:14643/guest/<slug>` (owner,
+    2026-09-16), and the Share button on each guide sends that URL rather
+    than the portal one. `VITE_PUBLIC_GUIDE_BASE` overrides the host for a
+    staging build. **No equivalent exists for a news article**, so News'
+    Share button can only share its portal URL - whoever opens it has to
+    sign in, and a non-owner cannot. If public article pages are planned,
+    the same helper covers them; if they are not, that button may be worth
+    removing rather than leaving it to hand out links half its recipients
+    cannot open.
+
 To wire up more of a real backend once these are answered:
 
 1. Set `VITE_API_BASE` (+ `VITE_USE_PROXY` in dev) and `VITE_USE_MOCK=false`.
