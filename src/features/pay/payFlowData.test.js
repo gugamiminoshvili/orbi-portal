@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { owedFor, buildRows, buildComplexes, utilityCardData, round2, serviceTypeFor } from './payFlowData'
+import { owedFor, buildRows, buildComplexes, utilityCardData, round2, serviceTypeFor, hasApCode } from './payFlowData'
 
 const USD_RATE = 2.5
 
@@ -144,5 +144,14 @@ describe('serviceTypeFor', () => {
   test('electricity/internettv pass through unchanged (already match the enum)', () => {
     expect(serviceTypeFor('electricity')).toBe('electricity')
     expect(serviceTypeFor('internettv')).toBe('internettv')
+  })
+})
+
+describe('hasApCode', () => {
+  test('a real code is payable; "" (live) and the "-" placeholder are not', () => {
+    expect(hasApCode({ epcode: '60011519' })).toBe(true)
+    expect(hasApCode({ epcode: '' })).toBe(false)
+    expect(hasApCode({ epcode: '-' })).toBe(false)
+    expect(hasApCode({})).toBe(false)
   })
 })

@@ -5,7 +5,7 @@ import { useCrumbs } from '../../components/layout/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { getCommunals, getRates } from '../../api/endpoints/dashboard'
 import { listApartments } from '../../api/endpoints/apartments'
-import { buildRows, buildComplexes, owedFor, round2 } from './payFlowData'
+import { buildRows, buildComplexes, hasApCode, owedFor, round2 } from './payFlowData'
 import Card from '../../components/ui/Card'
 import Skeleton from '../../components/ui/Skeleton'
 import ComplexStep from './ComplexStep'
@@ -71,7 +71,7 @@ export default function MultiPayFlow() {
       if (preUtility) {
         setUtility(preUtility)
         const owed = owedFor(row, preUtility, usdRate, maintenanceCurrency)
-        if (owed > 0) setSelections({ [row.epcode]: round2(owed) })
+        if (owed > 0 && hasApCode(row)) setSelections({ [row.code]: round2(owed) })
         setStep(3)
       } else {
         setStep(2)
@@ -119,7 +119,7 @@ export default function MultiPayFlow() {
     const next = {}
     for (const row of apartments) {
       const owed = owedFor(row, u, usdRate, maintenanceCurrency)
-      if (owed > 0) next[row.epcode] = round2(owed)
+      if (owed > 0 && hasApCode(row)) next[row.code] = round2(owed)
     }
     return next
   }

@@ -37,7 +37,9 @@ function buildByApartment() {
     const s = SERVICES[a.id]
     return {
       code: a.code,
-      epcode: a.apCode,
+      // A3 has no AP code here - live sends "" for such a flat - so mock
+      // mode shows the multi-pay table's unpayable row (see hasApCode).
+      epcode: a.id === 'A3' ? '' : a.apCode,
       electricity: s.electricity.balance,
       waterIndication: s.water.indication,
       internet: {

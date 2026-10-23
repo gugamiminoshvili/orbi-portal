@@ -98,6 +98,16 @@ export function utilityCardData(complexApartments, usdRate, maintenanceCurrency 
   }))
 }
 
+// Whether a row can be paid at all. POST /payment/multi/ addresses each
+// apartment by its AP code (`epcode`), so a row without one cannot be part of
+// a payment. Live, a missing code arrives as "" (adaptCommunals keeps it) or
+// as the '-' placeholder when no utility block carried the field. Such rows
+// are still listed - the debt is real - but can't be selected (owner call
+// 2026-10-23).
+export function hasApCode(row) {
+  return Boolean(row.epcode) && row.epcode !== '-'
+}
+
 // Rounds to cents — used whenever an owed amount becomes an editable
 // payment amount (default checkbox-select value), so the input never shows
 // a long floating-point tail from the USD->GEL multiply.

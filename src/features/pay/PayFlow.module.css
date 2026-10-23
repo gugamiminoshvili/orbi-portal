@@ -338,6 +338,84 @@ table.tbl tbody tr.on:hover td {
   }
 }
 
+/* ---------- Apartment without an AP code ----------
+   The payment can't be made without one, so the row is listed (the debt is
+   real) but can't be chosen: a soft amber band with an amber edge, a tag
+   under the code, one line saying why, and a link to support to get it
+   fixed. The amount box becomes an empty dashed outline. */
+table.tbl tbody tr.noap {
+  cursor: default;
+}
+table.tbl tbody tr.noap td,
+table.tbl tbody tr.noap:hover td {
+  background: var(--noap-bg);
+}
+table.tbl tbody tr.noap td:first-child {
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+.apt-code {
+  font-weight: 600;
+}
+tr.noap .apt-code {
+  color: var(--ink-2);
+}
+.noap-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  min-height: 22px;
+  margin-top: 6px;
+  padding: 0 9px;
+  border-radius: var(--r-pill);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.noap-tag > span {
+  display: inline-flex;
+}
+.noap-why {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.noap-why a {
+  color: var(--teal-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+.amt.na {
+  background: transparent;
+  border-color: var(--line);
+  border-style: dashed;
+}
+.amt.na .amt-input {
+  color: var(--fill-2);
+}
+/* On a phone the note must not widen the apartment column - that pushes the
+   Amount field behind a horizontal scroll - so the tag and the link wrap. */
+@media (max-width: 560px) {
+  .noap-why {
+    font-size: 11.5px;
+  }
+  .noap-tag {
+    padding: 2px 8px;
+    white-space: normal;
+    line-height: 1.3;
+  }
+  .noap-why a {
+    white-space: normal;
+  }
+}
+
 .tbl-foot {
   display: flex;
   align-items: center;

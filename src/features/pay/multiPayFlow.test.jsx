@@ -436,4 +436,76 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
 
     openSpy.mockRestore()
   })
+
+  // Owner call 2026-10-23: a flat without an AP code can't be paid (the
+  // payment is addressed by that code), so it is listed with its debt but
+  // can't be chosen. Live sends "" for it; '-' is the adapter placeholder
+  // when no utility block carried the field - both count as missing. Two
+  // such rows in one table also prove selections no longer key on epcode,
+  // where both would have collided on the same empty key.
+  test('apartments without an AP code are listed, flagged and cannot be selected or paid', async () => {
+    listApartments.mockResolvedValue([
+      { id: 'N1', code: 'OCN.A.01.0101', project: 'Orbi City', role: 'Owner' },
+      { id: 'N2', code: 'OCN.A.02.0202', project: 'Orbi City', role: 'Owner' },
+      { id: 'N3', code: 'OCN.A.03.0303', project: 'Orbi City', role: 'Owner' },
+    ])
+    getCommunals.mockResolvedValue({
+      utilities: { electricitySum: 0, internetSum: 0, currency: 'GEL' },
+      maintenance: { owed: 0, advance: 0, currency: 'USD' },
+      byApartment: [
+        { code: 'OCN.A.01.0101', epcode: 'NEP1', electricity: 50, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCN.A.02.0202', epcode: '', electricity: 30, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+        { code: 'OCN.A.03.0303', epcode: '-', electricity: 20, waterIndication: '-', internet: { balance: 0, balanceWithPenalty: 0, cost: 0, penalty: 0 }, maintenance: 0, displayServices: [] },
+      ],
+    })
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue({ opener: {} })
+
+    renderApp(['/pay'])
+    await screen.findByText('Orbi City')
+    fireEvent.click(screen.getByText('Select'))
+    fireEvent.click(await screen.findByText('Electricity').then((el) => el.closest('button')))
+    await screen.findByText('OCN.A.01.0101')
+
+    for (const code of ['OCN.A.02.0202', 'OCN.A.03.0303']) {
+      const row = screen.getByText(code).closest('tr')
+      // Still listed with its debt...
+      expect(within(row).getByText(/^\d+\.00 ₾$/)).toBeInTheDocument()
+      // ...flagged, with the reason and the way out...
+      expect(within(row).getByText('No AP code')).toBeInTheDocument()
+      expect(within(row).getByText(/Can't be paid until a code is assigned/)).toBeInTheDocument()
+      expect(within(row).getByRole('link', { name: 'Contact support' })).toHaveAttribute('href', '/support/new')
+      // ...but never selected: not by default (it owes), not by a click.
+      const box = within(row).getByRole('checkbox')
+      expect(box).toBeDisabled()
+      expect(box).not.toBeChecked()
+      fireEvent.click(screen.getByText(code))
+      expect(box).not.toBeChecked()
+    }
+
+    // "n of m" counts only the rows that can be chosen.
+    expect(screen.getByText('1 of 1 selected · Total 50.00 ₾')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    const modal = await screen.findByTestId('modal-box')
+    fireEvent.click(within(modal).getByRole('button', { name: /Crypto/ }))
+    fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))
+    await within(modal).findByText('Payment opened in a new tab')
+    expect(payMulti).toHaveBeenCalledWith(
+      expect.objectContaining({ services: [{ epcode: 'NEP1', amount: 50, serviceType: 'electricity' }] })
+    )
+
+    openSpy.mockRestore()
+  })
+
+  test('a Pay deep link to an apartment without an AP code opens the table without selecting it', async () => {
+    getCommunals.mockResolvedValue({
+      ...COMMUNALS,
+      byApartment: COMMUNALS.byApartment.map((r) => (r.code === 'OCT.A.30.3026' ? { ...r, epcode: '' } : r)),
+    })
+    renderApp([{ pathname: '/pay', state: { apartmentCode: 'OCT.A.30.3026', utility: 'electricity' } }])
+
+    const row = (await screen.findByText('OCT.A.30.3026')).closest('tr')
+    expect(within(row).getByRole('checkbox')).not.toBeChecked()
+    expect(within(row).getByText('No AP code')).toBeInTheDocument()
+  })
 })

@@ -81,6 +81,7 @@
   --line-2:#E6E6E6;        /* library: Light icon 20% */
   --card-line:rgba(132, 132, 132, .18); /* card hairline — Light icon, softer than --line-2 */
   --row-on:#F2F7F5;        /* selected row band (multi-pay table) */
+  --noap-bg:#FFFBF2;       /* unpayable row band - no AP code (multi-pay table) */
 
   /* ---- Semantic.
      Each --*-bg is the base at 10%, --*-line at 40%, and --*-ink a shade
@@ -203,6 +204,7 @@
   --line-2:#3A3A3A;
   --card-line:rgba(58, 58, 58, .9);
   --row-on:#24332C;
+  --noap-bg:#2E2717;
 
   /* ---- Semantic */
   --pos:#4CD090;  --pos-bg:#263E33;  --pos-ink:#7FE0B0;

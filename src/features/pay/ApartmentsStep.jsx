@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../context/ModalContext'
 import { fmt, fmtNum } from '../../utils/format'
-import { owedFor, round2, serviceTypeFor } from './payFlowData'
+import { hasApCode, owedFor, round2, serviceTypeFor } from './payFlowData'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Checkbox from '../../components/ui/Checkbox'
@@ -70,10 +71,12 @@ function AmountField({ label, value, max, disabled, onChange, ariaLabel }) {
 }
 
 // Step 3: the apartment checkbox table for the selected complex+utility,
-// plus the summary/Pay-Now panel. `selections` is the lifted `{epcode:
+// plus the summary/Pay-Now panel. `selections` is the lifted `{code:
 // amount}` state MultiPayFlow owns (so it survives a Back-and-forward round
 // trip and is what the eventual POST /payment/multi/ body — P3-4 — will be
-// built from).
+// built from). Keyed by the apartment `code`, not its `epcode`: the code is
+// always present and unique, while apartments without an AP code all share
+// the same empty epcode and would collide in one key.
 export default function ApartmentsStep({
   complex,
   utility,
@@ -106,7 +109,10 @@ export default function ApartmentsStep({
     [complex.apartments, utility, usdRate, maintenanceCurrency, roleFilter]
   )
 
-  const selectedCount = rows.filter((r) => selections[r.epcode] != null).length
+  // Rows without an AP code can't be chosen, so they don't count toward the
+  // "n of m" either - "1 of 6" where two can never be ticked reads as a bug.
+  const payableRows = rows.filter(hasApCode)
+  const selectedCount = payableRows.filter((r) => selections[r.code] != null).length
   const total = Object.values(selections).reduce((sum, v) => sum + (Number(v) || 0), 0)
 
   // Carried fix (P3-5 review, filter-vs-selections desync): switching
@@ -123,12 +129,12 @@ export default function ApartmentsStep({
     setRoleFilter(nextFilter)
     if (nextFilter === 'All') return
     const visibleCodes = new Set(
-      complex.apartments.filter((row) => row.role === nextFilter).map((row) => row.epcode)
+      complex.apartments.filter((row) => row.role === nextFilter).map((row) => row.code)
     )
     onSelectionsChange((prev) => {
       const next = {}
-      for (const [epcode, amount] of Object.entries(prev)) {
-        if (visibleCodes.has(epcode)) next[epcode] = amount
+      for (const [code, amount] of Object.entries(prev)) {
+        if (visibleCodes.has(code)) next[code] = amount
       }
       return next
     })
@@ -138,10 +144,11 @@ export default function ApartmentsStep({
   // runs that during the owner component's render, and a setAmounts() in
   // there is a cross-component update mid-render.
   function toggleRow(row) {
-    if (selections[row.epcode] != null) {
+    if (!hasApCode(row)) return
+    if (selections[row.code] != null) {
       onSelectionsChange((prev) => {
         const next = { ...prev }
-        delete next[row.epcode] // the displayed amount deliberately stays
+        delete next[row.code] // the displayed amount deliberately stays
         return next
       })
       return
@@ -149,9 +156,9 @@ export default function ApartmentsStep({
     // Re-checking restores whatever was last typed here, falling back the
     // first time to the full outstanding amount — or to 0 when there is
     // nothing outstanding, since how much to pay ahead is the user's call.
-    const amount = amounts[row.epcode] ?? Math.max(0, round2(row.owed))
-    setAmounts((a) => ({ ...a, [row.epcode]: amount }))
-    onSelectionsChange((prev) => ({ ...prev, [row.epcode]: amount }))
+    const amount = amounts[row.code] ?? Math.max(0, round2(row.owed))
+    setAmounts((a) => ({ ...a, [row.code]: amount }))
+    onSelectionsChange((prev) => ({ ...prev, [row.code]: amount }))
   }
 
   // The whole row toggles, not just the checkbox. Clicks that landed on
@@ -165,9 +172,13 @@ export default function ApartmentsStep({
   // AmountField has already parsed and clamped to [0, owed] — this just
   // records the number in both maps.
   function updateAmount(row, amount) {
-    setAmounts((a) => ({ ...a, [row.epcode]: amount }))
-    onSelectionsChange((prev) => ({ ...prev, [row.epcode]: amount }))
+    setAmounts((a) => ({ ...a, [row.code]: amount }))
+    onSelectionsChange((prev) => ({ ...prev, [row.code]: amount }))
   }
+
+  // POST /payment/multi/ addresses apartments by AP code, so the selections
+  // (keyed by apartment code) are translated back here.
+  const epcodeByCode = new Map(complex.apartments.map((row) => [row.code, row.epcode]))
 
   return (
     <div className={styles['step3-grid']}>
@@ -203,12 +214,49 @@ export default function ApartmentsStep({
             </thead>
             <tbody>
               {rows.map((row) => {
-                const checked = selections[row.epcode] != null
+                const checked = selections[row.code] != null
                 const owedClass =
                   row.owed > 0 ? styles['owed-neg'] : row.owed < 0 ? styles['owed-pos'] : styles['owed-zero']
+                // No AP code: listed with its debt, but it can't be paid -
+                // a disabled checkbox, an amber band, a tag saying why and
+                // the way to get it fixed. The amount box is an empty dashed
+                // outline so the row reads "not payable", not "0".
+                if (!hasApCode(row)) {
+                  return (
+                    <tr key={row.code} className={styles.noap} aria-disabled="true">
+                      <td>
+                        <Checkbox aria-label={row.code} checked={false} disabled readOnly />
+                      </td>
+                      <td>
+                        <span className={styles['apt-code']}>{row.code}</span>
+                        <span className={styles['noap-tag']}>
+                          <Icon name="warn" size={13} /> {t('pay:noApCodeTag')}
+                        </span>
+                        <span className={styles['noap-why']}>
+                          {t('pay:noApCodeWhy')}{' '}
+                          <Link to="/support/new">{t('pay:noApCodeLink')}</Link>
+                        </span>
+                      </td>
+                      <td className={`${styles.r} ${owedClass}`}>{fmt(row.owed, '₾')}</td>
+                      <td className={styles.r}>
+                        <span className={`${styles.amt} ${styles.na}`}>
+                          <span className={styles['amt-lab']}>{t('pay:tableAmountHeader')}</span>
+                          <input
+                            type="text"
+                            className={styles['amt-input']}
+                            value="-"
+                            disabled
+                            readOnly
+                            aria-label={`${t('pay:tableAmountHeader')} ${row.code}`}
+                          />
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                }
                 return (
                   <tr
-                    key={row.epcode}
+                    key={row.code}
                     className={checked ? styles.on : ''}
                     onClick={(e) => handleRowClick(e, row)}
                   >
@@ -224,7 +272,7 @@ export default function ApartmentsStep({
                     <td className={styles.r}>
                       <AmountField
                         label={t('pay:tableAmountHeader')}
-                        value={checked ? selections[row.epcode] : (amounts[row.epcode] ?? 0)}
+                        value={checked ? selections[row.code] : (amounts[row.code] ?? 0)}
                         max={MAX_ROW_AMOUNT}
                         disabled={!checked}
                         onChange={(raw) => updateAmount(row, raw)}
@@ -238,7 +286,7 @@ export default function ApartmentsStep({
           </table>
         </div>
         <div className={styles['tbl-foot']}>
-          {t('pay:selectionFooter', { n: selectedCount, m: rows.length, total: fmt(total, '₾') })}
+          {t('pay:selectionFooter', { n: selectedCount, m: payableRows.length, total: fmt(total, '₾') })}
         </div>
         {/* Says out loud what the table now allows, so a zero-balance row
             doesn't read as a checkbox that does nothing. */}
@@ -292,8 +340,8 @@ export default function ApartmentsStep({
                   complexName={complex.project}
                   utilityLabel={t(`pay:utilityLabels.${utility}`)}
                   amount={total}
-                  services={Object.entries(selections).map(([epcode, amt]) => ({
-                    epcode,
+                  services={Object.entries(selections).map(([code, amt]) => ({
+                    epcode: epcodeByCode.get(code),
                     amount: amt,
                     serviceType: serviceTypeFor(utility),
                   }))}
