@@ -92,3 +92,20 @@
 .modal.xl {
   max-width: 940px;
 }
+/* A tall content modal (chart over a long list) takes the whole screen on a
+   phone instead of floating with a margin around it. */
+.modal.xl.sheet-phone {
+  max-height: min(860px, 92vh);
+}
+@media (max-width: 640px) {
+  .modal-overlay:has(.sheet-phone) {
+    padding: 0;
+    align-items: stretch;
+  }
+  .modal.sheet-phone {
+    max-width: none;
+    max-height: none;
+    height: 100dvh;
+    border-radius: 0;
+  }
+}

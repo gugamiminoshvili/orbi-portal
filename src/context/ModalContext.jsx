@@ -9,6 +9,8 @@ const SIZE_CLASS = {
   md: styles.md,
   lg: styles.lg,
   xl: styles.xl,
+  // xl on a wide screen, the whole screen on a phone (DailyReadingsModal).
+  'xl-sheet': `${styles.xl} ${styles['sheet-phone']}`,
 }
 
 const FOCUSABLE_SELECTOR = 'button:not([disabled]),input,select,[tabindex="0"],a[href]'

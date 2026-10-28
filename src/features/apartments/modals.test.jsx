@@ -40,6 +40,29 @@ test('electricity report modal: generate monthly report then download', async ()
   expect(await screen.findByText('Monthly report downloaded')).toBeInTheDocument()
 }, 8000)
 
+test('daily readings: a year of readings, a month badge, and the list grouped by month', async () => {
+  renderApp(['/apartments/A1'])
+  fireEvent.click(await screen.findByRole('button', { name: /Metered consumption/ }))
+  fireEvent.click(screen.getByRole('button', { name: /Daily readings/ }))
+  const modal = await screen.findByTestId('modal-box')
+  expect(await within(modal).findByText('Daily consumption')).toBeInTheDocument()
+  expect(within(modal).getByText(/Counter E-3026-01 · Last 12 months/)).toBeInTheDocument()
+
+  // Opens on the newest days: the badge names the current month.
+  const now = new Date()
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  expect(within(modal).getByTestId('readings-month')).toHaveTextContent(`${MONTHS[now.getMonth()]} ${now.getFullYear()}`)
+
+  // The whole year is listed, one sticky header per month (12 or 13 of them).
+  const rows = modal.querySelectorAll('[data-row]')
+  expect(rows.length).toBe(365)
+  expect(within(modal).getAllByText(new RegExp(`^${MONTHS[now.getMonth()]} ${now.getFullYear()}`)).length).toBeGreaterThanOrEqual(1)
+
+  // A row selects its bar.
+  fireEvent.click(rows[rows.length - 1]) // the oldest day
+  expect(modal.querySelector('[data-i="0"] > div').className).toMatch(/sel/)
+})
+
 test('doors calendar renders June 2026 with counts', async () => {
   renderApp(['/apartments/A1'])
   fireEvent.click(await screen.findByText('Open calendar'))

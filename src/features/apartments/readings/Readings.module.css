@@ -1,0 +1,438 @@
+/* Electricity daily readings (DailyReadingsModal). Layout follows the
+   portal's readings view (orbi-portal-readings.html): a fixed chart over a
+   scrolling list. The chart's days sit on one wide track that scrolls
+   sideways; 30 of them fill the visible width. */
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.tile {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  flex: none;
+}
+.ttl {
+  flex: 1;
+  min-width: 0;
+}
+.ttl h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.ttl span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.head button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.state {
+  padding: 22px;
+}
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ---------- chart ---------- */
+.chartsec {
+  position: relative;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.chart-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 16px;
+}
+.chart-title b {
+  font-size: 15px;
+  font-weight: 600;
+}
+/* The month on screen. */
+.mnow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--teal-soft);
+  color: var(--teal-ink);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mnow::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+.range {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.plot-wrap {
+  display: flex;
+  gap: 10px;
+}
+.yaxis {
+  display: flex;
+  gap: 6px;
+}
+.yunit {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-align: center;
+  padding-bottom: 20px;
+  white-space: nowrap;
+}
+.yticks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 190px;
+  width: 20px;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  padding-bottom: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.plot {
+  flex: 1;
+  position: relative;
+  height: 190px;
+  min-width: 0;
+}
+.grid {
+  position: absolute;
+  inset: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.grid i {
+  border-top: 1px solid var(--line);
+}
+.grid i:last-child {
+  border-top-color: var(--line-2);
+}
+.pscroll {
+  position: absolute;
+  inset: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+.pscroll::-webkit-scrollbar {
+  display: none;
+}
+.pscroll.drag {
+  cursor: grabbing;
+}
+.pscroll.drag .day {
+  pointer-events: none;
+}
+.ptrack {
+  position: relative;
+  height: 100%;
+}
+.bars {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 20px;
+  display: flex;
+  align-items: flex-end;
+}
+.day {
+  flex: none;
+  width: var(--slot);
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 var(--half-gap);
+  cursor: pointer;
+}
+.bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #2f9e5f, var(--teal));
+  transition: opacity 0.2s ease, filter var(--t);
+}
+/* Days outside the month on screen step back, so the month reads as a block. */
+.day.out .bar {
+  opacity: 0.35;
+}
+.day:hover .bar {
+  filter: brightness(1.08);
+}
+.bar.today {
+  background: linear-gradient(180deg, var(--teal), var(--teal-600));
+}
+.bar.sel {
+  opacity: 1 !important;
+  box-shadow: 0 0 0 2px var(--teal-line);
+}
+.xlabels {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 16px;
+  display: flex;
+}
+.xlabels span {
+  flex: none;
+  width: var(--slot);
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: visible;
+  font-variant-numeric: tabular-nums;
+}
+.xlabels span.m1 {
+  color: var(--ink);
+  font-weight: 600;
+}
+.xlabels span.todayLbl {
+  color: var(--teal-ink);
+  font-weight: 600;
+}
+/* Where each month begins. */
+.msep {
+  position: absolute;
+  top: 0;
+  bottom: 20px;
+  border-left: 1px dashed var(--line-2);
+  pointer-events: none;
+}
+/* Fades at the edges say "there is more this way". */
+.plot::before,
+.plot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 20px;
+  width: 18px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.plot::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--card), transparent);
+}
+.plot::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--card), transparent);
+}
+.plot.more-l::before,
+.plot.more-r::after {
+  opacity: 1;
+}
+.ctip {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -100%);
+  background: #1d2433;
+  color: #fff;
+  font-size: 11.5px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---------- list ---------- */
+.listhead,
+.lrow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  align-items: center;
+  padding: 0 22px;
+}
+.listhead {
+  height: 40px;
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.r {
+  text-align: right;
+}
+.listbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.lmonth {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 34px;
+  padding: 0 22px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.lmonth span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.lrow {
+  width: 100%;
+  min-height: 50px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: inherit;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--t);
+}
+.lrow:hover {
+  background: var(--surface-2);
+}
+.lrow:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+.d {
+  font-weight: 500;
+}
+.rd {
+  color: var(--ink-2);
+}
+.rd small {
+  display: none;
+}
+.u {
+  font-weight: 600;
+  color: var(--teal-ink);
+}
+.u small {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 11.5px;
+  margin-left: 3px;
+}
+.flash {
+  animation: flash 1.1s ease;
+}
+@keyframes flash {
+  0%,
+  30% {
+    background: var(--teal-soft);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* ---------- phone: the modal is full screen (see Modal.module.css) ---------- */
+@media (max-width: 640px) {
+  .head {
+    padding: 14px 16px;
+  }
+  .chartsec {
+    padding: 14px 16px;
+  }
+  .chart-title {
+    row-gap: 6px;
+    margin-bottom: 12px;
+  }
+  .mnow {
+    margin-left: auto;
+  }
+  .range {
+    flex-basis: 100%;
+    margin-left: 0;
+    font-size: 11.5px;
+  }
+  .yticks,
+  .plot {
+    height: 150px;
+  }
+  .listhead {
+    display: none;
+  }
+  .lmonth {
+    padding: 0 16px;
+  }
+  .lrow {
+    grid-template-columns: 1fr auto;
+    padding: 12px 16px;
+    row-gap: 3px;
+  }
+  .d {
+    grid-column: 1;
+    grid-row: 1;
+    font-weight: 600;
+  }
+  .rd {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .rd small {
+    display: inline;
+  }
+  .u {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+  }
+}

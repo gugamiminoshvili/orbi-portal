@@ -10,6 +10,7 @@ import buttonStyles from '../../../components/ui/Button.module.css'
 import Badge from '../../../components/ui/Badge'
 import ServiceShell, { Metric } from './ServiceShell'
 import ElectricityReportModal from '../modals/ElectricityReportModal'
+import DailyReadingsModal from '../readings/DailyReadingsModal'
 import styles from '../Detail.module.css'
 
 const STATUS_TONE = { Active: 'pos', Suspended: 'warn' }
@@ -67,6 +68,13 @@ export default function ElectricityCard({ apt }) {
           onClick={guard(() => openModal(<ElectricityReportModal apartment={apt} />, { size: 'md' }))}
         >
           <Icon name="doc" /> {t('apartments:electricityReports')}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={guard(() => openModal(<DailyReadingsModal apartment={apt} />, { size: 'xl-sheet' }))}
+        >
+          <Icon name="chart" /> {t('apartments:dailyReadings')}
         </Button>
         {due && (
           <Link
