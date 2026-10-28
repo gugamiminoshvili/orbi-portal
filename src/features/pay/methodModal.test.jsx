@@ -1,11 +1,9 @@
-// Unit tests for MethodModal (Task P3-4) in isolation from the flow —
-// payMulti/downloadInvoice are mocked directly (same vi.mock-the-endpoints-
-// module pattern as dashboard.test.jsx / modals.real.test.jsx) so the
-// method-picker's own gating/body-building logic is exercised without
-// depending on ApartmentsStep's selections state.
+// Unit tests for MethodModal in isolation from the flow: the endpoints are
+// mocked so the picker's own list, gating and request-building are exercised
+// without ApartmentsStep's selections.
 import { useEffect } from 'react'
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import '../../i18n'
 import { ToastProvider } from '../../context/ToastContext'
 import { ModalProvider, useModal } from '../../context/ModalContext'
@@ -13,17 +11,26 @@ import { ModalProvider, useModal } from '../../context/ModalContext'
 vi.mock('../../api/endpoints/pay', () => ({
   payMulti: vi.fn(),
   downloadInvoice: vi.fn(),
+  getPaymentMethods: vi.fn(),
 }))
 
-import { payMulti, downloadInvoice } from '../../api/endpoints/pay'
+import { payMulti, downloadInvoice, getPaymentMethods } from '../../api/endpoints/pay'
 import MethodModal from './MethodModal'
 
 const SERVICES = [{ epcode: 'EP1', amount: 30, serviceType: 'electricity' }]
 
-// Goes through the real openModal() (same call site ApartmentsStep uses)
-// rather than mounting <MethodModal> as a plain child, so the modal-box
-// portal actually exists and closeModal() (the invoice success path, e.g.)
-// is observable the same way it is in the real app.
+// As GET /paymentMethods/ arrives after adaptPaymentMethods: two card rows
+// with different limits, Apple Pay, crypto, and an online bank with a fee cap.
+// No invoice row - the modal adds it itself.
+const METHODS = [
+  { id: 1, key: 'card', name: 'Card', title: 'Pay by card', max: 1500, feePct: 2, maxFee: null },
+  { id: 2, key: 'card', name: 'Card', title: 'Pay by card', max: 3000, feePct: 2.5, maxFee: null },
+  { id: 3, key: 'applepay', name: 'Apple Pay', title: 'Apple Pay', max: 3000, feePct: 2.5, maxFee: null },
+  { id: 4, key: 'crypto', name: 'Crypto', title: 'Crypto', max: 50000, feePct: 0.6, maxFee: null },
+  { id: 5, key: 'bank', name: 'Online bank', title: 'Online bank', max: 50000, feePct: 0.6, maxFee: 100 },
+]
+
+// Through the real openModal(), so the modal box and closeModal() behave as in the app.
 function Harness(props) {
   const { openModal } = useModal()
   useEffect(() => {
@@ -43,13 +50,16 @@ function renderModal(props = {}) {
   )
 }
 
+// The rows, in order, once the list has loaded.
+async function rows() {
+  await screen.findAllByRole('button', { name: /Bank Card/ })
+  return screen.getAllByRole('button', { pressed: false }).concat(screen.queryAllByRole('button', { pressed: true }))
+}
+
 beforeEach(() => {
+  getPaymentMethods.mockReset().mockResolvedValue(METHODS)
   payMulti.mockReset().mockResolvedValue({ url: 'https://example.test/pay' })
   downloadInvoice.mockReset().mockResolvedValue(new Blob(['pdf'], { type: 'application/pdf' }))
-  // jsdom has no createObjectURL/revokeObjectURL, and its window.open is an
-  // unimplemented stub that logs a console error — stub both so redirect
-  // tests are deterministic and quiet; individual tests override window.open
-  // with mockReturnValueOnce(null) to exercise the popup-blocked path.
   URL.createObjectURL = vi.fn(() => 'blob:mock')
   URL.revokeObjectURL = vi.fn()
   vi.spyOn(window, 'open').mockReturnValue({ opener: {} })
@@ -59,224 +69,133 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('MethodModal — rendering', () => {
-  test('renders the subtitle, amount banner, and all five method options with fee/limit info', () => {
+describe('MethodModal - list', () => {
+  test('title, subtitle, the amount panel, and one row per method with its limit and fee', async () => {
     renderModal()
-
+    await rows()
+    expect(screen.getByText('Select Payment Method')).toBeInTheDocument()
     expect(screen.getByText('Orbi City • Electricity')).toBeInTheDocument()
+    expect(screen.getByText('Initial Amount')).toBeInTheDocument()
     expect(screen.getByText('30.00 ₾')).toBeInTheDocument()
 
-    expect(screen.getByRole('button', { name: /Bank Card/ })).toBeInTheDocument()
-    expect(screen.getAllByText('Max 3,000.00 ₾').length).toBe(2) // Bank Card + Apple Pay share the same max
-    expect(screen.getAllByText('2.5%').length).toBe(2) // Bank Card + Apple Pay
+    const cards = screen.getAllByRole('button', { name: /Bank Card/ })
+    expect(cards).toHaveLength(2)
+    expect(cards[0]).toHaveTextContent('Max 1,500 ₾')
+    expect(cards[0]).toHaveTextContent('Fee 2.0 %')
+    expect(cards[1]).toHaveTextContent('Max 3,000 ₾')
+    expect(cards[1]).toHaveTextContent('Fee 2.5 %')
+    // The fee cap, where there is one.
+    expect(screen.getByRole('button', { name: /Online Bank/ })).toHaveTextContent('Max fee 100 ₾')
+    // The invoice is offered even though the list did not carry it.
+    expect(screen.getByRole('button', { name: /Invoice/ })).toHaveTextContent('Download')
+  })
 
-    expect(screen.getByRole('button', { name: /Apple Pay/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Online Bank/ })).toBeInTheDocument()
-    expect(screen.getByText('Max 50,000.00 ₾')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Crypto/ })).toBeInTheDocument()
-    expect(screen.getByText('Max 100,000.00 ₾')).toBeInTheDocument()
-    expect(screen.getAllByText('0.6%').length).toBe(2) // Online Bank + Crypto
+  test('no fee or total breakdown - only a hint until a method is picked', async () => {
+    renderModal()
+    await rows()
+    expect(screen.getByText('Select a payment method above to continue')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Total$/)).not.toBeInTheDocument()
+  })
 
-    expect(screen.getByRole('button', { name: /Invoice/ })).toBeInTheDocument()
-    expect(screen.getByText('Download')).toBeInTheDocument()
+  test('a method over its limit is disabled and cannot be picked', async () => {
+    renderModal({ amount: 2000 })
+    await rows()
+    const [small, big] = screen.getAllByRole('button', { name: /Bank Card/ })
+    expect(small).toBeDisabled()
+    fireEvent.click(small)
+    expect(small).toHaveAttribute('aria-pressed', 'false')
+    expect(big).not.toBeDisabled()
+  })
+
+  test('a failed list shows a retry that loads it again', async () => {
+    getPaymentMethods.mockRejectedValueOnce(new Error('down'))
+    renderModal()
+    fireEvent.click(await screen.findByRole('button', { name: /Retry/ }))
+    expect(await screen.findAllByRole('button', { name: /Bank Card/ })).toHaveLength(2)
+    expect(getPaymentMethods).toHaveBeenCalledTimes(2)
   })
 })
 
-// Owner call 2026-08-07: the payer should see what the method adds before
-// they are redirected, not after.
-describe('MethodModal — fee and total', () => {
-  test('shows only a hint until a method is picked', () => {
+describe('MethodModal - paying', () => {
+  test('the picked row is sent by its id: the second card row pays as method "card", id 2', async () => {
     renderModal()
-    expect(screen.getByText('The fee depends on the payment method.')).toBeInTheDocument()
-    expect(screen.queryByText('Total')).not.toBeInTheDocument()
-  })
-
-  test('the fee and total follow the selected method', () => {
-    renderModal()
-
-    // Bank Card — 2.5% of 30.00
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
-    expect(screen.getByText('Fee (2.5%)')).toBeInTheDocument()
-    expect(screen.getByText('+0.75 ₾')).toBeInTheDocument()
-    expect(screen.getByText('30.75 ₾')).toBeInTheDocument()
-
-    // Crypto — 0.6%, and the figures must REPLACE the previous ones
-    fireEvent.click(screen.getByRole('button', { name: /Crypto/ }))
-    expect(screen.getByText('Fee (0.6%)')).toBeInTheDocument()
-    expect(screen.getByText('+0.18 ₾')).toBeInTheDocument()
-    expect(screen.getByText('30.18 ₾')).toBeInTheDocument()
-    expect(screen.queryByText('+0.75 ₾')).not.toBeInTheDocument()
-  })
-
-  test('the invoice adds nothing, and says so', () => {
-    renderModal()
-    fireEvent.click(screen.getByRole('button', { name: /Invoice/ }))
-    expect(screen.getByText('No fee is added.')).toBeInTheDocument()
-    expect(screen.queryByText('Total')).not.toBeInTheDocument()
-  })
-
-  test('the fee is rounded to cents, never to a long float tail', () => {
-    // 203.26 * 2.5% = 5.0815 -> 5.08, total 208.34
-    renderModal({ amount: 203.26 })
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
-    expect(screen.getByText('+5.08 ₾')).toBeInTheDocument()
-    expect(screen.getByText('208.34 ₾')).toBeInTheDocument()
-  })
-})
-
-describe('MethodModal — continue gating', () => {
-  test('Continue starts disabled and enables once a non-bank method is chosen', () => {
-    renderModal()
-    const continueBtn = screen.getByRole('button', { name: 'Continue' })
-    expect(continueBtn).toBeDisabled()
-
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
-    expect(continueBtn).not.toBeDisabled()
-  })
-
-  test('Online Bank stays gated until a bank is also chosen, and expands/selects with a green highlight (aria-pressed)', () => {
-    renderModal()
-    const continueBtn = screen.getByRole('button', { name: 'Continue' })
-
-    fireEvent.click(screen.getByRole('button', { name: /Online Bank/ }))
-    expect(continueBtn).toBeDisabled()
-    expect(screen.getByText('Bank of Georgia')).toBeInTheDocument()
-    expect(screen.getByText('TBC Bank')).toBeInTheDocument()
-    expect(screen.getByText('Credo Bank')).toBeInTheDocument()
-    expect(screen.getByText('Liberty Bank')).toBeInTheDocument()
-
-    const tbcBtn = screen.getByRole('button', { name: /TBC Bank/ })
-    expect(tbcBtn).toHaveAttribute('aria-pressed', 'false')
-    fireEvent.click(tbcBtn)
-    expect(tbcBtn).toHaveAttribute('aria-pressed', 'true')
-    expect(continueBtn).not.toBeDisabled()
-  })
-
-  test('an amount over a method\'s max disables that row (with a muted note) and it cannot be selected', () => {
-    // 5000 is over Bank Card/Apple Pay's 3000 max but under Online Bank's 50000
-    renderModal({ amount: 5000 })
-
-    const cardBtn = screen.getByRole('button', { name: /Bank Card/ })
-    expect(cardBtn).toBeDisabled()
-    expect(screen.getAllByText("Amount exceeds this method's limit").length).toBe(2) // card + applepay
-
-    fireEvent.click(cardBtn)
-    expect(cardBtn).toHaveAttribute('aria-pressed', 'false')
-    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
-
-    // Online Bank is still selectable at 5000
-    fireEvent.click(screen.getByRole('button', { name: /Online Bank/ }))
-    expect(screen.getByRole('button', { name: /Online Bank/ })).toHaveAttribute('aria-pressed', 'true')
-  })
-})
-
-describe('MethodModal — payMulti body per method', () => {
-  test('Bank Card -> method "card", no bankVendor', async () => {
-    renderModal()
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
+    await rows()
+    const card2 = screen.getAllByRole('button', { name: /Bank Card/ })[1]
+    fireEvent.click(card2)
+    expect(card2).toHaveAttribute('aria-pressed', 'true')
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
-    await screen.findByText(/Payment opened/)
-    expect(payMulti).toHaveBeenCalledWith(
-      expect.objectContaining({ services: SERVICES, method: 'card', bankVendor: undefined })
-    )
+    expect(await screen.findByText('Payment opened in a new tab')).toBeInTheDocument()
+    expect(payMulti).toHaveBeenCalledWith(expect.objectContaining({ services: SERVICES, method: 'card', methodId: 2, bankVendor: undefined }))
+    expect(window.open).toHaveBeenCalledWith('https://example.test/pay', '_blank')
   })
 
-  test('Online Bank + TBC -> method "bank" with bankVendor "tbc"', async () => {
+  test('crypto pays as method "crypto"', async () => {
     renderModal()
-    fireEvent.click(screen.getByRole('button', { name: /Online Bank/ }))
-    fireEvent.click(screen.getByRole('button', { name: /TBC Bank/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
-    await screen.findByText(/Payment opened/)
-    expect(payMulti).toHaveBeenCalledWith(
-      expect.objectContaining({ services: SERVICES, method: 'bank', bankVendor: 'tbc' })
-    )
-  })
-
-  test('Crypto -> method "crypto"', async () => {
-    renderModal()
+    await rows()
     fireEvent.click(screen.getByRole('button', { name: /Crypto/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await screen.findByText('Payment opened in a new tab')
+    expect(payMulti).toHaveBeenCalledWith(expect.objectContaining({ method: 'crypto', methodId: 4 }))
+  })
 
-    await screen.findByText(/Payment opened/)
-    expect(payMulti).toHaveBeenCalledWith(expect.objectContaining({ method: 'crypto' }))
+  test('online bank opens its banks; picking one pays straight away', async () => {
+    renderModal()
+    await rows()
+    fireEvent.click(screen.getByRole('button', { name: /Online Bank/ }))
+    // No Continue - the bank itself is the next step.
+    expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
+    const banks = screen.getByRole('group', { name: 'Choose your bank' })
+    fireEvent.click(within(banks).getByRole('button', { name: /TBC Bank/ }))
+    await screen.findByText('Payment opened in a new tab')
+    expect(payMulti).toHaveBeenCalledWith(expect.objectContaining({ method: 'bank', methodId: 5, bankVendor: 'tbc' }))
   })
 
   test('a popup-blocked redirect shows the blocked copy and Reopen retries the same url', async () => {
-    vi.spyOn(window, 'open').mockReturnValueOnce(null).mockReturnValueOnce({ opener: {} })
+    window.open.mockReturnValueOnce(null)
     renderModal()
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
+    await rows()
+    fireEvent.click(screen.getByRole('button', { name: /Crypto/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
-    expect(await screen.findByText(/browser blocked the popup/)).toBeInTheDocument()
+    expect(await screen.findByText('Payment window blocked')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Reopen/ }))
-    expect(await screen.findByText(/Complete your payment/)).toBeInTheDocument()
+    expect(await screen.findByText('Payment opened in a new tab')).toBeInTheDocument()
+    expect(window.open).toHaveBeenCalledTimes(2)
   })
-})
 
-describe('MethodModal — invoice branch', () => {
-  test('Invoice -> payMulti(method:"invoice"), then downloadInvoice, saves a blob, toasts, and closes', async () => {
-    payMulti.mockResolvedValueOnce({ invoiceId: 42 })
+  test('invoice: Download asks for the invoice, saves the PDF, toasts and closes', async () => {
     renderModal()
-
+    await rows()
+    payMulti.mockResolvedValueOnce({ invoice_id: 77 })
     fireEvent.click(screen.getByRole('button', { name: /Invoice/ }))
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }))
     expect(await screen.findByText('Invoice downloaded')).toBeInTheDocument()
-    expect(payMulti).toHaveBeenCalledWith(expect.objectContaining({ services: SERVICES, method: 'invoice' }))
-    expect(downloadInvoice).toHaveBeenCalledWith(42)
-    expect(URL.createObjectURL).toHaveBeenCalled()
+    expect(payMulti).toHaveBeenCalledWith(expect.objectContaining({ method: 'invoice' }))
+    expect(downloadInvoice).toHaveBeenCalledWith(77)
     expect(screen.queryByTestId('modal-box')).not.toBeInTheDocument()
   })
-})
 
-describe('MethodModal — failure handling', () => {
-  test('a rejected payMulti shows a generic failure toast and re-enables Continue', async () => {
-    payMulti.mockRejectedValueOnce(new Error('down'))
+  test('a rejected payment toasts and leaves Continue usable', async () => {
+    payMulti.mockRejectedValueOnce(new Error('boom'))
     renderModal()
-
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
-    const continueBtn = screen.getByRole('button', { name: 'Continue' })
-    fireEvent.click(continueBtn)
-
-    expect(await screen.findByText('Request failed. Please try again.')).toBeInTheDocument()
-    expect(continueBtn).not.toBeDisabled()
-    expect(screen.getByTestId('modal-box')).toBeInTheDocument() // stayed open for a retry
-  })
-
-  test('a rejected downloadInvoice on the invoice branch also shows the failure toast', async () => {
-    downloadInvoice.mockRejectedValueOnce(new Error('down'))
-    renderModal()
-
-    fireEvent.click(screen.getByRole('button', { name: /Invoice/ }))
+    await rows()
+    fireEvent.click(screen.getByRole('button', { name: /Crypto/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
     expect(await screen.findByText('Request failed. Please try again.')).toBeInTheDocument()
-    expect(screen.getByTestId('modal-box')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Continue' })).not.toBeDisabled()
   })
-})
 
-describe('MethodModal — in-flight modal lock', () => {
-  test('ESC cannot dismiss the modal while payMulti is in flight, and works again after it settles', async () => {
-    // Controllable promise: the modal stays in its in-flight (locked) state
-    // until resolvePay is called.
+  test('ESC cannot dismiss the modal while the payment is in flight', async () => {
     let resolvePay
     payMulti.mockImplementationOnce(() => new Promise((resolve) => { resolvePay = resolve }))
     renderModal()
-
-    fireEvent.click(screen.getByRole('button', { name: /Bank Card/ }))
+    await rows()
+    fireEvent.click(screen.getByRole('button', { name: /Crypto/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
-    // Mid-request: ESC must be a no-op (setModalLocked(true), same pattern
-    // as ElectricityReportModal's "generating" step).
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.getByTestId('modal-box')).toBeInTheDocument()
-
     resolvePay({ url: 'https://example.test/pay' })
     expect(await screen.findByText('Payment opened in a new tab')).toBeInTheDocument()
-
-    // Settled: the lock is released (finally), so ESC closes normally again.
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByTestId('modal-box')).not.toBeInTheDocument()
   })

@@ -89,8 +89,9 @@ test('Maintenance Pay link lands on step 3 with A1 preselected and the SAME owed
   fireEvent.click(maintPay)
 
   expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
-  expect(screen.getByText('Orbi City')).toBeInTheDocument()
-  expect(screen.getByText('Maintenance')).toBeInTheDocument()
+  // Complex and utility appear in the trail and the summary alike.
+  expect(screen.getAllByText('Orbi City').length).toBeGreaterThanOrEqual(1)
+  expect(screen.getAllByText('Maintenance').length).toBeGreaterThanOrEqual(1)
   const row = screen.getByText('OCT.A.30.3026').closest('tr')
   expect(within(row).getByRole('checkbox')).toBeChecked()
   // detail-page owed === flow default amount, verbatim — no rate multiply
@@ -112,7 +113,7 @@ test('Electricity Pay link lands on step 3 of the multi-pay flow with A1 presele
   fireEvent.click(elecPay)
 
   expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
-  expect(screen.getByText('Electricity')).toBeInTheDocument()
+  expect(screen.getAllByText('Electricity').length).toBeGreaterThanOrEqual(1)
   const row = screen.getByText('OCT.A.30.3026').closest('tr')
   expect(within(row).getByRole('checkbox')).toBeChecked()
 })

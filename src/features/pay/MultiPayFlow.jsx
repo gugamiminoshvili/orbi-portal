@@ -11,6 +11,8 @@ import Skeleton from '../../components/ui/Skeleton'
 import ComplexStep from './ComplexStep'
 import UtilityStep from './UtilityStep'
 import ApartmentsStep from './ApartmentsStep'
+import { UTILITY_ICON } from './utilityIcons'
+import Icon from '../../components/ui/Icon'
 import styles from './PayFlow.module.css'
 
 // Replaces the v1 single-apartment PayPage (Task P3-3 — see design doc
@@ -81,10 +83,39 @@ export default function MultiPayFlow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, preselectApplied])
 
+  // Each step has its own title and line; steps 2-3 also show the trail of
+  // what was picked - each crumb steps back to that choice.
+  const STEP_COPY = {
+    1: ['pay:step1Title', 'pay:step1Sub'],
+    2: ['pay:step2Title', 'pay:step2Sub'],
+    3: ['pay:step3Title', 'pay:step3Sub'],
+  }
+  const trailComplex = complexes.find((c) => c.project === complexProject)
   const head = (
     <div className={styles['page-head']}>
       <div>
-        <h1>{t('pay:flowTitle')}</h1>
+        <h1>{t(STEP_COPY[step][0])}</h1>
+        <p>{t(STEP_COPY[step][1])}</p>
+        {step >= 2 && trailComplex && (
+          <nav className={styles.trail} aria-label={t('pay:trailAria')}>
+            <button type="button" className={styles.tchip} onClick={() => setStep(1)}>
+              <Icon name="building" size={14} /> {trailComplex.project}
+            </button>
+            {step === 3 && utility && (
+              <>
+                <span className={styles.tsep} aria-hidden="true">/</span>
+                <button
+                  type="button"
+                  className={styles.tchip}
+                  style={{ background: UTILITY_ICON[utility].bg, color: UTILITY_ICON[utility].color }}
+                  onClick={() => setStep(2)}
+                >
+                  <Icon name={UTILITY_ICON[utility].icon} size={14} /> {t(`pay:utilityLabels.${utility}`)}
+                </button>
+              </>
+            )}
+          </nav>
+        )}
       </div>
     </div>
   )
@@ -139,7 +170,6 @@ export default function MultiPayFlow() {
           complex={activeComplex}
           usdRate={usdRate}
           maintenanceCurrency={maintenanceCurrency}
-          onBack={() => setStep(1)}
           onSelect={goToApartmentsStep}
         />
       )}
@@ -151,7 +181,6 @@ export default function MultiPayFlow() {
           maintenanceCurrency={maintenanceCurrency}
           selections={selections}
           onSelectionsChange={setSelections}
-          onBack={() => setStep(2)}
         />
       )}
     </div>

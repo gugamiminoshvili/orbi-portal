@@ -51,3 +51,16 @@
   cursor: default;
   opacity: 0.5;
 }
+/* "Some, not all" (a select-all header): a bar instead of the tick. */
+.cb:indeterminate {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.cb:indeterminate::after {
+  opacity: 1;
+  width: 9px;
+  height: 0;
+  margin-top: 0;
+  border-width: 0 0 2px;
+  transform: none;
+}

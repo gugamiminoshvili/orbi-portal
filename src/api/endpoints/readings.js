@@ -1,15 +1,16 @@
 // Electricity daily readings for one flat: `[{ date: 'YYYY-MM-DD', reading,
 // use }]`, oldest first - see features/apartments/readings/readingsData.js.
-import { USE_MOCK, delay } from '../client'
+import { USE_MOCK, delay, http, persCab } from '../client'
 import { mockDailyReadings } from '../mock/readings'
+import { adaptDailyReadings } from '../adapters/readings'
 
-// FLAG: the live endpoint is not connected yet - the backend contract is
-// still to come. Until it is, real mode rejects, and DailyReadingsModal shows
-// its error state rather than an empty year that would look like no usage.
+// GET /persCabApi/electricity_daily/?flatId= (persCabApi host, see client.js).
 export async function getDailyReadings(flatId) {
   if (USE_MOCK) {
     await delay()
     return mockDailyReadings(flatId)
   }
-  throw new Error('Daily readings endpoint is not connected yet')
+  const params = new URLSearchParams({ flatId: String(flatId) })
+  const rows = await http(persCab(`/electricity_daily/?${params.toString()}`))
+  return adaptDailyReadings(rows)
 }

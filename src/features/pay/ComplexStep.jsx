@@ -6,10 +6,9 @@ import Icon from '../../components/ui/Icon'
 import EmptyState from '../../components/ui/EmptyState'
 import styles from './PayFlow.module.css'
 
-// Step 1: pick a complex. One row per project the resident has apartments
-// in (buildComplexes' grouping) — apartment count, unpaid BILLS count (one
-// apartment can contribute up to 3, one per utility), and the GEL
-// outstanding total (maintenance already USD->GEL converted by owedFor).
+// Step 1: pick a complex. One card per project the resident has apartments
+// in (buildComplexes): apartment count, unpaid bills (one apartment can
+// contribute up to 3, one per utility) and the outstanding debt in GEL.
 export default function ComplexStep({ complexes, onSelect }) {
   const { t } = useTranslation()
 
@@ -25,42 +24,50 @@ export default function ComplexStep({ complexes, onSelect }) {
 
   return (
     <>
-      <Banner title={t('pay:complexBannerTitle')} body={t('pay:complexBannerBody')} />
+      <InfoAlert>{t('pay:complexInfo')}</InfoAlert>
       <div className={styles['complex-list']}>
-        {complexes.map((c) => (
-          <Card key={c.project} className={styles['complex-row']}>
-            <div className={styles['complex-icon']}>
-              <Icon name="building" />
-            </div>
-            <div className={styles['complex-body']}>
-              <h3>{c.project}</h3>
-              <div className={styles['complex-meta']}>
-                <span>{t('pay:apartmentsCount', { count: c.count })}</span>
-                <span>·</span>
-                <span>{t('pay:unpaidBillsCount', { count: c.unpaidBillsCount })}</span>
+        {complexes.map((c) => {
+          const owes = c.outstandingGEL > 0
+          return (
+            <Card key={c.project} className={styles['complex-row']}>
+              <div className={styles['complex-icon']}>
+                <Icon name="building" />
               </div>
-            </div>
-            <div className={styles['complex-total']}>{fmt(c.outstandingGEL, '₾')}</div>
-            <Button size="sm" onClick={() => onSelect(c.project)}>
-              {t('pay:select')} <Icon name="arrow" />
-            </Button>
-          </Card>
-        ))}
+              <div className={styles['complex-body']}>
+                <h3>{c.project}</h3>
+                <div className={styles['complex-meta']}>
+                  <span className={styles['meta-apts']}>
+                    <Icon name="building" size={13} /> {t('pay:apartmentsCount', { count: c.count })}
+                  </span>
+                  <span className={styles.dot} aria-hidden="true" />
+                  <span className={styles['meta-bills']}>{t('pay:unpaidBillsCount', { count: c.unpaidBillsCount })}</span>
+                </div>
+              </div>
+              {/* Phone: the bills count becomes a pill beside the button. */}
+              <span className={`${styles['bills-pill']} ${c.unpaidBillsCount > 0 ? styles.neg : styles.pos}`}>
+                <Icon name="doc" size={13} /> {t('pay:unpaidBillsCount', { count: c.unpaidBillsCount })}
+              </span>
+              <div className={styles['complex-total']}>
+                <small>{t('pay:outstandingDebt')}</small>
+                <b className={owes ? styles.neg : ''}>{fmt(c.outstandingGEL, '₾')}</b>
+              </div>
+              <Button className={styles['select-btn']} onClick={() => onSelect(c.project)}>
+                {t('pay:select')} <Icon name="arrow" />
+              </Button>
+            </Card>
+          )
+        })}
       </div>
     </>
   )
 }
 
-export function Banner({ title, body }) {
+// One-line info note above a step's list.
+export function InfoAlert({ children }) {
   return (
-    <div className={styles.banner}>
-      <div className={styles.bi}>
-        <Icon name="warn" size={16} />
-      </div>
-      <div>
-        <h4>{title}</h4>
-        <p>{body}</p>
-      </div>
+    <div className={styles.info} role="note">
+      <Icon name="info" size={17} />
+      <span>{children}</span>
     </div>
   )
 }

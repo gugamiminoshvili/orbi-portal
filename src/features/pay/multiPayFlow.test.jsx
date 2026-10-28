@@ -26,11 +26,12 @@ vi.mock('../../api/endpoints/apartments', () => ({
 vi.mock('../../api/endpoints/pay', () => ({
   payMulti: vi.fn(),
   downloadInvoice: vi.fn(),
+  getPaymentMethods: vi.fn(),
 }))
 
 import { getCommunals, getRates } from '../../api/endpoints/dashboard'
 import { listApartments } from '../../api/endpoints/apartments'
-import { payMulti } from '../../api/endpoints/pay'
+import { payMulti, getPaymentMethods } from '../../api/endpoints/pay'
 
 const APARTMENTS = [
   { id: 'A1', code: 'OCT.A.30.3026', project: 'Orbi City', role: 'Owner' },
@@ -96,28 +97,44 @@ beforeEach(() => {
   getRates.mockReset().mockResolvedValue(RATES)
   listApartments.mockReset().mockResolvedValue(APARTMENTS)
   payMulti.mockReset().mockResolvedValue({ url: 'https://example.test/pay' })
+  getPaymentMethods.mockReset().mockResolvedValue([
+    { id: 11, key: 'card', name: 'Card', title: 'Pay by card', max: 3000, feePct: 2.5, maxFee: null },
+    { id: 14, key: 'crypto', name: 'Crypto', title: 'Crypto', max: 50000, feePct: 0.6, maxFee: null },
+    { id: 16, key: 'invoice', name: 'Invoice', title: 'Invoice', max: null, feePct: null, maxFee: null },
+  ])
 })
+
+// The table footer: "n of m apartments selected" on one side, "Total: X" on the other.
+function expectFooter(n, m, total) {
+  const sel = screen.getByText(`${n} of ${m} apartments selected`)
+  expect(sel.parentElement).toHaveTextContent(`Total: ${total}`)
+}
+
+// The trail under the title: each chip steps back to that choice.
+function trailChip(name) {
+  return within(screen.getByRole('navigation', { name: 'Your choices so far' })).getByRole('button', { name })
+}
 
 describe('MultiPayFlow — step 1 (complexes)', () => {
   test('renders one card per complex with apartment/unpaid-bill counts and the GEL outstanding total', async () => {
     renderApp(['/pay'])
 
-    expect(await screen.findByRole('heading', { name: 'Pay balances' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Monthly Obligations' })).toBeInTheDocument()
     expect(screen.getByText('Orbi City')).toBeInTheDocument()
     expect(screen.getByText('2 apartments')).toBeInTheDocument()
     // row1 owes on all 3 utilities (50 + 10 + 80 GEL), row2 owes nothing
-    expect(screen.getByText('3 unpaid bills')).toBeInTheDocument()
+    expect(screen.getAllByText('3 unpaid bills').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('140.00 ₾')).toBeInTheDocument()
 
     expect(screen.getByText('Orbi Sea Towers')).toBeInTheDocument()
     expect(screen.getByText('1 apartment')).toBeInTheDocument()
-    expect(screen.getByText('1 unpaid bill')).toBeInTheDocument()
+    expect(screen.getAllByText('1 unpaid bill').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('5.00 ₾')).toBeInTheDocument()
   })
 })
 
 describe('MultiPayFlow — step transitions', () => {
-  test('complex -> utility -> apartments, and Back returns to the previous step', async () => {
+  test('complex -> utility -> apartments, and the trail steps back', async () => {
     renderApp(['/pay'])
     await screen.findByText('Orbi City')
 
@@ -126,18 +143,21 @@ describe('MultiPayFlow — step transitions', () => {
     expect(screen.getByText('Electricity')).toBeInTheDocument()
     expect(screen.getByText('Internet & TV')).toBeInTheDocument()
     // only row1 owes maintenance/electricity/internettv in Orbi City
-    expect(screen.getAllByText('1 apartment owes').length).toBe(3)
+    expect(screen.getAllByText('1 unpaid bill').length).toBe(3)
+    expect(screen.getByRole('heading', { name: 'Utility Categories' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('Electricity').closest('button'))
     expect(await screen.findByText('OCT.A.30.3026')).toBeInTheDocument()
     expect(screen.getByText('OCT.A.14.1408')).toBeInTheDocument()
 
-    // Back from step 3 returns to the utility cards
-    fireEvent.click(screen.getByText('Back'))
+    expect(screen.getByRole('heading', { name: 'Select Apartments' })).toBeInTheDocument()
+
+    // The utility chip returns to the utility list...
+    fireEvent.click(trailChip(/Electricity/))
     expect(await screen.findByText('Maintenance')).toBeInTheDocument()
 
-    // Back from step 2 returns to the complex list
-    fireEvent.click(screen.getByText('Back'))
+    // ...and the complex chip to the complex list.
+    fireEvent.click(trailChip(/Orbi City/))
     expect(await screen.findByText('Orbi Sea Towers')).toBeInTheDocument()
   })
 })
@@ -165,7 +185,7 @@ describe('MultiPayFlow — step 3 table', () => {
     const advanceRow = screen.getByText('OCT.A.14.1408').closest('tr')
     expect(within(advanceRow).getByRole('checkbox')).not.toBeChecked()
 
-    expect(screen.getByText('1 of 2 selected · Total 50.00 ₾')).toBeInTheDocument()
+    expectFooter(1, 2, '50.00 ₾')
   })
 
   test('a row with nothing outstanding is still payable, defaulting to 0 rather than a negative', async () => {
@@ -183,7 +203,7 @@ describe('MultiPayFlow — step 3 table', () => {
 
     fireEvent.change(within(advanceRow).getByRole('textbox'), { target: { value: '25' } })
     // 50 still ticked from the auto-select, plus the 25 advance.
-    expect(screen.getByText('2 of 2 selected · Total 75.00 ₾')).toBeInTheDocument()
+    expectFooter(2, 2, '75.00 ₾')
   })
 
   test('clicking anywhere on a row toggles it, except on the amount field itself', async () => {
@@ -214,7 +234,7 @@ describe('MultiPayFlow — step 3 table', () => {
 
     fireEvent.change(within(debtRow).getByRole('textbox'), { target: { value: '30' } })
 
-    expect(screen.getByText('30.00 ₾')).toBeInTheDocument()
+    expect(screen.getAllByText('30.00 ₾').length).toBeGreaterThanOrEqual(1)
   })
 
   test('an amount above what is owed is allowed — the excess is an advance', async () => {
@@ -225,7 +245,7 @@ describe('MultiPayFlow — step 3 table', () => {
     fireEvent.change(amountInput, { target: { value: '999' } })
 
     expect(amountInput).toHaveValue('999')
-    expect(screen.getByText('1 of 2 selected · Total 999.00 ₾')).toBeInTheDocument()
+    expectFooter(1, 2, '999.00 ₾')
   })
 
   test('a row unchecked and re-checked comes back at the amount that was typed, not the owed amount', async () => {
@@ -240,7 +260,7 @@ describe('MultiPayFlow — step 3 table', () => {
     fireEvent.click(box)
 
     expect(within(debtRow).getByRole('textbox')).toHaveValue('30.00')
-    expect(screen.getByText('1 of 2 selected · Total 30.00 ₾')).toBeInTheDocument()
+    expectFooter(1, 2, '30.00 ₾')
   })
 
   // Carried fix from the P3-5 review: switching roleFilter re-derives the
@@ -272,7 +292,7 @@ describe('MultiPayFlow — step 3 table', () => {
     await screen.findByText('OCM.A.01.0101')
 
     // Both rows owe, so both arrive pre-checked under the default "All".
-    expect(screen.getByText('2 of 2 selected · Total 80.00 ₾')).toBeInTheDocument()
+    expectFooter(2, 2, '80.00 ₾')
 
     // Switch the filter to Owner-only — the Trusted row (and its ₾30
     // selection) drops out of the table...
@@ -282,7 +302,7 @@ describe('MultiPayFlow — step 3 table', () => {
     // ...and the footer must agree: 1 of 1 selected, total only the still
     // visible Owner row's ₾50 — not the stale ₾80 that double-counted the
     // now-hidden Trusted row.
-    expect(screen.getByText('1 of 1 selected · Total 50.00 ₾')).toBeInTheDocument()
+    expectFooter(1, 1, '50.00 ₾')
     expect(screen.getAllByText('50.00 ₾').length).toBeGreaterThanOrEqual(2)
   })
 
@@ -296,7 +316,7 @@ describe('MultiPayFlow — step 3 table', () => {
     // owed 40 USD * rate 2 = 80.00 ₾, and the conversion-rate line renders
     const debtRow = screen.getByText('OCT.A.30.3026').closest('tr')
     expect(within(debtRow).getByText('80.00 ₾')).toBeInTheDocument()
-    expect(screen.getByText('$1 = 2.0000₾')).toBeInTheDocument()
+    expect(screen.getAllByText('$1 = 2.00₾').length).toBeGreaterThanOrEqual(1)
   })
 })
 
@@ -306,7 +326,7 @@ describe('MultiPayFlow — deep-link preselect', () => {
 
     expect(await screen.findByText('OST.A.08.0803')).toBeInTheDocument()
     // preselected complex/utility surfaced in the summary panel
-    expect(screen.getByText('Orbi Sea Towers')).toBeInTheDocument()
+    expect(screen.getAllByText('Orbi Sea Towers').length).toBeGreaterThanOrEqual(1)
     const row = screen.getByText('OST.A.08.0803').closest('tr')
     expect(within(row).getByRole('checkbox')).toBeChecked()
     expect(screen.getAllByText('5.00 ₾').length).toBeGreaterThanOrEqual(2)
@@ -317,7 +337,7 @@ describe('/pay/:id redirect', () => {
   test('with no router state, redirects into step 1 of the new flow (not the retired PayPage wizard)', async () => {
     renderApp(['/pay/A1'])
     expect(await screen.findByText('Orbi City')).toBeInTheDocument()
-    expect(screen.getByText('Pick a complex')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Monthly Obligations' })).toBeInTheDocument()
   })
 
   test('forwards apartmentCode/utility router state through into step 3', async () => {
@@ -340,7 +360,7 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     renderApp([{ pathname: '/pay', state: { apartmentCode: 'OST.A.08.0803', utility: 'electricity' } }])
 
     await screen.findByText('OST.A.08.0803')
-    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    fireEvent.click(screen.getAllByRole('button', { name: /Pay Now/ })[0])
 
     const modal = await screen.findByTestId('modal-box')
     expect(within(modal).getByText('Orbi Sea Towers • Electricity')).toBeInTheDocument()
@@ -360,7 +380,7 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     renderApp([{ pathname: '/pay', state: { apartmentCode: 'OST.A.08.0803', utility: 'electricity' } }])
 
     await screen.findByText('OST.A.08.0803')
-    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    fireEvent.click(screen.getAllByRole('button', { name: /Pay Now/ })[0])
     const modal = await screen.findByTestId('modal-box')
 
     fireEvent.click(within(modal).getByRole('button', { name: /Bank Card/ }))
@@ -414,7 +434,7 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     fireEvent.click(within(row3).getByRole('checkbox'))
     fireEvent.click(within(row3).getByRole('checkbox'))
 
-    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    fireEvent.click(screen.getAllByRole('button', { name: /Pay Now/ })[0])
     const modal = await screen.findByTestId('modal-box')
     // Banner total reflects the same current selections (50 + 10)
     expect(within(modal).getByText('60.00 ₾')).toBeInTheDocument()
@@ -483,9 +503,9 @@ describe('Pay Now -> method modal wiring (P3-4)', () => {
     }
 
     // "n of m" counts only the rows that can be chosen.
-    expect(screen.getByText('1 of 1 selected · Total 50.00 ₾')).toBeInTheDocument()
+    expectFooter(1, 1, '50.00 ₾')
 
-    fireEvent.click(screen.getByRole('button', { name: /Pay Now/ }))
+    fireEvent.click(screen.getAllByRole('button', { name: /Pay Now/ })[0])
     const modal = await screen.findByTestId('modal-box')
     fireEvent.click(within(modal).getByRole('button', { name: /Crypto/ }))
     fireEvent.click(within(modal).getByRole('button', { name: 'Continue' }))

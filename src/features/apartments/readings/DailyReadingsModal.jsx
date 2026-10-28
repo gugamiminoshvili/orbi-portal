@@ -322,7 +322,7 @@ function ReadingsView({ days }) {
             role="status"
             style={{ left: Math.max(70, Math.min(tip.w - 70, tip.x)), top: tip.y - 8 }}
           >
-            {dayLabel(days[tip.i].date, lang)} · {days[tip.i].use} {t('apartments:kwh')}
+            {dayLabel(days[tip.i].date, lang)} · {fmtReading(days[tip.i].use)} {t('apartments:kwh')}
           </div>
         )}
       </div>
@@ -356,7 +356,7 @@ function ReadingsView({ days }) {
                       {fmtReading(d.reading)}
                     </span>
                     <span className={`${styles.u} ${styles.r}`}>
-                      +{d.use}
+                      +{fmtReading(d.use)}
                       <small>{t('apartments:kwh')}</small>
                     </span>
                   </button>

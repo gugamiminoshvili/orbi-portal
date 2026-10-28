@@ -60,6 +60,8 @@ describe('formatting', () => {
     expect(dayLabel('2026-09-30', 'ru')).toBe('30 сен 2026')
     expect(monthFull(8, 'ka')).toBe('სექტემბერი')
     expect(fmtReading(13020)).toBe('13 020')
+    expect(fmtReading(1250.5)).toBe('1 250.5')
+    expect(fmtReading(12.600000001)).toBe('12.6')
   })
   test('CSV export, oldest first', () => {
     expect(readingsCsv(days.slice(0, 2))).toBe('date,reading,consumption_kwh\n2026-08-30,100,4\n2026-08-31,106,6')

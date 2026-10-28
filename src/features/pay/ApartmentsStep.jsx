@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useModal } from '../../context/ModalContext'
@@ -6,10 +6,12 @@ import { fmt, fmtNum } from '../../utils/format'
 import { hasApCode, owedFor, round2, serviceTypeFor } from './payFlowData'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
+import cbStyles from '../../components/ui/Checkbox.module.css'
 import Checkbox from '../../components/ui/Checkbox'
 import Icon from '../../components/ui/Icon'
 import { Seg } from '../../components/ui/Badge'
 import MethodModal from './MethodModal'
+import { UTILITY_ICON } from './utilityIcons'
 import styles from './PayFlow.module.css'
 
 const ROLE_OPTIONS = ['All', 'Owner']
@@ -84,7 +86,6 @@ export default function ApartmentsStep({
   maintenanceCurrency,
   selections,
   onSelectionsChange,
-  onBack,
 }) {
   const { t } = useTranslation()
   const { openModal } = useModal()
@@ -180,180 +181,218 @@ export default function ApartmentsStep({
   // (keyed by apartment code) are translated back here.
   const epcodeByCode = new Map(complex.apartments.map((row) => [row.code, row.epcode]))
 
+  // Header checkbox: every payable row on screen, on or off. Ticking all
+  // restores what was typed in a row before, else its full outstanding amount.
+  const allOn = payableRows.length > 0 && selectedCount === payableRows.length
+  const someOn = selectedCount > 0 && !allOn
+  const headCb = useRef(null)
+  useEffect(() => {
+    if (headCb.current) headCb.current.indeterminate = someOn
+  }, [someOn])
+  function toggleAll() {
+    if (allOn) {
+      const codes = new Set(payableRows.map((r) => r.code))
+      onSelectionsChange((prev) => Object.fromEntries(Object.entries(prev).filter(([c]) => !codes.has(c))))
+      return
+    }
+    const nextAmounts = {}
+    for (const r of payableRows) {
+      if (selections[r.code] == null) nextAmounts[r.code] = amounts[r.code] ?? Math.max(0, round2(r.owed))
+    }
+    setAmounts((a) => ({ ...a, ...nextAmounts }))
+    onSelectionsChange((prev) => ({ ...prev, ...nextAmounts }))
+  }
+
+  // The role filter only earns its place when the complex mixes roles.
+  const mixedRoles = new Set(complex.apartments.map((r) => r.role)).size > 1
+  const showRate = utility === 'maintenance' && maintenanceCurrency === 'USD' && usdRate != null
+  const ui = UTILITY_ICON[utility]
+
+  function openPay() {
+    openModal(
+      <MethodModal
+        complexName={complex.project}
+        utilityLabel={t(`pay:utilityLabels.${utility}`)}
+        amount={total}
+        services={Object.entries(selections).map(([code, amt]) => ({
+          epcode: epcodeByCode.get(code),
+          amount: amt,
+          serviceType: serviceTypeFor(utility),
+        }))}
+      />,
+      { size: 'md' }
+    )
+  }
+
   return (
     <div className={styles['step3-grid']}>
-      <Card>
-        <Card.Head>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <Icon name="back" /> {t('common:back')}
-            </Button>
-            <h3>
-              {complex.project} · {t(`pay:utilityLabels.${utility}`)}
-            </h3>
+      <div className={styles['step3-main']}>
+        {mixedRoles && (
+          <div className={styles['filter-row']}>
+            <Seg
+              options={ROLE_OPTIONS.map((r) => ({ value: r, label: t(`apartments:roles.${r}`) }))}
+              value={roleFilter}
+              onChange={handleRoleFilterChange}
+              role="tablist"
+              aria-label={t('apartments:filterAria')}
+            />
           </div>
-        </Card.Head>
-        <div className={styles['filter-row']}>
-          <Seg
-            options={ROLE_OPTIONS.map((r) => ({ value: r, label: t(`apartments:roles.${r}`) }))}
-            value={roleFilter}
-            onChange={handleRoleFilterChange}
-            role="tablist"
-            aria-label={t('apartments:filterAria')}
-          />
-        </div>
-        <div className={styles['tbl-wrap']}>
-          <table className={styles.tbl}>
-            <thead>
-              <tr>
-                <th />
-                <th>{t('pay:tableApartmentHeader')}</th>
-                <th className={styles.r}>{t('pay:tableOutstandingHeader')}</th>
-                <th className={styles.r}>{t('pay:tableAmountHeader')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const checked = selections[row.code] != null
-                const owedClass =
-                  row.owed > 0 ? styles['owed-neg'] : row.owed < 0 ? styles['owed-pos'] : styles['owed-zero']
-                // No AP code: listed with its debt, but it can't be paid -
-                // a disabled checkbox, an amber band, a tag saying why and
-                // the way to get it fixed. The amount box is an empty dashed
-                // outline so the row reads "not payable", not "0".
-                if (!hasApCode(row)) {
+        )}
+        <Card className={styles.tcard}>
+          <div className={styles['tbl-wrap']}>
+            <table className={styles.tbl}>
+              <thead>
+                <tr>
+                  <th className={styles.cbcol}>
+                    <input
+                      ref={headCb}
+                      type="checkbox"
+                      className={cbStyles.cb}
+                      checked={allOn}
+                      disabled={payableRows.length === 0}
+                      onChange={toggleAll}
+                      aria-label={t('pay:selectAll')}
+                    />
+                  </th>
+                  <th>{t('pay:tableApartmentHeader')}</th>
+                  <th className={styles.r}>{t('pay:tableOutstandingHeader')}</th>
+                  <th className={styles.r}>{t('pay:tablePayAmountHeader')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => {
+                  const checked = selections[row.code] != null
+                  const owedClass =
+                    row.owed > 0 ? styles['owed-neg'] : row.owed < 0 ? styles['owed-pos'] : styles['owed-zero']
+                  // No AP code: listed with its debt, but it can't be paid -
+                  // a disabled checkbox, an amber band, a tag saying why and
+                  // the way to get it fixed. The amount box is an empty dashed
+                  // outline so the row reads "not payable", not "0".
+                  if (!hasApCode(row)) {
+                    return (
+                      <tr key={row.code} className={styles.noap} aria-disabled="true">
+                        <td>
+                          <Checkbox aria-label={row.code} checked={false} disabled readOnly />
+                        </td>
+                        <td>
+                          <span className={styles['apt-code']}>{row.code}</span>
+                          <span className={styles['noap-tag']}>
+                            <Icon name="warn" size={13} /> {t('pay:noApCodeTag')}
+                          </span>
+                          <span className={styles['noap-why']}>
+                            {t('pay:noApCodeWhy')}{' '}
+                            <Link to="/support/new">{t('pay:noApCodeLink')}</Link>
+                          </span>
+                        </td>
+                        <td className={`${styles.r} ${owedClass}`}>{fmt(row.owed, '₾')}</td>
+                        <td className={styles.r}>
+                          <span className={`${styles.amt} ${styles.na}`}>
+                            <span className={styles['amt-lab']}>{t('pay:tableAmountHeader')}</span>
+                            <input
+                              type="text"
+                              className={styles['amt-input']}
+                              value="-"
+                              disabled
+                              readOnly
+                              aria-label={`${t('pay:tableAmountHeader')} ${row.code}`}
+                            />
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  }
                   return (
-                    <tr key={row.code} className={styles.noap} aria-disabled="true">
+                    <tr
+                      key={row.code}
+                      className={checked ? styles.on : ''}
+                      onClick={(e) => handleRowClick(e, row)}
+                    >
                       <td>
-                        <Checkbox aria-label={row.code} checked={false} disabled readOnly />
+                        <Checkbox
+                          aria-label={row.code}
+                          checked={checked}
+                          onChange={() => toggleRow(row)}
+                        />
                       </td>
-                      <td>
-                        <span className={styles['apt-code']}>{row.code}</span>
-                        <span className={styles['noap-tag']}>
-                          <Icon name="warn" size={13} /> {t('pay:noApCodeTag')}
-                        </span>
-                        <span className={styles['noap-why']}>
-                          {t('pay:noApCodeWhy')}{' '}
-                          <Link to="/support/new">{t('pay:noApCodeLink')}</Link>
-                        </span>
-                      </td>
+                      <td>{row.code}</td>
                       <td className={`${styles.r} ${owedClass}`}>{fmt(row.owed, '₾')}</td>
                       <td className={styles.r}>
-                        <span className={`${styles.amt} ${styles.na}`}>
-                          <span className={styles['amt-lab']}>{t('pay:tableAmountHeader')}</span>
-                          <input
-                            type="text"
-                            className={styles['amt-input']}
-                            value="-"
-                            disabled
-                            readOnly
-                            aria-label={`${t('pay:tableAmountHeader')} ${row.code}`}
-                          />
-                        </span>
+                        <AmountField
+                          label={t('pay:tableAmountHeader')}
+                          value={checked ? selections[row.code] : (amounts[row.code] ?? 0)}
+                          max={MAX_ROW_AMOUNT}
+                          disabled={!checked}
+                          onChange={(raw) => updateAmount(row, raw)}
+                          ariaLabel={`${t('pay:tableAmountHeader')} ${row.code}`}
+                        />
                       </td>
                     </tr>
                   )
-                }
-                return (
-                  <tr
-                    key={row.code}
-                    className={checked ? styles.on : ''}
-                    onClick={(e) => handleRowClick(e, row)}
-                  >
-                    <td>
-                      <Checkbox
-                        aria-label={row.code}
-                        checked={checked}
-                        onChange={() => toggleRow(row)}
-                      />
-                    </td>
-                    <td>{row.code}</td>
-                    <td className={`${styles.r} ${owedClass}`}>{fmt(row.owed, '₾')}</td>
-                    <td className={styles.r}>
-                      <AmountField
-                        label={t('pay:tableAmountHeader')}
-                        value={checked ? selections[row.code] : (amounts[row.code] ?? 0)}
-                        max={MAX_ROW_AMOUNT}
-                        disabled={!checked}
-                        onChange={(raw) => updateAmount(row, raw)}
-                        ariaLabel={`${t('pay:tableAmountHeader')} ${row.code}`}
-                      />
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles['tbl-foot']}>
+            <span>{t('pay:selectedOfApartments', { n: selectedCount, m: payableRows.length })}</span>
+            <span className={styles['foot-total']}>
+              {t('pay:totalShort')} <b>{fmt(total, '₾')}</b>
+            </span>
+          </div>
+          {/* Says out loud what the table allows, so a zero-balance row
+              doesn't read as a checkbox that does nothing. */}
+          <p className={styles['foot-note']}>{t('pay:advanceNote')}</p>
+        </Card>
+      </div>
+
+      <Card className={styles.summary}>
+        <h3>{t('pay:summaryTitle')}</h3>
+        <div className={styles['summary-row']}>
+          <span className={styles.k}>{t('pay:summaryComplex')}</span>
+          <span className={styles.v}>{complex.project}</span>
         </div>
-        <div className={styles['tbl-foot']}>
-          {t('pay:selectionFooter', { n: selectedCount, m: payableRows.length, total: fmt(total, '₾') })}
+        <div className={styles['summary-row']}>
+          <span className={styles.k}>{t('pay:summaryUtility')}</span>
+          <span className={styles.v}>
+            <span className={styles['v-ic']} style={{ color: ui?.color }}>
+              <Icon name={ui?.icon || 'doc'} size={14} />
+            </span>
+            {t(`pay:utilityLabels.${utility}`)}
+          </span>
         </div>
-        {/* Says out loud what the table now allows, so a zero-balance row
-            doesn't read as a checkbox that does nothing. */}
-        <p className={styles['foot-note']}>{t('pay:advanceNote')}</p>
+        <div className={styles['summary-row']}>
+          <span className={styles.k}>{t('pay:summarySelected')}</span>
+          <span className={styles.v}>{t('pay:summarySelectedOf', { n: selectedCount, m: payableRows.length })}</span>
+        </div>
+        {/* Only when a USD->GEL conversion actually happened (live maintenance). */}
+        {showRate && (
+          <div className={styles['summary-row']}>
+            <span className={styles.k}>
+              <Icon name="info" size={13} /> {t('pay:currencyRate')}
+            </span>
+            <span className={styles.v}>{t('pay:rateLine', { rate: usdRate.toFixed(2) })}</span>
+          </div>
+        )}
+        <div className={styles['summary-total']}>
+          <span className={styles.k}>{t('pay:payableAmount')}</span>
+          <span className={styles.v}>
+            {fmtNum(total)} <small>₾</small>
+          </span>
+        </div>
+        <Button className={styles.paybtn} disabled={total <= 0} onClick={openPay}>
+          {t('pay:payNow')}
+        </Button>
       </Card>
 
-      <Card>
-        <Card.Head>
-          <h3>{t('pay:summaryTitle')}</h3>
-        </Card.Head>
-        <Card.Pad>
-          <div className={styles['summary-row']}>
-            <span className={styles.k}>{t('pay:summaryComplex')}</span>
-            <span className={styles.v}>{complex.project}</span>
-          </div>
-          <div className={styles['summary-row']}>
-            <span className={styles.k}>{t('pay:summaryUtility')}</span>
-            <span className={styles.v}>{t(`pay:utilityLabels.${utility}`)}</span>
-          </div>
-          <div className={styles['summary-row']}>
-            <span className={styles.k}>{t('pay:summarySelected')}</span>
-            <span className={styles.v}>{t('pay:summarySelectedValue', { count: selectedCount })}</span>
-          </div>
-          {/* Only when a USD->GEL conversion actually happened (live
-              maintenance, currency 'USD') — surface the rate used to build
-              both the Outstanding column and this total, per the design
-              screenshots' "$1 = X₾" line (FLAG, see payFlowData.js's owedFor
-              comment). Mock-mode maintenance is GEL-native, so no rate line. */}
-          {utility === 'maintenance' && maintenanceCurrency === 'USD' && usdRate != null && (
-            <div className={styles['summary-row']}>
-              <span className={styles.k}>{t('dashboard:ratesTitle')}</span>
-              <span className={styles.v}>{t('pay:rateLine', { rate: usdRate.toFixed(4) })}</span>
-            </div>
-          )}
-          <div className={`${styles['summary-row']} ${styles['summary-total']}`}>
-            <span className={styles.k}>{t('pay:payableAmount')}</span>
-            <span className={styles.v}>{fmt(total, '₾')}</span>
-          </div>
-          {/* P3-4: opens the payment-method modal (bank card / Apple Pay /
-              open banking / crypto / invoice) with the selections turned
-              into payMulti's services[] shape — one entry per checked
-              apartment, amount = its editable payable amount, serviceType
-              from payFlowData's serviceTypeFor (utility -> finance
-              accountType mapping, FLAG see that function's comment). */}
-          <Button
-            style={{ width: '100%', justifyContent: 'center', marginTop: 14 }}
-            disabled={total <= 0}
-            onClick={() =>
-              openModal(
-                <MethodModal
-                  complexName={complex.project}
-                  utilityLabel={t(`pay:utilityLabels.${utility}`)}
-                  amount={total}
-                  services={Object.entries(selections).map(([code, amt]) => ({
-                    epcode: epcodeByCode.get(code),
-                    amount: amt,
-                    serviceType: serviceTypeFor(utility),
-                  }))}
-                />,
-                { size: 'md' }
-              )
-            }
-          >
-            <Icon name="wallet" /> {t('pay:payNow')}
-          </Button>
-        </Card.Pad>
-      </Card>
+      {/* Phone: the summary folds into a bar that stays at the bottom. */}
+      <div className={styles.paybar}>
+        <div>
+          <b>{fmt(total, '₾')}</b>
+          {showRate && <span className={styles.ratepill}>{t('pay:rateLine', { rate: usdRate.toFixed(2) })}</span>}
+        </div>
+        <Button disabled={total <= 0} onClick={openPay}>
+          {t('pay:payNow')}
+        </Button>
+      </div>
     </div>
   )
 }

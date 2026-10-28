@@ -1,4 +1,5 @@
-import { USE_MOCK, delay, http } from '../client'
+import { USE_MOCK, delay, http, persCab } from '../client'
+import { adaptPaymentMethods } from '../adapters/paymentMethods'
 
 // NOTE: v1's single-apartment `payService` (POST /mobileApi/payment/, Task
 // I7) was removed with PayPage in Task P3-3 — the multi-pay flow's payMulti
@@ -43,12 +44,17 @@ function multiPayFlags(method, bankVendor) {
   }
 }
 
-export async function payMulti({ services, method, bankVendor, lang } = {}) {
+// `method` is the chosen row's `key` (drives the flags above); `methodId` is
+// its `id` from GET /paymentMethods/ - the list can hold two "card" rows with
+// different limits and fees, so the id is what tells the backend which one
+// (owner call 2026-10-28). FLAG: the body field name is assumed.
+export async function payMulti({ services, method, methodId, bankVendor, lang } = {}) {
   if (USE_MOCK) {
     await delay()
     return { url: 'https://example.test/pay' }
   }
   const body = { services, ...multiPayFlags(method, bankVendor) }
+  if (methodId != null) body.payment_method_id = methodId
   if (lang) body.language = lang
   return http('/mobileApi/payment/multi/', {
     method: 'POST',
@@ -70,4 +76,24 @@ export async function downloadInvoice(invoiceId) {
   }
   const params = new URLSearchParams({ invoice_id: String(invoiceId), response_type: 'pdf' })
   return http(`/mobileApi/payment/invoice/?${params.toString()}`, { blob: true })
+}
+
+// The method list, with each method's limit and fee (persCabApi host). Mock
+// mode mirrors the design: two card rows with different limits, Apple Pay,
+// crypto, online bank (with a fee cap) and the invoice.
+const MOCK_METHODS = [
+  { id: 1, name: 'Card', key: 'card', title: 'Pay by card', max_payable: 1500, fee_percent: 2.0, max_fee_amount: null },
+  { id: 2, name: 'Card', key: 'card', title: 'Pay by card', max_payable: 3000, fee_percent: 2.5, max_fee_amount: null },
+  { id: 3, name: 'Apple Pay', key: 'applepay', title: 'Apple Pay', max_payable: 3000, fee_percent: 2.5, max_fee_amount: null },
+  { id: 4, name: 'Crypto', key: 'crypto', title: 'Crypto', max_payable: 50000, fee_percent: 0.6, max_fee_amount: null },
+  { id: 5, name: 'Online bank', key: 'bank', title: 'Online bank', max_payable: 50000, fee_percent: 0.6, max_fee_amount: 100 },
+  { id: 6, name: 'Invoice', key: 'invoice', title: 'Invoice', max_payable: null, fee_percent: null, max_fee_amount: null },
+]
+
+export async function getPaymentMethods() {
+  if (USE_MOCK) {
+    await delay()
+    return adaptPaymentMethods(MOCK_METHODS)
+  }
+  return adaptPaymentMethods(await http(persCab('/paymentMethods/')))
 }

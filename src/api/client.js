@@ -26,6 +26,15 @@ function apiBase() {
   return import.meta.env.VITE_API_BASE || ''
 }
 
+// persCabApi lives on its own host. Only two calls use it so far - daily
+// electricity readings and the payment-method list (owner call 2026-10-28);
+// everything else stays on mobileApi. Same Bearer token, same envelope.
+// Override with VITE_PERSCAB_BASE (e.g. for a staging host).
+export function persCab(path) {
+  const base = import.meta.env.VITE_PERSCAB_BASE || 'https://apimyorbi.orbi.ge:15043'
+  return `${base}/persCabApi${path}`
+}
+
 // Session-expired notification: fired whenever a 401-triggered refresh
 // itself fails (refresh token missing/expired/rejected). AuthContext
 // subscribes to this in real mode to flip status to 'anon' — RequireAuth
@@ -94,7 +103,9 @@ async function request(path, opts, { multipart = false } = {}) {
     headers['Content-Type'] = 'application/json'
   }
 
-  const res = await fetch(`${apiBase()}${path}`, { ...rest, headers })
+  // An absolute URL (persCab()) goes out as is; a path is joined to mobileApi's base.
+  const url = /^https?:\/\//.test(path) ? path : `${apiBase()}${path}`
+  const res = await fetch(url, { ...rest, headers })
 
   if (res.status === 401 && !_isRetry) {
     try {

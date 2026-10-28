@@ -44,9 +44,10 @@ export function dayLabel(iso, lang) {
   return `${d} ${monthShort(m, lang)} ${y}`
 }
 
-// Meter readings are grouped with a thin gap: 13 020.
+// Readings and kWh figures: grouped with a thin gap, at most one decimal -
+// the live meter reports tenths (1 250.5, 4.2) - and no trailing ".0".
 export function fmtReading(n) {
-  return Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')
+  return (Math.round(n * 10) / 10).toLocaleString('en-US', { maximumFractionDigits: 1 }).replace(/,/g, ' ')
 }
 
 export const monthKey = (iso) => {
